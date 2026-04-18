@@ -14,6 +14,7 @@ import 'package:tech_app/services/NotificationService.dart';
 import 'package:tech_app/services/TechnicianProfile_Service.dart';
 import 'package:tech_app/services/account_delete.dart';
 import 'package:tech_app/services/lockout_service.dart';
+import 'package:tech_app/services/MqttNotificationService.dart';
 import 'package:tech_app/services/notification_toggle_service.dart';
 import 'package:tech_app/widgets/header.dart';
 import 'package:tech_app/widgets/inputs/app_text_field.dart';
@@ -99,6 +100,7 @@ Future<void> toggleNotification(bool value) async {
     try {
       // Call backend logout
       await _lockoutService.fetchlogout();
+      MqttNotificationService.disconnect();
       // Clear local storage
       await Appperfernces.clearAll();
       await Appperfernces.setLoggedIn(false);
@@ -283,11 +285,12 @@ Future<void> toggleNotification(bool value) async {
             CircleAvatar(
               radius: 45,
               backgroundColor: Colors.grey.shade300,
-              backgroundImage: _profile?.data.image != null
-                  ? CachedNetworkImageProvider(
-                      '${ImageBaseUrl.baseUrl}/${_profile!.data.image}',
-                    )
-                  : null,
+              backgroundImage: (_profile?.data.image != null &&
+        _profile!.data.image!.isNotEmpty)
+    ? CachedNetworkImageProvider(
+        '${ImageBaseUrl.baseUrl}/${_profile?.data.image}',
+      )
+    : null,
               child: _profile?.data.image == null
                   ? const Icon(Icons.person, size: 30)
                   : null,
@@ -296,13 +299,19 @@ Future<void> toggleNotification(bool value) async {
               bottom: 0,
               right: 0,
               child: InkWell(
-                onTap: () async {
-                  final updated = await context.push(
-                    RouteName.editprofile,
-                    extra: _profile,
-                  );
-                  if (updated == true) profiledata();
-                },
+               onTap: () async {
+  if (_profile == null || _profile!.data == null) {
+    debugPrint("Profile still null - can't navigate");
+    return;
+  }
+
+  final updated = await context.push(
+    RouteName.editprofile,
+    extra: _profile,
+  );
+
+  if (updated == true) profiledata();
+},
                 child: CircleAvatar(
                   radius: 16,
                   backgroundColor: AppColors.app_background_clr,
@@ -317,8 +326,7 @@ Future<void> toggleNotification(bool value) async {
           "${_profile?.data.firstName} ${_profile?.data.lastName}",
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
         ),
-        Text(_profile?.data.role.skill ?? ""),
-      ],
+Text(_profile?.data.role?.skill ?? ""),      ],
     );
   }
 

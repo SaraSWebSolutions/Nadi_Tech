@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 import 'package:tech_app/core/network/dio_client.dart';
 
@@ -21,6 +22,10 @@ class AcceptrequestService {
           "reason": reason
         }
         );
+            debugPrint("=== ACCEPT/REJECT RESPONSE ===");
+    debugPrint(response.data.toString());
+    debugPrint("================================");
+
       return response.data;
     } on DioException catch (e) {
 

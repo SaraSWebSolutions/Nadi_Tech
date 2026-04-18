@@ -7,6 +7,7 @@ import 'package:tech_app/routes/route_name.dart';
 import 'package:tech_app/widgets/inputs/app_text_field.dart';
 import 'package:tech_app/widgets/inputs/primary_button.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
+import 'package:tech_app/services/MqttNotificationService.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -147,6 +148,11 @@ class _LoginViewState extends State<LoginView> {
 
                                 if (errorMessage == null) {
                                   await Appperfernces.setLoggedIn(true);
+                                  // Connect MQTT for chat notifications
+                                  final techId = await Appperfernces.getTechId();
+                                  if (techId != null) {
+                                    MqttNotificationService.connect(techId);
+                                  }
                                   SnackbarHelper.show(
                                     context,
                                     message: "Login successful",

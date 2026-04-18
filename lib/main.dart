@@ -7,16 +7,24 @@ import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/firebase_options.dart';
 import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
+import 'package:tech_app/provider/active_chat_provider.dart';
 import 'package:tech_app/provider/language_provider.dart';
+import 'package:tech_app/services/MqttNotificationService.dart';
 import 'package:tech_app/provider/theme_provider.dart';
 import 'package:tech_app/routes/app_route.dart';
 import 'package:tech_app/services/NotificationService.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 import 'package:tech_app/services/Stream_Chat_Service.dart';
 
-///  STEP 1: ADD THIS HERE (TOP LEVEL, NOT INSIDE CLASS)
+final container = ProviderContainer();
+
 Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
+  // Stream Chat SDK handles its own background messages — skip them
+  if (message.data.containsKey('sender') ||
+      message.data.containsKey('channel_id')) {
+    return;
+  }
 }
 
 void main() async {
@@ -63,12 +71,60 @@ void main() async {
 
   /// FOREGROUND MESSAGE
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    final data = message.data;
+
+    // Handle Stream Chat push notifications
+    if (data.containsKey('sender') ||
+        data.containsKey('channel_id') ||
+        (data.containsKey('type') && data['type'] == 'message.new')) {
+
+      final senderName = data['sender_name'] ??
+                         data['sender'] ??
+                         message.notification?.title ??
+                         'New Message';
+
+      final messageText = data['message_text'] ??
+                          message.notification?.body ??
+                          'You have a new message';
+
+      final channelId = data['channel_id'] ?? data['cid'] ?? '';
+
+      // Suppress notification if technician is actively viewing this chat
+      final activeChannel = container.read(activeChatChannelProvider);
+      if (activeChannel != null && channelId.contains(activeChannel)) {
+        return;
+      }
+
+      NotificationService.show(
+        title: senderName,
+        body: messageText,
+        channelId: 'chat_messages_channel',
+        channelName: 'Chat Messages',
+        payload: 'chat:$channelId',
+      );
+      return;
+    }
+
+    // General / OTP notifications
     NotificationService.show(
       title: message.notification?.title ?? 'OTP',
       body: message.notification?.body ?? 'Your OTP is ${message.data['otp']}',
     );
   });
-  runApp(ProviderScope(child: MyApp()));
+
+  // Wire GoRouter to NotificationService for tap-to-navigate
+  NotificationService.setRouter(Approute);
+
+  // Init MQTT with provider container so it can suppress notifications in active chat
+  MqttNotificationService.init(container);
+
+  // Connect MQTT if already logged in
+  final techId = await Appperfernces.getTechId();
+  if (techId != null) {
+    MqttNotificationService.connect(techId);
+  }
+
+  runApp(UncontrolledProviderScope(container: container, child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {

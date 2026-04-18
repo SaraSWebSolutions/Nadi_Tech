@@ -62,17 +62,26 @@ Future<void> _initNotifications() async {
 }
 
   Future<void> _navigate() async {
-    await Future.delayed(const Duration(seconds: 3));
-    final isLoggedIn = await Appperfernces.isLoggedIn();
-    if (!mounted) return;
-    if (isLoggedIn) {
-          final techId = await Appperfernces.getTechId(); // <-- get techId here
-    if (techId != null) {
-      await StreamChatService().connectUser(techId);
-    } 
-      context.go(RouteName.bottom_nav);
-    } else {
-      context.go(RouteName.login);
+    try {
+      await Future.delayed(const Duration(seconds: 3));
+      final isLoggedIn = await Appperfernces.isLoggedIn();
+      if (!mounted) return;
+      
+      if (isLoggedIn) {
+        final techId = await Appperfernces.getTechId();
+        if (techId != null) {
+          // Connect stream chat async WITHOUT blocking the screen
+          StreamChatService().connectUserIfNeeded(techId).catchError((e) {
+            print("⚠️ Stream Chat connect failed: $e");
+          });
+        }
+        context.go(RouteName.bottom_nav);
+      } else {
+        context.go(RouteName.login);
+      }
+    } catch (e) {
+      print("❌ splash routing error: $e");
+      if (mounted) context.go(RouteName.login);
     }
   }
 
@@ -86,13 +95,23 @@ Future<void> _initNotifications() async {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.app_background_clr,
-      body: Center(
-        child: ScaleTransition(
-          scale: _scaleAnimation,
-          child: Image.asset(
-            "assets/logo/Techlogo.png",
-            height: 100,
-            width: 100,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/splash_bg.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Center(
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Image.asset(
+              "assets/logo/Techlogo.png",
+              height: 100,
+              width: 100,
+            ),
           ),
         ),
       ),

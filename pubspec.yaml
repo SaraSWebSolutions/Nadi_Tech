@@ -25,6 +25,8 @@ dependencies:
   smooth_page_indicator: ^2.0.1
   flutter_staggered_animations: ^1.1.1
   audioplayers: ^6.5.1
+  record: ^6.1.2
+  path_provider: ^2.1.4
   firebase_core: ^4.4.0
   firebase_messaging: ^16.1.1
   flutter_local_notifications: ^19.5.0
@@ -32,6 +34,7 @@ dependencies:
   flutter_native_splash: ^2.4.7
   flutter_launcher_icons: ^0.14.4
   stream_chat_flutter: ^9.23.0
+  mqtt_client: ^10.0.0
 
 dev_dependencies:
   flutter_test:
@@ -46,12 +49,15 @@ flutter_launcher_icons:
 
 # ---------------- NATIVE SPLASH ----------------
 flutter_native_splash:
-  # color: "#FFFFFF"                       # Background color of splash
-  image: assets/logo/Techlogo.png        # Your app logo for splash
+  color: "#6473B7"
+  image: assets/logo/Techlogo.png
   android: true
   ios: true
   android_gravity: center
-  ios_content_mode: scaleAspectFit
+  ios_content_mode: center
+  android_12:
+    color: "#6473B7"
+    image: assets/logo/Techlogo.png
 
 flutter:
   generate: true

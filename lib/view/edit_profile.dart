@@ -32,12 +32,21 @@ class _EditProfileState extends State<EditProfile> {
   @override
   void initState() {
     super.initState();
-    _firstname = TextEditingController(text: widget.profile.data.firstName);
-    _lastname = TextEditingController(text: widget.profile.data.lastName);
-    _email = TextEditingController(text: widget.profile.data.email);
-    _mobile = TextEditingController(
-      text: widget.profile.data.mobile.toString(),
-    );
+    _firstname = TextEditingController(
+  text: widget.profile.data.firstName ?? "",
+);
+
+_lastname = TextEditingController(
+  text: widget.profile.data.lastName ?? "",
+);
+
+_email = TextEditingController(
+  text: widget.profile.data.email ?? "",
+);
+
+_mobile = TextEditingController(
+  text: widget.profile.data.mobile?.toString() ?? "",
+);
   }
 
   Future<void> _PickImage() async {
@@ -60,36 +69,44 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   Future<void> _updateprofile() async {
-    try {
-      setState(() => _isLoading = true);
+  try {
+    setState(() => _isLoading = true);
 
-      await _editprofileService.updateProfile(
-        firstName: _firstname.text.trim(),
-        lastName: _lastname.text.trim(),
-        email: _email.text.trim(),
-        mobile: _mobile.text.trim(),
-        image: _selectImage,
-      );
+    final response = await _editprofileService.updateProfile(
+      firstName: _firstname.text.trim(),
+      lastName: _lastname.text.trim(),
+      email: _email.text.trim(),
+      mobile: _mobile.text.trim(),
+      image: _selectImage,
+    );
 
-      setState(() => _isLoading = false);
+    debugPrint("✅ UPDATE PROFILE RESPONSE: $response");
 
-      SnackbarHelper.show(
-        context,
-        backgroundColor: AppColors.scoundry_clr,
-        message: AppLocalizations.of(context)!.profileUpdatedSuccessfully,
-      );
-      Navigator.pop(context, true);
-    } catch (e) {
-      setState(() => _isLoading = false);
+    setState(() => _isLoading = false);
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
-    }
+    SnackbarHelper.show(
+      context,
+      backgroundColor: AppColors.scoundry_clr,
+      message: AppLocalizations.of(context)!.profileUpdatedSuccessfully,
+    );
+
+    Navigator.pop(context, true);
+  } catch (e, stack) {
+    setState(() => _isLoading = false);
+
+    debugPrint("❌ ERROR: $e");
+    debugPrint("❌ STACK: $stack");
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(e.toString())),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
+    final image = widget.profile.data.image;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -104,18 +121,16 @@ class _EditProfileState extends State<EditProfile> {
                   child: CircleAvatar(
                     radius: 60,
                     backgroundColor: Colors.grey.shade300,
-                    backgroundImage: _selectImage != null
-                        ? FileImage(_selectImage!)
-                        : widget.profile.data.image!.isNotEmpty
-                        ? CachedNetworkImageProvider(
-                            '${ImageBaseUrl.baseUrl}/${widget.profile.data.image}',
-                          )
-                        : null,
-                    child:
-                        (_selectImage == null &&
-                            widget.profile.data.image!.isEmpty)
-                        ? const Icon(Icons.person, size: 90)
-                        : null,
+                   backgroundImage: _selectImage != null
+    ? FileImage(_selectImage!)
+    : (image != null && image.isNotEmpty)
+        ? CachedNetworkImageProvider(
+            '${ImageBaseUrl.baseUrl}/$image',
+          )
+        : null,
+                   child: (_selectImage == null && (image == null || image.isEmpty))
+    ? const Icon(Icons.person, size: 90)
+    : null,
                   ),
                 ),
                 Positioned(

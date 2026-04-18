@@ -18,7 +18,7 @@ import 'package:tech_app/widgets/card/shimmer_loader.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tech_app/widgets/header.dart';
 import 'package:tech_app/widgets/no_internet_widget.dart';
-
+import 'package:tech_app/provider/home_tab_provider.dart';
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
 
@@ -30,19 +30,34 @@ class _HomeViewState extends ConsumerState<HomeView> {
   int selectedIndex = 0;
   final TimerService _timerService = TimerService();
   bool timerLoaded = false;
-  @override
-  void initState() {
-    super.initState();
-  
-    Future.microtask(() => ref.refresh(notificationServiceProvider));
-  }
+@override
+void initState() {
+  super.initState();
+
+  Future.microtask(() async {
+    final index = ref.read(homeTabProvider);
+
+    final filters = [
+      'all',
+      'pending',
+      'accepted',
+      'rejected',
+      'in-progress',
+      'completed'
+    ];
+
+    await ref
+        .read(serviceListProvider.notifier)
+        .fetchServiceByStatus(filters[index]);
+  });
+}
 
 
 
   @override
   Widget build(BuildContext context) {
     final serviceList = ref.watch(serviceListProvider);
-
+final selectedIndex = ref.watch(homeTabProvider);
     // ghange data format
     String formatDate(DateTime date) {
       return DateFormat('MMMM d, y \'at\' h:mm a').format(date);
@@ -59,11 +74,13 @@ class _HomeViewState extends ConsumerState<HomeView> {
       // StatusFilter('Completed', 'completed'),
       // StatusFilter('Rejected', 'rejected'),
       StatusFilter(lang.all, 'all'),
-      StatusFilter(lang.accepted, 'accepted'),
-      StatusFilter(lang.inProgress, 'in-progress'),
       StatusFilter(lang.pending, 'pending'),
-      StatusFilter(lang.completed, 'completed'),
+
+      StatusFilter(lang.accepted, 'accepted'),
       StatusFilter(lang.rejected, 'rejected'),
+
+      StatusFilter(lang.inProgress, 'in-progress'),
+      StatusFilter(lang.completed, 'completed'),
     ];
     final timerState = ref.watch(timerProvider);
     return Scaffold(
@@ -102,8 +119,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                         onTap: () async {
                           if (selectedIndex == index) return;
 
-                          setState(() => selectedIndex = index);
-
+ref.read(homeTabProvider.notifier).state = index;
                           await ref
                               .read(serviceListProvider.notifier)
                               .fetchServiceByStatus(filter.value);
@@ -196,8 +212,17 @@ class _HomeViewState extends ConsumerState<HomeView> {
                         );
                       }
 
-                      return AnimationLimiter(
-                        child: ListView.builder(
+                      return RefreshIndicator(
+                        color: AppColors.app_background_clr,
+                        onRefresh: () async {
+                          await ref
+                              .read(serviceListProvider.notifier)
+                              .fetchServiceByStatus(filters[selectedIndex].value);
+                          ref.invalidate(notificationServiceProvider);
+                        },
+                        child: AnimationLimiter(
+                          child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
                           itemCount: data.data.length,
                           itemBuilder: (context, index) {
                             final item = data.data[index];
@@ -295,6 +320,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                               );
                             }
                           },
+                        ),
                         ),
                       );
                     },

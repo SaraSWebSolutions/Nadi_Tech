@@ -13,13 +13,14 @@ import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
 import 'package:tech_app/provider/service_list_provider.dart';
 import 'package:tech_app/provider/service_timer_provider.dart';
+import 'package:tech_app/routes/route_name.dart';
 import 'package:tech_app/services/AcceptRequest_Service.dart';
 import 'package:tech_app/services/StartWork_Service.dart';
 import 'package:tech_app/view/update_request_view.dart';
 import 'package:tech_app/widgets/card/request_cart.dart';
 import 'package:tech_app/widgets/inputs/primary_button.dart';
 import 'package:tech_app/model/ServiceList _Model.dart';
-
+import 'package:tech_app/provider/home_tab_provider.dart';
 class ServicerequestCart extends ConsumerStatefulWidget {
   final Datum data;
 
@@ -68,7 +69,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
         status,
         reason,
       );
-
+debugPrint("RESULT: $result");
       SnackbarHelper.show(
         context,
         backgroundColor: AppColors.app_background_clr,
@@ -76,8 +77,14 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
       );
       //   REFRESH SERVICE LIST API
       ref.invalidate(serviceListProvider);
-      context.pop();
-    } catch (e) {
+    // 🔥 SET TAB BASED ON ACTION
+    if (status == "accept") {
+      ref.read(homeTabProvider.notifier).state = 2; // Accepted tab
+    } else {
+      ref.read(homeTabProvider.notifier).state = 3; // Rejected tab
+    }
+
+    context.go(RouteName.bottom_nav);    } catch (e) {
       SnackbarHelper.show(
         context,
         backgroundColor: Colors.red,
@@ -145,7 +152,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                     onPressed: () {
                       acceptrequest(status: "accept");
                     },
-                    text: AppLocalizations.of(context)!.accepted,
+                    text: AppLocalizations.of(context)!.accept,
                   ),
                 ),
                 Padding(
@@ -158,7 +165,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                     onPressed: () {
                       _showRejectReasonSheet(context);
                     },
-                    text: AppLocalizations.of(context)!.rejected,
+                    text: AppLocalizations.of(context)!.reject,
                   ),
                 ),
               ],
@@ -290,11 +297,6 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                 _infoRow(AppLocalizations.of(context)!.name, widget.data.userId.basicInfo.fullName),
                 const Divider(),
                 _infoRow(AppLocalizations.of(context)!.email, widget.data.userId.basicInfo.email),
-                const Divider(),
-                _infoRow(
-                  AppLocalizations.of(context)!.phone,
-                  "+973 ${widget.data.userId.basicInfo.mobileNumber}",
-                ),
                 const Divider(),
                 _infoRow(
                   AppLocalizations.of(context)!.address,
@@ -484,25 +486,6 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
 )
                   ),
                 ],
-
-                const Divider(),
-                _infoRow(
-                 AppLocalizations.of(context)!.dateRequired,
-                  formatDateOnly(widget.data.scheduleService),
-                ),
-                const Divider(),
-                _infoRow(
-                  AppLocalizations.of(context)!.timeWindow,
-                  widget.data.scheduleServiceTime?.isNotEmpty == true
-                      ? widget.data.scheduleServiceTime!
-                      : "00:00",
-                ),
-
-                const Divider(),
-                _infoRow(
-                  AppLocalizations.of(context)!.dateCreated,
-                  formatDateForUI(widget.data.createdAt),
-                ),
               ],
             ),
           ),
@@ -735,25 +718,36 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                   Column(
                     children: [
                       SizedBox(
-                        height: 200,
+                        height: 240,
                         child: PageView.builder(
                           controller: _pageController,
                           itemCount: images.length,
                           itemBuilder: (context, index) {
                             final imgUrl =
                                 "${ImageBaseUrl.baseUrl}/${images[index].trim()}";
-                            return CachedNetworkImage(
-                              imageUrl: imgUrl,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => const SizedBox(
-                                height: 100,
-                                width: 100,
-                                child: Center(
-                                  child: CircularProgressIndicator(),
+                            return GestureDetector(
+                              onTap: () => _openFullScreenImage(
+                                context,
+                                images,
+                                index,
+                              ),
+                              child: InteractiveViewer(
+                                minScale: 1,
+                                maxScale: 4,
+                                child: CachedNetworkImage(
+                                  imageUrl: imgUrl,
+                                  fit: BoxFit.contain,
+                                  placeholder: (context, url) => const SizedBox(
+                                    height: 100,
+                                    width: 100,
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.broken_image, size: 50),
                                 ),
                               ),
-                              errorWidget: (context, url, error) =>
-                                  const Icon(Icons.broken_image, size: 50),
                             );
                           },
                         ),
@@ -778,6 +772,24 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
           ),
         );
       },
+    );
+  }
+
+  void _openFullScreenImage(
+    BuildContext context,
+    List<String> images,
+    int initialIndex,
+  ) {
+    final controller = PageController(initialPage: initialIndex);
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black.withOpacity(0.92),
+        pageBuilder: (_, __, ___) => _FullScreenImageViewer(
+          images: images,
+          controller: controller,
+        ),
+      ),
     );
   }
 
@@ -846,7 +858,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                       }
                       debugPrint("reason $reason");
                       acceptrequest(
-                        status: AppLocalizations.of(context)!.rejected,
+                        status: "reject",
                         reason: reason,
                       ); // pass reason only for reject
                       Navigator.pop(context);
@@ -860,6 +872,67 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
           ),
         );
       },
+    );
+  }
+}
+
+class _FullScreenImageViewer extends StatelessWidget {
+  final List<String> images;
+  final PageController controller;
+
+  const _FullScreenImageViewer({
+    required this.images,
+    required this.controller,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            PageView.builder(
+              controller: controller,
+              itemCount: images.length,
+              itemBuilder: (context, index) {
+                final url =
+                    "${ImageBaseUrl.baseUrl}/${images[index].trim()}";
+                return InteractiveViewer(
+                  minScale: 1,
+                  maxScale: 5,
+                  child: Center(
+                    child: CachedNetworkImage(
+                      imageUrl: url,
+                      fit: BoxFit.contain,
+                      placeholder: (_, __) => const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                      errorWidget: (_, __, ___) => const Icon(
+                        Icons.broken_image,
+                        color: Colors.white,
+                        size: 64,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 30,
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

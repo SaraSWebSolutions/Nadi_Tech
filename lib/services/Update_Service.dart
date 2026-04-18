@@ -36,6 +36,7 @@ class UpdateService {
     required List<File> images,
     required String userServiceId,
     required String serviceStatus,
+    File? voice,
   }) async {
     try {
       final formData = FormData();
@@ -53,6 +54,19 @@ class UpdateService {
             await MultipartFile.fromFile(
               image.path,
               filename: image.path.split('/').last,
+            ),
+          ),
+        );
+      }
+
+      // Voice note (optional)
+      if (voice != null) {
+        formData.files.add(
+          MapEntry(
+            "voice",
+            await MultipartFile.fromFile(
+              voice.path,
+              filename: voice.path.split('/').last,
             ),
           ),
         );

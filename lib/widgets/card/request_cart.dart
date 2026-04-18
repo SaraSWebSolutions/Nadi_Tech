@@ -282,21 +282,33 @@ class RequestCart extends StatelessWidget {
                 Column(
                   children: [
                     SizedBox(
-                      height: 200,
+                      height: 240,
                       child: PageView.builder(
                         controller: _pageController,
                         itemCount: images.length,
                         itemBuilder: (context, index) {
                           final imgUrl =
                               "${ImageBaseUrl.baseUrl}/${images[index].trim()}";
-                          return CachedNetworkImage(
-                            imageUrl: imgUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => const Center(
-                              child: CircularProgressIndicator(),
+                          final urls = images
+                              .map((m) =>
+                                  "${ImageBaseUrl.baseUrl}/${m.trim()}")
+                              .toList();
+                          return GestureDetector(
+                            onTap: () =>
+                                _openFullScreenImage(context, urls, index),
+                            child: InteractiveViewer(
+                              minScale: 1,
+                              maxScale: 4,
+                              child: CachedNetworkImage(
+                                imageUrl: imgUrl,
+                                fit: BoxFit.contain,
+                                placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.broken_image, size: 50),
+                              ),
                             ),
-                            errorWidget: (context, url, error) =>
-                                const Icon(Icons.broken_image, size: 50),
                           );
                         },
                       ),
@@ -382,25 +394,37 @@ class RequestCart extends StatelessWidget {
                   Column(
                     children: [
                       SizedBox(
-                        height: 200,
+                        height: 240,
                         child: PageView.builder(
                           controller: _pageController,
                           itemCount: images.length,
                           itemBuilder: (context, index) {
                             final imgUrl =
                                 "${ImageBaseUrl.baseUrl}/${images[index].trim()}";
-                            return CachedNetworkImage(
-                              imageUrl: imgUrl,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => const SizedBox(
-                                height: 100,
-                                width: 100,
-                                child: Center(
-                                  child: CircularProgressIndicator(),
+                            final urls = images
+                                .map((m) =>
+                                    "${ImageBaseUrl.baseUrl}/${m.trim()}")
+                                .toList();
+                            return GestureDetector(
+                              onTap: () =>
+                                  _openFullScreenImage(context, urls, index),
+                              child: InteractiveViewer(
+                                minScale: 1,
+                                maxScale: 4,
+                                child: CachedNetworkImage(
+                                  imageUrl: imgUrl,
+                                  fit: BoxFit.contain,
+                                  placeholder: (context, url) => const SizedBox(
+                                    height: 100,
+                                    width: 100,
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.broken_image, size: 50),
                                 ),
                               ),
-                              errorWidget: (context, url, error) =>
-                                  const Icon(Icons.broken_image, size: 50),
                             );
                           },
                         ),
@@ -427,6 +451,24 @@ class RequestCart extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  void _openFullScreenImage(
+    BuildContext context,
+    List<String> images,
+    int initialIndex,
+  ) {
+    final controller = PageController(initialPage: initialIndex);
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black.withOpacity(0.92),
+        pageBuilder: (_, __, ___) => _FullScreenImageViewer(
+          images: images,
+          controller: controller,
+        ),
+      ),
     );
   }
 
@@ -461,12 +503,6 @@ class RequestCart extends StatelessWidget {
                     // _infoRow(context, "Status", assignmentStatus),
                     const Divider(),
                     _infoRow(context, AppLocalizations.of(context)!.clientName, clientname),
-                    const Divider(),
-                    _infoRow(
-                      context,
-                     AppLocalizations.of(context)!.scheduledFor,
-                      formatDate(scheduleService),
-                    ),
                     // const Divider(),
                     // _infoRow(
                     //   context,
@@ -483,8 +519,6 @@ class RequestCart extends StatelessWidget {
                         media: media,
                       ),
                     ],
-                    const Divider(),
-                    _infoRow(context, AppLocalizations.of(context)!.createdOn, formatDate(createdAt)),
                     const Divider(),
                     Align(
                       // alignment: Alignment.centerLeft,
@@ -670,6 +704,57 @@ class RequestCart extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _FullScreenImageViewer extends StatelessWidget {
+  final List<String> images;
+  final PageController controller;
+  const _FullScreenImageViewer({
+    required this.images,
+    required this.controller,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: controller,
+            itemCount: images.length,
+            itemBuilder: (context, index) => Center(
+              child: InteractiveViewer(
+                minScale: 1,
+                maxScale: 5,
+                child: CachedNetworkImage(
+                  imageUrl: images[index],
+                  fit: BoxFit.contain,
+                  placeholder: (context, url) => const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  ),
+                  errorWidget: (context, url, error) =>
+                      const Icon(Icons.broken_image, color: Colors.white, size: 60),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 12,
+            child: Material(
+              color: Colors.black54,
+              shape: const CircleBorder(),
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

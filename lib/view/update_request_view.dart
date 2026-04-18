@@ -1,7 +1,10 @@
 import 'dart:io';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
@@ -42,6 +45,15 @@ final TimerService _timerService = TimerService();
   List<XFile> selectedImages = [];
   final UpdateService _updateService = UpdateService();
   final statustext = TextEditingController();
+
+  // Voice recording
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isRecording = false;
+  bool _isPlayingVoice = false;
+  String? _voicePath;
+  Duration _recordDuration = Duration.zero;
+  Timer? _recordTimer;
   final List<Map<String, dynamic>> status = [
     {"title": "Accepted"},
     {"title": "In Progress"},
@@ -66,7 +78,85 @@ WidgetsBinding.instance.addObserver(this);
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     statustext.dispose();
+    _recordTimer?.cancel();
+    _audioRecorder.dispose();
+    _audioPlayer.dispose();
     super.dispose();
+  }
+
+  Future<void> _startRecording() async {
+    try {
+      if (!await _audioRecorder.hasPermission()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Microphone permission denied")),
+        );
+        return;
+      }
+      final dir = await getTemporaryDirectory();
+      final path =
+          '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      await _audioRecorder.start(
+        const RecordConfig(encoder: AudioEncoder.aacLc),
+        path: path,
+      );
+      setState(() {
+        _isRecording = true;
+        _voicePath = null;
+        _recordDuration = Duration.zero;
+      });
+      _recordTimer?.cancel();
+      _recordTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (!mounted) return;
+        setState(() => _recordDuration += const Duration(seconds: 1));
+      });
+    } catch (e) {
+      debugPrint("Record start error: $e");
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    try {
+      final path = await _audioRecorder.stop();
+      _recordTimer?.cancel();
+      setState(() {
+        _isRecording = false;
+        _voicePath = path;
+      });
+    } catch (e) {
+      debugPrint("Record stop error: $e");
+    }
+  }
+
+  Future<void> _togglePlayVoice() async {
+    if (_voicePath == null) return;
+    if (_isPlayingVoice) {
+      await _audioPlayer.stop();
+      setState(() => _isPlayingVoice = false);
+    } else {
+      await _audioPlayer.play(DeviceFileSource(_voicePath!));
+      setState(() => _isPlayingVoice = true);
+      _audioPlayer.onPlayerComplete.listen((_) {
+        if (!mounted) return;
+        setState(() => _isPlayingVoice = false);
+      });
+    }
+  }
+
+  void _deleteVoice() {
+    if (_isPlayingVoice) {
+      _audioPlayer.stop();
+    }
+    setState(() {
+      _voicePath = null;
+      _isPlayingVoice = false;
+      _recordDuration = Duration.zero;
+    });
+  }
+
+  String _formatDuration(Duration d) {
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return "$m:$s";
   }
 
  @override
@@ -130,6 +220,7 @@ void didChangeAppLifecycleState(AppLifecycleState state) {
         images: files,
         userServiceId: widget.userServiceId,
         serviceStatus: statustext.text.trim(),
+        voice: _voicePath != null ? File(_voicePath!) : null,
       );
 
       if (isCompletedSelected) {
@@ -347,6 +438,14 @@ Text(
                 },
               ),
 
+              const SizedBox(height: 15),
+              Text(
+                "Voice Note (Optional)",
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 10),
+              _buildVoiceRecorder(),
+
               const SizedBox(height: 25),
 
               // PrimaryButton(
@@ -381,6 +480,73 @@ Text(
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildVoiceRecorder() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: AppColors.scoundry_clr, width: 1.2),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: _isRecording ? _stopRecording : _startRecording,
+            child: CircleAvatar(
+              radius: 24,
+              backgroundColor: _isRecording
+                  ? Colors.red
+                  : AppColors.scoundry_clr,
+              child: Icon(
+                _isRecording ? Icons.stop : Icons.mic,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _isRecording
+                      ? "Recording... ${_formatDuration(_recordDuration)}"
+                      : _voicePath != null
+                          ? "Voice note ready"
+                          : "Tap mic to record",
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                  ),
+                ),
+                if (_voicePath != null && !_isRecording)
+                  Text(
+                    _formatDuration(_recordDuration),
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+              ],
+            ),
+          ),
+          if (_voicePath != null && !_isRecording) ...[
+            IconButton(
+              onPressed: _togglePlayVoice,
+              icon: Icon(
+                _isPlayingVoice ? Icons.pause_circle : Icons.play_circle,
+                color: AppColors.scoundry_clr,
+                size: 30,
+              ),
+            ),
+            IconButton(
+              onPressed: _deleteVoice,
+              icon: const Icon(Icons.delete, color: Colors.red),
+            ),
+          ],
+        ],
       ),
     );
   }
