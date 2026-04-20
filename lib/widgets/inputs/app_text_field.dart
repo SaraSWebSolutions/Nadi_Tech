@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
+import 'package:flutter/services.dart'; // ✅ add this
 
 class AppTextField extends StatefulWidget {
   final String label;
@@ -11,7 +12,7 @@ class AppTextField extends StatefulWidget {
   final int? maxLines;
   final bool readOnly;
   final bool enabled;
-
+final List<TextInputFormatter>? inputFormatters; // ✅ NEW
   const AppTextField({
     super.key,
     required this.label,
@@ -23,6 +24,7 @@ class AppTextField extends StatefulWidget {
     this.maxLines,
     this.enabled = true,
     this.readOnly = false,
+    this.inputFormatters,
   });
 
   @override
@@ -35,6 +37,8 @@ class _AppTextFieldState extends State<AppTextField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+        inputFormatters: widget.inputFormatters, // ✅ ADD THIS
+
       controller: widget.controller,
       validator: widget.validator,
       keyboardType: widget.keyboardType,

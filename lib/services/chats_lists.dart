@@ -10,7 +10,7 @@ class ChatsList {
   Future<ChatModel> fetchchatlist() async {
     try {
       final response =
-          await _dio.get("user-account/list-users-with-last-message");
+          await _dio.get("admin/admin-list");
 
       /// ✅ FULL RESPONSE LOG
       debugPrint("API RESPONSE => ${response.data}");

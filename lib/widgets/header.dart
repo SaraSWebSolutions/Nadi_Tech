@@ -111,8 +111,11 @@ final notificationCount  = ref.watch(notificationServiceProvider);
             : Stack(
     children: [
       InkWell(
-        onTap: () => context.push(RouteName.nodification),
-        child: Container(
+onTap: () {
+  context.push(RouteName.nodification).then((_) {
+    ref.invalidate(notificationServiceProvider);
+  });
+},        child: Container(
           height: 38,
           width: 38,
           decoration: const BoxDecoration(

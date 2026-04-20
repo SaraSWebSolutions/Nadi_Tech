@@ -205,6 +205,8 @@ _mobile = TextEditingController(
                         AppTextField(
                           label: AppLocalizations.of(context)!.mobileNumber,
                           controller: _mobile,
+                          keyboardType: TextInputType.phone,
+ 
                         ),
                         const SizedBox(height: 20),
                         PrimaryButton(
