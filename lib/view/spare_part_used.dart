@@ -10,6 +10,7 @@ import 'package:tech_app/provider/UpdatedPayment_Provider.dart';
 import 'package:tech_app/provider/service_list_provider.dart';
 import 'package:tech_app/routes/route_name.dart';
 import 'package:tech_app/widgets/inputs/primary_button.dart';
+import 'package:tech_app/provider/home_tab_provider.dart';
 
 class SparePartUsed extends ConsumerStatefulWidget {
   final String userServiceId;
@@ -79,6 +80,7 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
 
         // 🔥 REFRESH SERVICE LIST API
         ref.invalidate(serviceListProvider);
+ ref.read(homeTabProvider.notifier).state = 5;
 
         context.go(RouteName.bottom_nav);
         // reset after success

@@ -18,7 +18,6 @@ import 'package:tech_app/widgets/inputs/primary_button.dart';
 import 'package:tech_app/widgets/media_upload.dart';
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 class UpdateRequestView extends ConsumerStatefulWidget {
   final String serviceRequestId;
   final String userServiceId;
@@ -222,8 +221,7 @@ void didChangeAppLifecycleState(AppLifecycleState state) {
         serviceStatus: statustext.text.trim(),
         voice: _voicePath != null ? File(_voicePath!) : null,
       );
-
-      if (isCompletedSelected) {
+   if (isCompletedSelected) {
         ref.read(timerProvider.notifier).reset();
       }
    await Appperfernces.clearUserServiceId();

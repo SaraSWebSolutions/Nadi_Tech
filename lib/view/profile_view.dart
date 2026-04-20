@@ -131,6 +131,7 @@ Future<void> toggleNotification(bool value) async {
       final response = await _accountDelete.fetchdeletereson();
 
       deleteReasons = response["data"] ?? [];
+      // print("deleteReasons: $deleteReasons");
     } catch (e) {
       debugPrint("Error loading reasons: $e");
     }
@@ -218,7 +219,33 @@ Future<void> toggleNotification(bool value) async {
       },
     );
   }
-
+void _showLogoutConfirmDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text(AppLocalizations.of(context)!.logOut),
+        content: Text("Are you sure you want to logout?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          TextButton(
+            onPressed: () async {
+              //Navigator.pop(context); // close dialog
+              await _logout(context); // call logout
+            },
+            child: Text(
+              AppLocalizations.of(context)!.logOut,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -252,8 +279,8 @@ Future<void> toggleNotification(bool value) async {
                 height: 50,
                 color: Color.fromRGBO(192, 33, 36, 1),
                 onPressed: () {
-                  _logout(context);
-                },
+  _showLogoutConfirmDialog(context);
+},
                 text: AppLocalizations.of(context)!.logOut,
               ),
             ),

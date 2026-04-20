@@ -109,9 +109,14 @@ debugPrint("RESULT: $result");
       );
 
       //  REFRESH SERVICE LIST
-      ref.invalidate(serviceListProvider);
+       // ✅ Refresh list
+    ref.invalidate(serviceListProvider);
 
-      context.pop();
+    // ✅ SWITCH TAB → In Progress
+    ref.read(homeTabProvider.notifier).state = 4; // index of In Progress tab
+
+    // ✅ GO TO MAIN SCREEN
+    context.go(RouteName.bottom_nav);
     } catch (e) {
       SnackbarHelper.show(
         context,

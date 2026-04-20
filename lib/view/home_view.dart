@@ -30,25 +30,31 @@ class _HomeViewState extends ConsumerState<HomeView> {
   int selectedIndex = 0;
   final TimerService _timerService = TimerService();
   bool timerLoaded = false;
+  final ScrollController _scrollController = ScrollController();
+ void _scrollToIndex(int index) {
+  if (!_scrollController.hasClients) return;
+
+  final screenWidth = MediaQuery.of(context).size.width;
+
+  final offset = (index * 100) - (screenWidth / 2) + 50;
+
+  _scrollController.animateTo(
+    offset.clamp(
+      _scrollController.position.minScrollExtent,
+      _scrollController.position.maxScrollExtent,
+    ),
+    duration: const Duration(milliseconds: 400),
+    curve: Curves.easeInOut,
+  );
+}
+
 @override
 void initState() {
   super.initState();
 
-  Future.microtask(() async {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
     final index = ref.read(homeTabProvider);
-
-    final filters = [
-      'all',
-      'pending',
-      'accepted',
-      'rejected',
-      'in-progress',
-      'completed'
-    ];
-
-    await ref
-        .read(serviceListProvider.notifier)
-        .fetchServiceByStatus(filters[index]);
+    _scrollToIndex(index);
   });
 }
 
@@ -56,6 +62,11 @@ void initState() {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(homeTabProvider, (prev, next) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _scrollToIndex(next);
+  });
+});
     final serviceList = ref.watch(serviceListProvider);
 final selectedIndex = ref.watch(homeTabProvider);
     // ghange data format
@@ -108,6 +119,7 @@ final selectedIndex = ref.watch(homeTabProvider);
                 SizedBox(
                   height: 30,
                   child: ListView.builder(
+                     controller: _scrollController,
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: filters.length,
@@ -116,14 +128,11 @@ final selectedIndex = ref.watch(homeTabProvider);
                       final isSelected = selectedIndex == index;
 
                       return InkWell(
-                        onTap: () async {
-                          if (selectedIndex == index) return;
+                      onTap: () {
+  if (selectedIndex == index) return;
 
-ref.read(homeTabProvider.notifier).state = index;
-                          await ref
-                              .read(serviceListProvider.notifier)
-                              .fetchServiceByStatus(filter.value);
-                        },
+  ref.read(homeTabProvider.notifier).state = index;
+},
                         child: Container(
                           margin: const EdgeInsets.only(right: 10),
                           padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -214,12 +223,10 @@ ref.read(homeTabProvider.notifier).state = index;
 
                       return RefreshIndicator(
                         color: AppColors.app_background_clr,
-                        onRefresh: () async {
-                          await ref
-                              .read(serviceListProvider.notifier)
-                              .fetchServiceByStatus(filters[selectedIndex].value);
-                          ref.invalidate(notificationServiceProvider);
-                        },
+                       onRefresh: () async {
+  ref.invalidate(serviceListProvider);
+  ref.invalidate(notificationServiceProvider);
+},
                         child: AnimationLimiter(
                           child: ListView.builder(
                           physics: const AlwaysScrollableScrollPhysics(),
