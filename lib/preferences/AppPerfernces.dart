@@ -10,6 +10,26 @@ class Appperfernces {
   static const String _fcmtokenkey ="fcmtoken";
     static const String _userServiceIdKey = "user_service_id";
     static const String _techIdKey = "technician_id";
+    static const _lastSeenKey = "last_seen_notification_time";
+    static Future<void> clearLastSeenNotificationTime(String userId) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.remove("last_seen_$userId");
+}
+ /// ✅ SAVE TIME
+  static Future<void> saveLastSeenNotificationTime(DateTime time) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_lastSeenKey, time.toIso8601String());
+  }
+
+  /// ✅ GET TIME
+  static Future<DateTime?> getLastSeenNotificationTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final value = prefs.getString(_lastSeenKey);
+
+    if (value == null) return null;
+
+    return DateTime.tryParse(value);
+  }
   // ==== TOKEN ====
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();

@@ -5,6 +5,7 @@ import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/provider/InventoryList_provider.dart';
 import 'package:tech_app/provider/notification_Service_Provider.dart';
 import 'package:tech_app/routes/route_name.dart';
+import 'package:tech_app/preferences/AppPerfernces.dart';
 
 class Header extends ConsumerStatefulWidget {
   final String title;
@@ -18,16 +19,24 @@ class Header extends ConsumerStatefulWidget {
 
 class _HeaderState extends ConsumerState<Header>
     with SingleTickerProviderStateMixin {
+
   late AnimationController _controller;
+  DateTime? _lastSeenTime;
 
   @override
   void initState() {
     super.initState();
-    // Animation controller for spinning refresh icon
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
+
+    Appperfernces.getLastSeenNotificationTime().then((val) {
+      if (mounted) {
+        setState(() => _lastSeenTime = val);
+      }
+    });
   }
 
   @override
@@ -38,49 +47,29 @@ class _HeaderState extends ConsumerState<Header>
 
   Future<void> _onRefresh() async {
     try {
-      // Start spinning
       _controller.repeat();
-      // Refresh inventory provider
       await ref.refresh(inventorylistprovider.future);
     } finally {
-      // Stop spinning
       _controller.reset();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-final notificationCount  = ref.watch(notificationServiceProvider);
+
+    final notificationAsync = ref.watch(notificationServiceProvider); // ✅ FIXED
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Back button
-          // InkWell(
-          //   onTap: () => Navigator.of(context).pop(),
-          //   child: Container(
-          //     height: 38,
-          //     width: 38,
-          //     decoration: const BoxDecoration(
-          //       shape: BoxShape.circle,
-          //       color: Color.fromRGBO(183, 213, 205, 1),
-          //     ),
-          //     alignment: Alignment.center,
-          //     child: const Icon(
-          //       Icons.arrow_back_rounded,
-          //       color: Colors.white,
-          //     ),
-          //   ),
-          // ),
 
-          // Title
           Text(
             widget.title,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
 
-          // Right icon
           widget.showRefreshIcon
               ? InkWell(
                   onTap: _onRefresh,
@@ -108,66 +97,102 @@ final notificationCount  = ref.watch(notificationServiceProvider);
                     ),
                   ),
                 )
-            : Stack(
-    children: [
-      InkWell(
-onTap: () {
-  context.push(RouteName.nodification).then((_) {
-    ref.invalidate(notificationServiceProvider);
-  });
-},        child: Container(
-          height: 38,
-          width: 38,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: Color.fromARGB(255, 186, 193, 227),
-          ),
-          alignment: Alignment.center,
-          child: const Icon(
-            Icons.notifications_none_outlined,
-            color: Colors.white,
-            size: 27,
-          ),
-        ),
-      ),
+              : Stack(
+                  children: [
 
-  notificationCount.when(
-  data: (list) {
-    final count = list.length;
-    print("DEBUG: Notification count = $count"); // <-- debug log
+                    /// 🔔 Notification Icon
+                    InkWell(
+                      onTap: () async {
 
-    return Positioned(
-      top: 4,
-      right: 4,
-      child: Container(
-        height: 16,
-        width: 16,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.red,
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          "$count", 
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
-  },
-  loading: () => const SizedBox.shrink(),
-  error: (err, _) {
- 
-    return const SizedBox.shrink();
-  },
-),
+                        DateTime seenTime = DateTime.now().toUtc();
 
-    ],
-  ),
+                        final asyncValue =
+                            ref.read(notificationServiceProvider);
 
+                        final currentList = asyncValue.value; // ✅ SAFE
+
+                        if (currentList != null && currentList.isNotEmpty) {
+                          seenTime = currentList
+                              .map((n) => n.time)
+                              .reduce((a, b) => a.isAfter(b) ? a : b);
+                        }
+
+                        await Appperfernces.saveLastSeenNotificationTime(seenTime); // ✅ FIXED
+
+                        if (mounted) {
+                          setState(() => _lastSeenTime = seenTime);
+                        }
+
+                        context.push(RouteName.nodification).then((_) {
+                          Appperfernces.getLastSeenNotificationTime().then((val) {
+                            if (mounted) setState(() => _lastSeenTime = val);
+                          });
+
+                          ref.invalidate(notificationServiceProvider);
+                        });
+                      },
+                      child: Container(
+                        height: 38,
+                        width: 38,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color.fromARGB(255, 186, 193, 227),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.notifications_none_outlined,
+                          color: Colors.white,
+                          size: 27,
+                        ),
+                      ),
+                    ),
+
+                    /// 🔴 Badge
+                    notificationAsync.when(
+                      data: (list) {
+
+                        int unreadCount = 0;
+
+                        if (_lastSeenTime == null) {
+  return const SizedBox.shrink(); // or loader
+                        } else {
+                          unreadCount = list
+                              .where((n) => n.time.isAfter(_lastSeenTime!))
+                              .length;
+                        }
+
+                        if (unreadCount == 0) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Container(
+                            height: 16,
+                            width: 16,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.red,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              "$unreadCount",
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                    ),
+
+                  ],
+                ),
         ],
       ),
     );

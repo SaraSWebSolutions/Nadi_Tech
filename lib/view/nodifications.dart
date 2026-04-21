@@ -25,7 +25,8 @@ class _NotificationsState extends ConsumerState<Notifications> {
             padding: const EdgeInsets.only(right: 12),
             child: TextButton(
               onPressed: () async {
-              await _notificationapi.deleteallnotifications();
+                await _notificationapi.deleteallnotifications();
+                ref.refresh(notificationServiceProvider);
               },
               child: Image.asset("assets/images/notification.png"),
             ),
@@ -68,8 +69,10 @@ class _NotificationsState extends ConsumerState<Notifications> {
                   ),
 
                   onDismissed: (direction) async {
-                    // notifications.removeAt(index);
-await _notificationapi.deletesinglenotification(id: n.id);                  },
+                    notifications.removeAt(index);
+                    await _notificationapi.deletesinglenotification(id: n.id);
+                    ref.refresh(notificationServiceProvider);
+                  },
 
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

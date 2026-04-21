@@ -9,16 +9,15 @@ class Notificationapiservice {
     try {
       final response = await _dio.post('techie/notifications');
 
-      final List list = response.data['data'];
-
-      return list
-          .map((e) => NotificationModel.fromJson(e))
-          .toList();
+final List<dynamic> list = response.data['data'] ?? [];
+      return list.map((e) {
+  e['time'] = DateTime.parse(e['time']).toUtc().toIso8601String();
+  return NotificationModel.fromJson(e);
+}).toList();
 
     } on DioException catch (e) {
       final errmsg = e.response?.data['message'] ?? "Something went wrong";
-      throw errmsg;
-    }
+throw Exception(errmsg);    }
   }
 
 Future<void> deletesinglenotification({

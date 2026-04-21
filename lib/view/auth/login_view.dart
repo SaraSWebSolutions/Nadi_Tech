@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tech_app/controllers/Auth_Controllers.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/core/utils/snackbar_helper.dart';
+import 'package:tech_app/provider/notification_Service_Provider.dart';
 import 'package:tech_app/routes/route_name.dart';
 import 'package:tech_app/widgets/inputs/app_text_field.dart';
 import 'package:tech_app/widgets/inputs/primary_button.dart';
@@ -153,6 +155,16 @@ class _LoginViewState extends State<LoginView> {
                                   if (techId != null) {
                                     MqttNotificationService.connect(techId);
                                   }
+                                   // ✅ RESET NOTIFICATION STATE (VERY IMPORTANT)
+  if (mounted) {
+    final container = ProviderScope.containerOf(context);
+    container.invalidate(notificationServiceProvider);
+  }
+
+  // ✅ OPTIONAL: RESET lastSeenTime for new login
+  if (techId != null) {
+    await Appperfernces.clearLastSeenNotificationTime(techId);
+  }
                                   SnackbarHelper.show(
                                     context,
                                     message: "Login successful",
