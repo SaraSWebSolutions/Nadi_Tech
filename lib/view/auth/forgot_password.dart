@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/core/utils/snackbar_helper.dart';
+import 'package:tech_app/routes/route_name.dart';
 import 'package:tech_app/services/Auth_Service.dart';
 import 'package:tech_app/widgets/inputs/app_text_field.dart';
 import 'package:tech_app/widgets/inputs/primary_button.dart';
@@ -74,7 +75,35 @@ class _ForgotPasswordState extends State<ForgotPassword> {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go(RouteName.login);
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(30),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.3),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.arrow_back,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   Center(
                     child: Image.asset(
                       "assets/images/logo.png",

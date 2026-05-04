@@ -94,8 +94,8 @@ class _LoginViewState extends State<LoginView> {
                           AppTextField(
                             label: "Enter Password",
                             keyboardType: TextInputType.visiblePassword,
-          
-                             isPassword: true,
+
+                            isPassword: true,
                             controller: _authcontroller.pasword,
                             validator: _authcontroller.validatePassword,
                           ),
@@ -151,24 +151,32 @@ class _LoginViewState extends State<LoginView> {
                                 if (errorMessage == null) {
                                   await Appperfernces.setLoggedIn(true);
                                   // Connect MQTT for chat notifications
-                                  final techId = await Appperfernces.getTechId();
+                                  final techId =
+                                      await Appperfernces.getTechId();
                                   if (techId != null) {
                                     MqttNotificationService.connect(techId);
                                   }
-                                   // ✅ RESET NOTIFICATION STATE (VERY IMPORTANT)
-  if (mounted) {
-    final container = ProviderScope.containerOf(context);
-    container.invalidate(notificationServiceProvider);
-  }
+                                  // ✅ RESET NOTIFICATION STATE (VERY IMPORTANT)
+                                  if (mounted) {
+                                    final container = ProviderScope.containerOf(
+                                      context,
+                                    );
+                                    container.invalidate(
+                                      notificationServiceProvider,
+                                    );
+                                  }
 
-  // ✅ OPTIONAL: RESET lastSeenTime for new login
-  if (techId != null) {
-    await Appperfernces.clearLastSeenNotificationTime(techId);
-  }
+                                  // ✅ OPTIONAL: RESET lastSeenTime for new login
+                                  if (techId != null) {
+                                    await Appperfernces.clearLastSeenNotificationTime(
+                                      techId,
+                                    );
+                                  }
                                   SnackbarHelper.show(
                                     context,
                                     message: "Login successful",
-                                    backgroundColor: AppColors.app_background_clr,
+                                    backgroundColor:
+                                        AppColors.app_background_clr,
                                   );
                                   context.go(RouteName.bottom_nav);
                                 } else {

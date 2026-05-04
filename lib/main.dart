@@ -48,8 +48,8 @@ void main() async {
   );
 
   /// VERY IMPORTANT FOR IOS TOKEN
-  await FirebaseMessaging.instance.setAutoInitEnabled(true); 
-    // ✅ CONNECT USER BEFORE APP STARTS
+  await FirebaseMessaging.instance.setAutoInitEnabled(true);
+  // ✅ CONNECT USER BEFORE APP STARTS
   // final techId = await Appperfernces.getTechId();
 
   // if (techId != null) {
@@ -77,15 +77,16 @@ void main() async {
     if (data.containsKey('sender') ||
         data.containsKey('channel_id') ||
         (data.containsKey('type') && data['type'] == 'message.new')) {
+      final senderName =
+          data['sender_name'] ??
+          data['sender'] ??
+          message.notification?.title ??
+          'New Message';
 
-      final senderName = data['sender_name'] ??
-                         data['sender'] ??
-                         message.notification?.title ??
-                         'New Message';
-
-      final messageText = data['message_text'] ??
-                          message.notification?.body ??
-                          'You have a new message';
+      final messageText =
+          data['message_text'] ??
+          message.notification?.body ??
+          'You have a new message';
 
       final channelId = data['channel_id'] ?? data['cid'] ?? '';
 
@@ -157,17 +158,12 @@ class MyApp extends ConsumerWidget {
           surface: Colors.white,
         ),
       ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-      ),
+      darkTheme: ThemeData(brightness: Brightness.dark),
       routerConfig: Approute,
 
       // ✅ THIS IS THE FIX
       builder: (context, child) {
-        return StreamChat(
-          client: client,
-          child: child!,
-        );
+        return StreamChat(client: client, child: child!);
       },
     );
   }

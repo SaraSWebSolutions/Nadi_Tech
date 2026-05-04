@@ -19,25 +19,29 @@ class AppDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return DropdownButtonFormField<String>(
       value: value,
       validator: validator,
-      style: const TextStyle(
-        color: Colors.black, 
-        fontSize: 14,
-      ),
+
+      /// ✅ TEXT STYLE
+      style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 14),
+
+      /// ✅ DROPDOWN MENU COLOR
+      dropdownColor: theme.colorScheme.surface,
+
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(
+        labelStyle: TextStyle(
           fontSize: 14,
-          color: Colors.black,
+          color: theme.textTheme.bodyMedium?.color,
         ),
         floatingLabelStyle: const TextStyle(
           color: AppColors.app_background_clr,
           fontWeight: FontWeight.w400,
         ),
         filled: true,
-        fillColor: Colors.white, 
+        fillColor: theme.colorScheme.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFF79747E)),
@@ -58,14 +62,16 @@ class AppDropdown extends StatelessWidget {
           borderSide: const BorderSide(color: Colors.red, width: 1.5),
         ),
       ),
-      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
+      icon: Icon(Icons.keyboard_arrow_down, color: theme.iconTheme.color),
       items: items
           .map(
             (item) => DropdownMenuItem<String>(
               value: item,
               child: Text(
                 item,
-                style: const TextStyle(color: Colors.black), 
+                style: TextStyle(
+                  color: theme.textTheme.bodyLarge?.color, // ✅ FIXED
+                ),
               ),
             ),
           )

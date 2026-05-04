@@ -2,7 +2,7 @@ name: tech_app
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.0+4
+version: 1.0.1+4
 
 environment:
   sdk: ^3.9.2
@@ -35,6 +35,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   stream_chat_flutter: ^9.23.0
   mqtt_client: ^10.0.0
+  app_badge_plus: ^1.1.3 
 
 dev_dependencies:
   flutter_test:

@@ -12,7 +12,7 @@ class AppTextField extends StatefulWidget {
   final int? maxLines;
   final bool readOnly;
   final bool enabled;
-final List<TextInputFormatter>? inputFormatters; // ✅ NEW
+  final List<TextInputFormatter>? inputFormatters; // ✅ NEW
   const AppTextField({
     super.key,
     required this.label,
@@ -36,8 +36,10 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context); // ✅ IMPORTANT
+
     return TextFormField(
-        inputFormatters: widget.inputFormatters, // ✅ ADD THIS
+      inputFormatters: widget.inputFormatters, // ✅ ADD THIS
 
       controller: widget.controller,
       validator: widget.validator,
@@ -46,30 +48,26 @@ class _AppTextFieldState extends State<AppTextField> {
       enabled: widget.enabled,
       maxLines: widget.maxLines ?? 1,
       obscureText: widget.isPassword ? _obscure : false,
-      style: const TextStyle(color: Colors.black),
+      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
       decoration: InputDecoration(
         labelText: widget.label,
-        labelStyle: const TextStyle(
+
+        /// ✅ LABEL COLOR
+        labelStyle: TextStyle(
           fontSize: 14,
-          color: Colors.black, 
+          color: theme.textTheme.bodyMedium?.color,
         ),
         floatingLabelStyle: const TextStyle(
           fontSize: 12,
           color: AppColors.app_background_clr,
         ),
         filled: true,
-        fillColor: Colors.white, 
-          enabledBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(12),
-    borderSide: BorderSide(
-      color: Colors.black,
-      width: 1,
-    ),
-  ),
-        border: OutlineInputBorder(
+        fillColor: theme.colorScheme.surface,
+        enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-    
+          borderSide: BorderSide(color: theme.dividerColor, width: 1),
         ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
@@ -89,7 +87,7 @@ class _AppTextFieldState extends State<AppTextField> {
             ? IconButton(
                 icon: Icon(
                   _obscure ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.grey,
+                  color: theme.iconTheme.color,
                 ),
                 onPressed: () {
                   setState(() {
