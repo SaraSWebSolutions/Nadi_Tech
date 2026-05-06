@@ -243,9 +243,9 @@ debugPrint("RESULT: $result");
     );
   }
 
-  String formatDateOnly(DateTime date) {
-    return DateFormat('d MMM yyyy').format(date);
-  }
+String formatDateOnly(DateTime date) {
+  return DateFormat('dd/MM/yyyy').format(date);
+}
 
   Widget _buildCustomerDetails() {
     return Container(

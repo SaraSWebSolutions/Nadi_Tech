@@ -39,7 +39,7 @@ class RequestCart extends StatelessWidget {
   });
 
   String formatDate(DateTime dateTime) {
-    return DateFormat('MMM d, yyyy').format(dateTime);
+    return DateFormat('dd/MM/yyyy').format(dateTime);
   }
 
   Widget _sectionHeader(String title, {IconData? icon}) {

@@ -70,9 +70,9 @@ void initState() {
     final serviceList = ref.watch(serviceListProvider);
 final selectedIndex = ref.watch(homeTabProvider);
     // ghange data format
-    String formatDate(DateTime date) {
-      return DateFormat('MMMM d, y \'at\' h:mm a').format(date);
-    }
+   String formatDate(DateTime date) {
+  return DateFormat('dd/MM/yyyy hh:mm a').format(date);
+}
 
     final connectivity = ref.watch(connectivityProvider);
     final lang = AppLocalizations.of(context)!;
