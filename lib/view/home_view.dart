@@ -19,6 +19,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tech_app/widgets/header.dart';
 import 'package:tech_app/widgets/no_internet_widget.dart';
 import 'package:tech_app/provider/home_tab_provider.dart';
+
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
 
@@ -31,48 +32,46 @@ class _HomeViewState extends ConsumerState<HomeView> {
   final TimerService _timerService = TimerService();
   bool timerLoaded = false;
   final ScrollController _scrollController = ScrollController();
- void _scrollToIndex(int index) {
-  if (!_scrollController.hasClients) return;
+  void _scrollToIndex(int index) {
+    if (!_scrollController.hasClients) return;
 
-  final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.of(context).size.width;
 
-  final offset = (index * 100) - (screenWidth / 2) + 50;
+    final offset = (index * 100) - (screenWidth / 2) + 50;
 
-  _scrollController.animateTo(
-    offset.clamp(
-      _scrollController.position.minScrollExtent,
-      _scrollController.position.maxScrollExtent,
-    ),
-    duration: const Duration(milliseconds: 400),
-    curve: Curves.easeInOut,
-  );
-}
+    _scrollController.animateTo(
+      offset.clamp(
+        _scrollController.position.minScrollExtent,
+        _scrollController.position.maxScrollExtent,
+      ),
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+    );
+  }
 
-@override
-void initState() {
-  super.initState();
+  @override
+  void initState() {
+    super.initState();
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    final index = ref.read(homeTabProvider);
-    _scrollToIndex(index);
-  });
-}
-
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final index = ref.read(homeTabProvider);
+      _scrollToIndex(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     ref.listen(homeTabProvider, (prev, next) {
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    _scrollToIndex(next);
-  });
-});
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToIndex(next);
+      });
+    });
     final serviceList = ref.watch(serviceListProvider);
-final selectedIndex = ref.watch(homeTabProvider);
+    final selectedIndex = ref.watch(homeTabProvider);
     // ghange data format
-   String formatDate(DateTime date) {
-  return DateFormat('dd/MM/yyyy hh:mm a').format(date);
-}
+    String formatDate(DateTime date) {
+      return DateFormat('dd/MM/yyyy hh:mm a').format(date);
+    }
 
     final connectivity = ref.watch(connectivityProvider);
     final lang = AppLocalizations.of(context)!;
@@ -119,7 +118,7 @@ final selectedIndex = ref.watch(homeTabProvider);
                 SizedBox(
                   height: 30,
                   child: ListView.builder(
-                     controller: _scrollController,
+                    controller: _scrollController,
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: filters.length,
@@ -128,11 +127,11 @@ final selectedIndex = ref.watch(homeTabProvider);
                       final isSelected = selectedIndex == index;
 
                       return InkWell(
-                      onTap: () {
-  if (selectedIndex == index) return;
+                        onTap: () {
+                          if (selectedIndex == index) return;
 
-  ref.read(homeTabProvider.notifier).state = index;
-},
+                          ref.read(homeTabProvider.notifier).state = index;
+                        },
                         child: Container(
                           margin: const EdgeInsets.only(right: 10),
                           padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -141,7 +140,9 @@ final selectedIndex = ref.watch(homeTabProvider);
                                 ? AppColors.app_background_clr
                                 : Colors.white,
                             borderRadius: BorderRadius.circular(25),
-                            border: Border.all(color: AppColors.app_background_clr),
+                            border: Border.all(
+                              color: AppColors.app_background_clr,
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -223,111 +224,116 @@ final selectedIndex = ref.watch(homeTabProvider);
 
                       return RefreshIndicator(
                         color: AppColors.app_background_clr,
-                       onRefresh: () async {
-  ref.invalidate(serviceListProvider);
-  ref.invalidate(notificationServiceProvider);
-},
+                        onRefresh: () async {
+                          ref.invalidate(serviceListProvider);
+                          await ref.refresh(notificationServiceProvider.future);
+                        },
                         child: AnimationLimiter(
                           child: ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: data.data.length,
-                          itemBuilder: (context, index) {
-                            final item = data.data[index];
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: data.data.length,
+                            itemBuilder: (context, index) {
+                              final item = data.data[index];
 
-                            // Choose widget based on serviceStatus
-                            if (item.assignmentStatus.toLowerCase() ==
-                                'completed') {
-                              return AnimationConfiguration.staggeredList(
-                                position: index,
-                                duration: const Duration(milliseconds: 1000),
-                                child: SlideAnimation(
-                                  verticalOffset: 40,
-                                  curve: Curves.easeOutCubic,
-                                  child: FadeInAnimation(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 15,
-                                        vertical: 10,
-                                      ),
-                                      child: IncomeCard(
-                                        name: item.userId.basicInfo.fullName,
-                                        service: item.serviceId.name,
-                                        issue: item.issuesId.issue,
-                                        assignments:
-                                            item
-                                                .technicianUserService
-                                                ?.assignments ??
-                                            [],
-                                        // status: item.serviceStatus,
-                                        payment: item.payment,
+                              // Choose widget based on serviceStatus
+                              if (item.assignmentStatus.toLowerCase() ==
+                                  'completed') {
+                                return AnimationConfiguration.staggeredList(
+                                  position: index,
+                                  duration: const Duration(milliseconds: 1000),
+                                  child: SlideAnimation(
+                                    verticalOffset: 40,
+                                    curve: Curves.easeOutCubic,
+                                    child: FadeInAnimation(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 15,
+                                          vertical: 10,
+                                        ),
+                                        child: IncomeCard(
+                                          name: item.userId.basicInfo.fullName,
+                                          service: item.serviceId.name,
+                                          issue: item.issuesId.issue,
+                                          assignments:
+                                              item
+                                                  .technicianUserService
+                                                  ?.assignments ??
+                                              [],
+                                          // status: item.serviceStatus,
+                                          payment: item.payment,
 
-                                        assignmentStatus: item.assignmentStatus,
-                                        onClick: () {
-                                          context.push(
-                                            RouteName.service_card,
-                                            extra:
-                                                item, // send the full item to next page
-                                          );
-                                        },
+                                          assignmentStatus:
+                                              item.assignmentStatus,
+                                          onClick: () {
+                                            context.push(
+                                              RouteName.service_card,
+                                              extra:
+                                                  item, // send the full item to next page
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              );
-                            } else if (item.assignmentStatus.toLowerCase() ==
-                                'in-progress') {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 15,
-                                  vertical: 10,
-                                ),
-                                child: IncomeCard(
-                                  name: item.userId.basicInfo.fullName,
-                                  service: item.serviceId.name,
-                                  issue: item.issuesId.issue,
-                                  schedule: formatDate(item.scheduleService),
-                                  // status: item.serviceStatus,
-                                  assignmentStatus: item.assignmentStatus,
-                                  assignments:
-                                      item.technicianUserService?.assignments ??
-                                      [],
-                                  onClick: () {
-                                    context.push(
-                                      RouteName.service_card,
-                                      extra:
-                                          item, // send the full item to next page
-                                    );
-                                  },
-                                ),
-                              );
-                            } else {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 15,
-                                  vertical: 10,
-                                ),
-                                child: IncomeCard(
-                                  name: item.userId.basicInfo.fullName,
-                                  service: item.serviceId.name,
-                                  issue: item.issuesId.issue,
-                                  schedule: formatDate(item.scheduleService),
-                                  // status: item.serviceStatus,
-                                  assignmentStatus: item.assignmentStatus,
-                                  assignments:
-                                      item.technicianUserService?.assignments ??
-                                      [],
-                                  onClick: () {
-                                    context.push(
-                                      RouteName.service_card,
-                                      extra:
-                                          item, // send the full item to next page
-                                    );
-                                  },
-                                ),
-                              );
-                            }
-                          },
-                        ),
+                                );
+                              } else if (item.assignmentStatus.toLowerCase() ==
+                                  'in-progress') {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 15,
+                                    vertical: 10,
+                                  ),
+                                  child: IncomeCard(
+                                    name: item.userId.basicInfo.fullName,
+                                    service: item.serviceId.name,
+                                    issue: item.issuesId.issue,
+                                    schedule: formatDate(item.scheduleService),
+                                    // status: item.serviceStatus,
+                                    assignmentStatus: item.assignmentStatus,
+                                    assignments:
+                                        item
+                                            .technicianUserService
+                                            ?.assignments ??
+                                        [],
+                                    onClick: () {
+                                      context.push(
+                                        RouteName.service_card,
+                                        extra:
+                                            item, // send the full item to next page
+                                      );
+                                    },
+                                  ),
+                                );
+                              } else {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 15,
+                                    vertical: 10,
+                                  ),
+                                  child: IncomeCard(
+                                    name: item.userId.basicInfo.fullName,
+                                    service: item.serviceId.name,
+                                    issue: item.issuesId.issue,
+                                    schedule: formatDate(item.scheduleService),
+                                    // status: item.serviceStatus,
+                                    assignmentStatus: item.assignmentStatus,
+                                    assignments:
+                                        item
+                                            .technicianUserService
+                                            ?.assignments ??
+                                        [],
+                                    onClick: () {
+                                      context.push(
+                                        RouteName.service_card,
+                                        extra:
+                                            item, // send the full item to next page
+                                      );
+                                    },
+                                  ),
+                                );
+                              }
+                            },
+                          ),
                         ),
                       );
                     },

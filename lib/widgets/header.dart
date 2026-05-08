@@ -6,6 +6,7 @@ import 'package:tech_app/provider/InventoryList_provider.dart';
 import 'package:tech_app/provider/notification_Service_Provider.dart';
 import 'package:tech_app/routes/route_name.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
+import 'package:app_badge_plus/app_badge_plus.dart';
 
 class Header extends ConsumerStatefulWidget {
   final String title;
@@ -19,7 +20,6 @@ class Header extends ConsumerStatefulWidget {
 
 class _HeaderState extends ConsumerState<Header>
     with SingleTickerProviderStateMixin {
-
   late AnimationController _controller;
   DateTime? _lastSeenTime;
 
@@ -56,7 +56,6 @@ class _HeaderState extends ConsumerState<Header>
 
   @override
   Widget build(BuildContext context) {
-
     final notificationAsync = ref.watch(notificationServiceProvider); // ✅ FIXED
 
     return Padding(
@@ -64,7 +63,6 @@ class _HeaderState extends ConsumerState<Header>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-
           Text(
             widget.title,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -99,15 +97,14 @@ class _HeaderState extends ConsumerState<Header>
                 )
               : Stack(
                   children: [
-
                     /// 🔔 Notification Icon
                     InkWell(
                       onTap: () async {
-
                         DateTime seenTime = DateTime.now().toUtc();
 
-                        final asyncValue =
-                            ref.read(notificationServiceProvider);
+                        final asyncValue = ref.read(
+                          notificationServiceProvider,
+                        );
 
                         final currentList = asyncValue.value; // ✅ SAFE
 
@@ -117,18 +114,22 @@ class _HeaderState extends ConsumerState<Header>
                               .reduce((a, b) => a.isAfter(b) ? a : b);
                         }
 
-                        await Appperfernces.saveLastSeenNotificationTime(seenTime); // ✅ FIXED
+                        await Appperfernces.saveLastSeenNotificationTime(
+                          seenTime,
+                        ); // ✅ FIXED
 
                         if (mounted) {
                           setState(() => _lastSeenTime = seenTime);
                         }
 
-                        context.push(RouteName.nodification).then((_) {
-                          Appperfernces.getLastSeenNotificationTime().then((val) {
+                        context.push(RouteName.nodification).then((_) async {
+                          Appperfernces.getLastSeenNotificationTime().then((
+                            val,
+                          ) {
                             if (mounted) setState(() => _lastSeenTime = val);
                           });
 
-                          ref.invalidate(notificationServiceProvider);
+                          await ref.refresh(notificationServiceProvider.future);
                         });
                       },
                       child: Container(
@@ -150,11 +151,10 @@ class _HeaderState extends ConsumerState<Header>
                     /// 🔴 Badge
                     notificationAsync.when(
                       data: (list) {
-
                         int unreadCount = 0;
 
                         if (_lastSeenTime == null) {
-  return const SizedBox.shrink(); // or loader
+                          return const SizedBox.shrink(); // or loader
                         } else {
                           unreadCount = list
                               .where((n) => n.time.isAfter(_lastSeenTime!))
@@ -162,9 +162,11 @@ class _HeaderState extends ConsumerState<Header>
                         }
 
                         if (unreadCount == 0) {
+                          AppBadgePlus.updateBadge(0);
+
                           return const SizedBox.shrink();
                         }
-
+                        AppBadgePlus.updateBadge(unreadCount);
                         return Positioned(
                           top: 4,
                           right: 4,
@@ -190,7 +192,6 @@ class _HeaderState extends ConsumerState<Header>
                       loading: () => const SizedBox.shrink(),
                       error: (_, __) => const SizedBox.shrink(),
                     ),
-
                   ],
                 ),
         ],

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tech_app/core/utils/Time_Date.dart';
 import 'package:tech_app/provider/notification_Service_Provider.dart';
 import 'package:tech_app/services/NotificationApiService.dart';
+
 class Notifications extends ConsumerStatefulWidget {
   const Notifications({super.key});
 
@@ -11,7 +12,6 @@ class Notifications extends ConsumerStatefulWidget {
 }
 
 class _NotificationsState extends ConsumerState<Notifications> {
-
   @override
   Widget build(BuildContext context) {
     final Notificationapiservice _notificationapi = Notificationapiservice();
@@ -68,8 +68,36 @@ class _NotificationsState extends ConsumerState<Notifications> {
                     child: const Icon(Icons.delete, color: Colors.white),
                   ),
 
+                  confirmDismiss: (direction) async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text("Delete Notification"),
+                          content: const Text(
+                            "Are you sure you want to delete this notification?",
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text("Cancel"),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                              ),
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text("Delete"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    return confirm ?? false;
+                  },
+
                   onDismissed: (direction) async {
-                    notifications.removeAt(index);
                     await _notificationapi.deletesinglenotification(id: n.id);
                     ref.refresh(notificationServiceProvider);
                   },
@@ -129,7 +157,7 @@ class _NotificationsState extends ConsumerState<Notifications> {
                                   style: const TextStyle(
                                     fontSize: 13,
                                     height: 1.4,
-                                        color: Colors.black,
+                                    color: Colors.black,
                                   ),
                                 ),
                                 const SizedBox(height: 8),

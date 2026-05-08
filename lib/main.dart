@@ -15,9 +15,10 @@ import 'package:tech_app/routes/app_route.dart';
 import 'package:tech_app/services/NotificationService.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 import 'package:tech_app/services/Stream_Chat_Service.dart';
+import 'package:app_badge_plus/app_badge_plus.dart';
 
 final container = ProviderContainer();
-
+int _badgeCount = 0;
 Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   // Stream Chat SDK handles its own background messages — skip them
@@ -36,6 +37,8 @@ void main() async {
   /// LOCAL NOTIFICATION INIT
   await NotificationService.initialize();
   await NotificationService.createChannel();
+  await AppBadgePlus.updateBadge(0);
+  _badgeCount = 0;
 
   /// BACKGROUND HANDLER
   FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
@@ -72,7 +75,10 @@ void main() async {
   /// FOREGROUND MESSAGE
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     final data = message.data;
+    _badgeCount++;
 
+    // Update app icon badge
+    AppBadgePlus.updateBadge(_badgeCount);
     // Handle Stream Chat push notifications
     if (data.containsKey('sender') ||
         data.containsKey('channel_id') ||
