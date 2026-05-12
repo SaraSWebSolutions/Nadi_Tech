@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/core/network/dio_client.dart';
@@ -14,6 +15,7 @@ import 'package:tech_app/widgets/inputs/primary_button.dart';
 
 class EditProfile extends StatefulWidget {
   final TechnicianProfile profile;
+
   const EditProfile({super.key, required this.profile});
 
   @override
@@ -25,31 +27,35 @@ class _EditProfileState extends State<EditProfile> {
   late TextEditingController _lastname;
   late TextEditingController _email;
   late TextEditingController _mobile;
+
+  final _formKey = GlobalKey<FormState>();
+
   File? _selectImage;
+
   bool _isLoading = false;
+
   final ImagePicker _picker = ImagePicker();
+
   final EditprofileService _editprofileService = EditprofileService();
+
   @override
   void initState() {
     super.initState();
+
     _firstname = TextEditingController(
-  text: widget.profile.data.firstName ?? "",
-);
+      text: widget.profile.data.firstName ?? "",
+    );
 
-_lastname = TextEditingController(
-  text: widget.profile.data.lastName ?? "",
-);
+    _lastname = TextEditingController(text: widget.profile.data.lastName ?? "");
 
-_email = TextEditingController(
-  text: widget.profile.data.email ?? "",
-);
+    _email = TextEditingController(text: widget.profile.data.email ?? "");
 
-_mobile = TextEditingController(
-  text: widget.profile.data.mobile?.toString() ?? "",
-);
+    _mobile = TextEditingController(
+      text: widget.profile.data.mobile?.toString() ?? "",
+    );
   }
 
-  Future<void> _PickImage() async {
+  Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
@@ -57,6 +63,32 @@ _mobile = TextEditingController(
         _selectImage = File(image.path);
       });
     }
+  }
+
+  String? validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return "Email is required";
+    }
+
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+
+    if (!emailRegex.hasMatch(value.trim())) {
+      return "Enter valid email";
+    }
+
+    return null;
+  }
+
+  String? validateMobile(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return "Mobile number is required";
+    }
+
+    if (!RegExp(r'^[0-9]{8}$').hasMatch(value.trim())) {
+      return "Mobile number must be 8 digits";
+    }
+
+    return null;
   }
 
   @override
@@ -69,39 +101,45 @@ _mobile = TextEditingController(
   }
 
   Future<void> _updateprofile() async {
-  try {
-    setState(() => _isLoading = true);
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-    final response = await _editprofileService.updateProfile(
-      firstName: _firstname.text.trim(),
-      lastName: _lastname.text.trim(),
-      email: _email.text.trim(),
-      mobile: _mobile.text.trim(),
-      image: _selectImage,
-    );
+    try {
+      setState(() => _isLoading = true);
 
-    debugPrint("✅ UPDATE PROFILE RESPONSE: $response");
+      final response = await _editprofileService.updateProfile(
+        firstName: _firstname.text.trim(),
+        lastName: _lastname.text.trim(),
+        email: _email.text.trim().toLowerCase(),
+        mobile: _mobile.text.trim(),
+        image: _selectImage,
+      );
 
-    setState(() => _isLoading = false);
+      debugPrint("✅ UPDATE PROFILE RESPONSE: $response");
 
-    SnackbarHelper.show(
-      context,
-      backgroundColor: AppColors.scoundry_clr,
-      message: AppLocalizations.of(context)!.profileUpdatedSuccessfully,
-    );
+      if (!mounted) return;
 
-    Navigator.pop(context, true);
-  } catch (e, stack) {
-    setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
 
-    debugPrint("❌ ERROR: $e");
-    debugPrint("❌ STACK: $stack");
+      SnackbarHelper.show(
+        context,
+        backgroundColor: AppColors.scoundry_clr,
+        message: AppLocalizations.of(context)!.profileUpdatedSuccessfully,
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(e.toString())),
-    );
+      Navigator.pop(context, true);
+    } catch (e, stack) {
+      setState(() => _isLoading = false);
+
+      debugPrint("❌ ERROR: $e");
+      debugPrint("❌ STACK: $stack");
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -112,111 +150,241 @@ _mobile = TextEditingController(
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Row(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Theme.of(
+                            context,
+                          ).dividerColor.withOpacity(0.1),
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 20,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // Text(
+                  //   AppLocalizations.of(context)!.editProfile,
+                  //   style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  //     fontWeight: FontWeight.w700,
+                  //   ),
+                  // ),
+                ],
+              ),
+            ),
+
+            /// PROFILE IMAGE
             Stack(
               children: [
-                SizedBox(
-                  height: 120,
-                  width: 120,
+                Container(
+                  height: 125,
+                  width: 125,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primary_clr.withOpacity(0.2),
+                      width: 3,
+                    ),
+                  ),
                   child: CircleAvatar(
                     radius: 60,
-                    backgroundColor: Colors.grey.shade300,
-                   backgroundImage: _selectImage != null
-    ? FileImage(_selectImage!)
-    : (image != null && image.isNotEmpty)
-        ? CachedNetworkImageProvider(
-            '${ImageBaseUrl.baseUrl}/$image',
-          )
-        : null,
-                   child: (_selectImage == null && (image == null || image.isEmpty))
-    ? const Icon(Icons.person, size: 90)
-    : null,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceVariant,
+
+                    backgroundImage: _selectImage != null
+                        ? FileImage(_selectImage!)
+                        : (image != null && image.isNotEmpty)
+                        ? CachedNetworkImageProvider(
+                            '${ImageBaseUrl.baseUrl}/$image',
+                          )
+                        : null,
+
+                    child:
+                        (_selectImage == null &&
+                            (image == null || image.isEmpty))
+                        ? Icon(
+                            Icons.person,
+                            size: 70,
+                            color: Colors.grey.shade600,
+                          )
+                        : null,
                   ),
                 ),
+
                 Positioned(
                   bottom: 0,
                   right: 0,
                   child: InkWell(
-                    onTap: () => _PickImage(),
+                    onTap: _pickImage,
+                    borderRadius: BorderRadius.circular(50),
                     child: Container(
-                      height: 40,
-                      width: 40,
+                      height: 42,
+                      width: 42,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.primary_clr,
+                        border: Border.all(
+                          color: Theme.of(context).cardColor,
+                          width: 2,
+                        ),
                       ),
-                      child: Icon(Icons.edit_outlined, color: Colors.white),
+                      child: const Icon(
+                        Icons.edit_outlined,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+
+            const SizedBox(height: 14),
+
+            /// USER NAME
             Text(
               "${widget.profile.data.firstName} ${widget.profile.data.lastName}",
-              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
-            const SizedBox(height: 5),
+
+            const SizedBox(height: 6),
+
             Expanded(
               child: SingleChildScrollView(
-                child: Container(
-                  margin: EdgeInsets.all(15),
-                  padding: const EdgeInsets.all(8),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    color: Colors.white,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                child: Form(
+                  key: _formKey,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: Theme.of(context).dividerColor.withOpacity(0.08),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                         AppLocalizations.of(context)!.personalInformation,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 18,
-                            color: Colors.black,
-                          ),
-                        ),
-                        const SizedBox(height: 15),
+                        /// HEADER
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.person_outline,
+                              color: AppColors.primary_clr,
+                              size: 22,
+                            ),
 
+                            const SizedBox(width: 8),
+
+                            Text(
+                              AppLocalizations.of(context)!.personalInformation,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        /// FIRST NAME
                         _label(AppLocalizations.of(context)!.firstName),
-                        const SizedBox(height: 15),
+
+                        const SizedBox(height: 10),
+
                         AppTextField(
                           label: AppLocalizations.of(context)!.firstName,
                           controller: _firstname,
                         ),
-                        const SizedBox(height: 10),
+
+                        const SizedBox(height: 18),
+
+                        /// LAST NAME
                         _label(AppLocalizations.of(context)!.lastName),
-                        const SizedBox(height: 15),
-                        AppTextField(label: AppLocalizations.of(context)!.lastName, controller: _lastname),
 
                         const SizedBox(height: 10),
 
-                        _label( AppLocalizations.of(context)!.email),
-                        const SizedBox(height: 15),
-                        AppTextField(label:  AppLocalizations.of(context)!.email, controller: _email),
+                        AppTextField(
+                          label: AppLocalizations.of(context)!.lastName,
+                          controller: _lastname,
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        /// EMAIL
+                        _label(AppLocalizations.of(context)!.email),
 
                         const SizedBox(height: 10),
+
+                        AppTextField(
+                          label: AppLocalizations.of(context)!.email,
+                          controller: _email,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: validateEmail,
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        /// MOBILE
                         _label(AppLocalizations.of(context)!.mobileNumber),
-                        const SizedBox(height: 15),
+
+                        const SizedBox(height: 10),
+
                         AppTextField(
                           label: AppLocalizations.of(context)!.mobileNumber,
                           controller: _mobile,
-                          keyboardType: TextInputType.phone,
- 
+                          keyboardType: TextInputType.number,
+
+                          validator: validateMobile,
+
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+
+                            LengthLimitingTextInputFormatter(8),
+                          ],
                         ),
-                        const SizedBox(height: 20),
+
+                        const SizedBox(height: 30),
+
+                        /// SAVE BUTTON
                         PrimaryButton(
-                          radius: 12,
-                          height: 50,
+                          radius: 14,
+                          height: 54,
                           color: AppColors.primary_clr,
-                          onPressed: () {
-                            _updateprofile();
-                          },
-                          text: AppLocalizations.of(context)!.saveChanges,
+                          onPressed: _isLoading ? null : _updateprofile,
+                          text: _isLoading
+                              ? "Please wait..."
+                              : AppLocalizations.of(context)!.saveChanges,
                         ),
                       ],
                     ),
@@ -233,7 +401,11 @@ _mobile = TextEditingController(
   Widget _label(String text) {
     return Text(
       text,
-      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16,color: Colors.black),
+      style: TextStyle(
+        fontWeight: FontWeight.w600,
+        fontSize: 15,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
     );
   }
 }

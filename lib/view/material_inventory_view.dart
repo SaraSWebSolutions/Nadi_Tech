@@ -94,9 +94,9 @@ class _MaterialInventoryViewState extends ConsumerState<MaterialInventoryView> {
                                 fit: BoxFit.contain,
                               ),
                               const SizedBox(height: 12),
-                              const Text(
-                                "No inventory found",
-                                style: TextStyle(
+                              Text(
+                                AppLocalizations.of(context)!.noInventoryFound,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
                                   color: Color.fromRGBO(13, 95, 72, 1),

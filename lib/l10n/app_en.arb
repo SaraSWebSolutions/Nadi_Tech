@@ -152,5 +152,93 @@
   "reduceEyeStrain": "Reduce eye strain in low light",
   "privacyControls": "Privacy Controls",
   "manageDataSharing": "Manage data sharing preferences",
-  "language": "Language"
+  "language": "Language",
+
+  "appTitle": "Nadi Staff",
+  "welcome": "Welcome!",
+  "enterEmail": "Enter email",
+  "enterPassword": "Enter password",
+  "rememberMe": "Remember me",
+  "forgotPassword": "Forgot password?",
+  "login": "Login",
+  "loginSuccessful": "Login successful",
+  "tapAgainToExit": "Tap again to exit",
+  "liveChat": "Live Chat",
+
+  "forgotPasswordTitle": "Forgot password!",
+  "sendResetLink": "Send reset link",
+  "emailIsRequired": "Email is required",
+  "enterValidEmail": "Enter a valid email",
+  "passwordIsRequired": "Password is required",
+  "passwordResetLinkSent": "Password reset link sent",
+
+  "logoutConfirmMessage": "Are you sure you want to log out?",
+  "chooseLanguage": "Choose language",
+  "languageEnglishShort": "ENG",
+  "languageArabicShort": "BH",
+
+  "noInternetTitle": "No internet connection",
+  "noInternetMessage": "Please check your internet connection and try again.",
+
+  "notificationsTitle": "Notifications",
+  "noNotifications": "No notifications",
+  "deleteNotificationTitle": "Delete notification",
+  "deleteNotificationConfirm": "Are you sure you want to delete this notification?",
+
+  "chatsTitle": "Chats",
+  "searchMessagesHint": "Search messages…",
+  "noChatsFound": "No chats found",
+
+  "qtyLabel": "Qty:",
+  "addMedia": "Add media",
+
+  "chat": "Chat",
+  "admin": "Admin",
+
+  "errorWithDetail": "Error: {detail}",
+  "@errorWithDetail": {
+    "placeholders": {
+      "detail": {}
+    }
+  },
+
+  "microphonePermissionDenied": "Microphone permission denied",
+  "voiceNoteOptional": "Voice note (optional)",
+  "recordingInProgress": "Recording… {duration}",
+  "@recordingInProgress": {
+    "placeholders": {
+      "duration": {}
+    }
+  },
+  "voiceNoteReady": "Voice note ready",
+  "tapMicToRecord": "Tap microphone to record",
+
+  "bhdAmount": "BHD: {amount}",
+  "@bhdAmount": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+
+  "addressFormatted": "Building {building}, floor {floor}, apt {aptNo}",
+  "@addressFormatted": {
+    "placeholders": {
+      "building": {},
+      "floor": {},
+      "aptNo": {}
+    }
+  },
+
+  "distanceKm": "{km} km",
+  "@distanceKm": {
+    "placeholders": {
+      "km": {}
+    }
+  },
+
+  "locationLabel": "Location",
+  "noInventoryFound": "No inventory found",
+  "editProfile": "Edit Profile",
+    "writeMessage": "Write a message..."
+
 }

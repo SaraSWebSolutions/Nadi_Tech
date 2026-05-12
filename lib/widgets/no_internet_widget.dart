@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tech_app/l10n/app_localizations.dart';
 
 class NoInternetScreen extends StatelessWidget {
   const NoInternetScreen({super.key});
@@ -19,7 +20,7 @@ class NoInternetScreen extends StatelessWidget {
 
               /// TITLE
               Text(
-                "No Internet Connection",
+                AppLocalizations.of(context)!.noInternetTitle,
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
 
@@ -27,7 +28,7 @@ class NoInternetScreen extends StatelessWidget {
 
               /// DESCRIPTION
               Text(
-                "Please check your internet connection and try again.",
+                AppLocalizations.of(context)!.noInternetMessage,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),

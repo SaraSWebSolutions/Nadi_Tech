@@ -3,11 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LanguageNotifier extends Notifier<Locale> {
-
   @override
   Locale build() {
-    loadSavedLanguage();
     return const Locale('en');
+  }
+
+  /// Called from [main] after reading [SharedPreferences] so the first frame uses the saved locale.
+  void applySavedLocale(String code) {
+    if (code == 'en' || code == 'ar') {
+      state = Locale(code);
+    }
   }
 
   Future<void> changeLanguage(String code) async {
@@ -16,18 +21,7 @@ class LanguageNotifier extends Notifier<Locale> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('lang', code);
   }
-
-  Future<void> loadSavedLanguage() async {
-    final prefs = await SharedPreferences.getInstance();
-    final code = prefs.getString('lang');
-
-    if (code != null) {
-      state = Locale(code);
-    }
-  }
 }
 
 final languageProvider =
-    NotifierProvider<LanguageNotifier, Locale>(
-  LanguageNotifier.new,
-);
+    NotifierProvider<LanguageNotifier, Locale>(LanguageNotifier.new);

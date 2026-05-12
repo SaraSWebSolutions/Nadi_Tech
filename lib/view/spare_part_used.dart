@@ -145,15 +145,17 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              error: (_, __) => const Text(
-                                "Spare Parts Used",
-                                style: TextStyle(
+                              error: (_, __) => Text(
+                                AppLocalizations.of(context)!.sparePartsUsed,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                               data: (response) => Text(
-                                "Spare Parts Used (${response.data.length})",
+                                AppLocalizations.of(context)!.sparePartsUsedCount(
+                                  response.data.length,
+                                ),
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -169,7 +171,13 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                         sparePartsAsync.when(
                           loading: () =>
                               const Center(child: CircularProgressIndicator()),
-                          error: (e, _) => Center(child: Text("Error: $e")),
+                          error: (e, _) => Center(
+                            child: Text(
+                              AppLocalizations.of(context)!.errorWithDetail(
+                                e.toString(),
+                              ),
+                            ),
+                          ),
                           data: (response) {
                             if (response.data.isEmpty) {
                               return Column(
@@ -249,7 +257,10 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
 
                                       children: [
                                         Text(
-                                          "BHD ${item.productId.price}",
+                                          AppLocalizations.of(context)!
+                                              .bhdAmount(
+                                            item.productId.price.toString(),
+                                          ),
                                           style: const TextStyle(
                                             color: AppColors.scoundry_clr,
                                             fontWeight: FontWeight.w600,
@@ -393,7 +404,9 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                     ),
                     Expanded(child: Text(item.productId.productName,style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),)),
                     Text(
-                      "BHD ${item.productId.price}",
+                      AppLocalizations.of(context)!.bhdAmount(
+                        item.productId.price.toString(),
+                      ),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ],

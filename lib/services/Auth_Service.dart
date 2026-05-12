@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 import 'package:tech_app/core/network/dio_client.dart';
 import 'package:tech_app/model/Auth_Model.dart';
@@ -7,25 +8,60 @@ import 'package:tech_app/preferences/AppPerfernces.dart';
 class AuthService {
   final Dio _dio = DioClient.dio;
 
-  Future<Map<String, dynamic>> techLogin(AuthModel authmodel ) async {
+  Future<Map<String, dynamic>> techLogin(AuthModel authmodel) async {
     try {
       final response = await _dio.post(
         "technician/login",
         data: authmodel.toJson(),
       );
 
+      debugPrint("✅ LOGIN RESPONSE => ${response.data}");
+
+      /// ✅ CHECK SUCCESS
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception(response.data['message'] ?? "Login failed");
+      }
+
       final token = response.data['token'];
       final techId = response.data['id'];
-      if (token != null) {
-        await Appperfernces.saveToken(token);
+
+      /// ✅ VALIDATE TOKEN
+      if (token == null || token.toString().isEmpty) {
+        throw Exception(response.data['message'] ?? "Invalid login response");
       }
-     if (techId != null) {
-      await Appperfernces.saveTechId(techId);
-    }
+
+      await Appperfernces.saveToken(token);
+
+      if (techId != null) {
+        await Appperfernces.saveTechId(techId);
+      }
+
       return response.data;
     } on DioException catch (e) {
-      final message = e.response?.data['message']?.toString() ?? "Login failed";
-      throw message; // will be caught in controller
+      debugPrint("❌ LOGIN ERROR STATUS => ${e.response?.statusCode}");
+
+      debugPrint("❌ LOGIN ERROR RESPONSE => ${e.response?.data}");
+
+      final errorData = e.response?.data;
+
+      String message = "Login failed";
+
+      if (errorData is Map<String, dynamic>) {
+        message = errorData['message']?.toString() ?? message;
+      }
+
+      throw Exception(message);
+    } catch (e) {
+      debugPrint("❌ UNKNOWN LOGIN ERROR => $e");
+
+      String errorMessage = e.toString();
+
+      // ✅ removes "Exception: "
+      if (errorMessage.startsWith("Exception: ")) {
+        errorMessage = errorMessage.replaceFirst("Exception: ", "");
+      }
+
+      throw errorMessage;
     }
   }
 

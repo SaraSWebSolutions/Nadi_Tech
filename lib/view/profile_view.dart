@@ -31,7 +31,8 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   final TechnicianprofileService _service = TechnicianprofileService();
 
   TechnicianProfile? _profile;
-   final  NotificationToggleService _notificationToggleService = NotificationToggleService();
+  final NotificationToggleService _notificationToggleService =
+      NotificationToggleService();
   late TextEditingController firstNameController;
   late TextEditingController lastNameController;
   late TextEditingController emailController;
@@ -51,7 +52,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
     profiledata();
     loadNotificationStatus();
   }
-  
+
   Future<void> profiledata() async {
     final response = await _service.tech_profile();
     if (!mounted) return;
@@ -66,35 +67,33 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   }
 
   Future<void> loadNotificationStatus() async {
-  try {
-    final status = await _notificationToggleService.fetchCheckStatus();
+    try {
+      final status = await _notificationToggleService.fetchCheckStatus();
+      if (!mounted) return;
+      setState(() {
+        pushNotification = status;
+      });
+    } catch (e) {
+      debugPrint("Error loading notification status: $e");
+    }
+  }
+
+  Future<void> toggleNotification(bool value) async {
+    setState(() {
+      pushNotification = value;
+    });
+
+    try {
+      await _notificationToggleService.updateNotificationStatus(value);
+    } catch (e) {
+      // revert if API fails
+      setState(() {
+        pushNotification = !value;
+      });
+    }
+
     if (!mounted) return;
-    setState(() {
-      pushNotification = status;
-    });
-  } catch (e) {
-    debugPrint("Error loading notification status: $e");
   }
-}
-Future<void> toggleNotification(bool value) async {
-  setState(() {
-    pushNotification = value; 
-  });
-
-  try {
-
-    await _notificationToggleService.updateNotificationStatus(value);
-    
-  } catch (e) {
-    // revert if API fails
-    setState(() {
-      pushNotification = !value;
-    });
-  }
-
-  if (!mounted) return;
-
-}
 
   Future<void> _logout(BuildContext context) async {
     try {
@@ -196,7 +195,11 @@ Future<void> toggleNotification(bool value) async {
                     debugPrint("selectedReasonId $selectedReasonId");
                     if (selectedReasonId == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please select a reason")),
+                        SnackBar(
+                          content: Text(
+                            AppLocalizations.of(context)!.pleaseSelectReason,
+                          ),
+                        ),
                       );
                       return;
                     }
@@ -219,33 +222,35 @@ Future<void> toggleNotification(bool value) async {
       },
     );
   }
-void _showLogoutConfirmDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text(AppLocalizations.of(context)!.logOut),
-        content: Text("Are you sure you want to logout?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          TextButton(
-            onPressed: () async {
-              //Navigator.pop(context); // close dialog
-              await _logout(context); // call logout
-            },
-            child: Text(
-              AppLocalizations.of(context)!.logOut,
-              style: const TextStyle(color: Colors.red),
+
+  void _showLogoutConfirmDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.logOut),
+          content: Text(AppLocalizations.of(context)!.logoutConfirmMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
-          ),
-        ],
-      );
-    },
-  );
-}
+            TextButton(
+              onPressed: () async {
+                //Navigator.pop(context); // close dialog
+                await _logout(context); // call logout
+              },
+              child: Text(
+                AppLocalizations.of(context)!.logOut,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -254,47 +259,168 @@ void _showLogoutConfirmDialog(BuildContext context) {
         child: Column(
           children: [
             Header(title: AppLocalizations.of(context)!.profileManagement),
-            const Divider(),
+            const Divider(height: 1),
 
-            // EVERYTHING SCROLLS
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  children: [
-                    _profileHeader(),
-                    const SizedBox(height: 20),
-                    _personalDetailsContainer(),
-                    const SizedBox(height: 20),
-                    _applicationSettingsContainer(),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: PrimaryButton(
-                radius: 15,
-                height: 50,
-                color: Color.fromRGBO(192, 33, 36, 1),
-                onPressed: () {
-  _showLogoutConfirmDialog(context);
-},
-                text: AppLocalizations.of(context)!.logOut,
-              ),
-            ),
+              child: Scrollbar(
+                thumbVisibility: true,
+                radius: const Radius.circular(10),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      _profileHeader(),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: PrimaryButton(
-                radius: 15,
-                height: 50,
-                color: Color.fromRGBO(192, 33, 36, 1),
-                onPressed: () {
-                  _showDeleteAccountDialog(context);
-                },
-                text: AppLocalizations.of(context)!.accountDelete,
+                      const SizedBox(height: 20),
+
+                      _personalDetailsContainer(),
+
+                      const SizedBox(height: 20),
+
+                      _applicationSettingsContainer(),
+
+                      const SizedBox(height: 30),
+
+                      /// LOGOUT BUTTON
+                      InkWell(
+                        borderRadius: BorderRadius.circular(18),
+                        onTap: () {
+                          _showLogoutConfirmDialog(context);
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 16,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.orange.shade400,
+                                Colors.deepOrange.shade400,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.orange.withOpacity(0.25),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.18),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.logout_rounded,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
+                              ),
+
+                              const SizedBox(width: 14),
+
+                              Expanded(
+                                child: Text(
+                                  AppLocalizations.of(context)!.logOut,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+
+                              const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      /// DELETE ACCOUNT BUTTON
+                      InkWell(
+                        borderRadius: BorderRadius.circular(18),
+                        onTap: () {
+                          _showDeleteAccountDialog(context);
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 16,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.red.shade400,
+                                Colors.red.shade700,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.red.withOpacity(0.25),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.18),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.delete_forever_rounded,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
+                              ),
+
+                              const SizedBox(width: 14),
+
+                              Expanded(
+                                child: Text(
+                                  AppLocalizations.of(context)!.accountDelete,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+
+                              const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      /// EXTRA BOTTOM SPACE
+                      const SizedBox(height: 30),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
@@ -305,86 +431,169 @@ void _showLogoutConfirmDialog(BuildContext context) {
 
   /// ---------------- PROFILE HEADER ----------------
   Widget _profileHeader() {
-    return Column(
-      children: [
-        Stack(
-          children: [
-            CircleAvatar(
-              radius: 45,
-              backgroundColor: Colors.grey.shade300,
-              backgroundImage: (_profile?.data.image != null &&
-        _profile!.data.image!.isNotEmpty)
-    ? CachedNetworkImageProvider(
-        '${ImageBaseUrl.baseUrl}/${_profile?.data.image}',
-      )
-    : null,
-              child: _profile?.data.image == null
-                  ? const Icon(Icons.person, size: 30)
-                  : null,
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: InkWell(
-               onTap: () async {
-  if (_profile == null || _profile!.data == null) {
-    debugPrint("Profile still null - can't navigate");
-    return;
-  }
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Stack(
+            children: [
+              CircleAvatar(
+                radius: 48,
+                backgroundColor: Colors.grey.shade300,
+                backgroundImage:
+                    (_profile?.data.image != null &&
+                        _profile!.data.image!.isNotEmpty)
+                    ? CachedNetworkImageProvider(
+                        '${ImageBaseUrl.baseUrl}/${_profile?.data.image}',
+                      )
+                    : null,
+                child: _profile?.data.image == null
+                    ? const Icon(Icons.person, size: 34)
+                    : null,
+              ),
 
-  final updated = await context.push(
-    RouteName.editprofile,
-    extra: _profile,
-  );
+              PositionedDirectional(
+                bottom: 0,
+                end: 0,
+                child: InkWell(
+                  onTap: () async {
+                    if (_profile == null || _profile!.data == null) {
+                      return;
+                    }
 
-  if (updated == true) profiledata();
-},
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundColor: AppColors.app_background_clr,
-                  child: const Icon(Icons.edit, size: 16, color: Colors.white),
+                    final updated = await context.push(
+                      RouteName.editprofile,
+                      extra: _profile,
+                    );
+
+                    if (updated == true) profiledata();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: AppColors.app_background_clr,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Theme.of(context).cardColor,
+                        width: 2,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          Text(
+            "${_profile?.data.firstName ?? ''} ${_profile?.data.lastName ?? ''}",
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 6),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.app_background_clr.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(30),
             ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          "${_profile?.data.firstName} ${_profile?.data.lastName}",
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-        ),
-Text(_profile?.data.role?.skill ?? ""),      ],
+            child: Text(
+              _profile?.data.role?.skill ?? "",
+              style: TextStyle(
+                color: AppColors.app_background_clr,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _personalDetailsContainer() {
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.08),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Icon(
+                Icons.person_outline,
+                color: AppColors.app_background_clr,
+                size: 22,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "Personal Details",
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
           AppTextField(
             label: AppLocalizations.of(context)!.firstName,
             controller: firstNameController,
             readOnly: true,
           ),
-          const SizedBox(height: 10),
+
+          const SizedBox(height: 14),
+
           AppTextField(
             label: AppLocalizations.of(context)!.lastName,
             controller: lastNameController,
             readOnly: true,
           ),
-          const SizedBox(height: 10),
+
+          const SizedBox(height: 14),
+
           AppTextField(
             label: AppLocalizations.of(context)!.email,
             controller: emailController,
             readOnly: true,
           ),
-          const SizedBox(height: 10),
+
+          const SizedBox(height: 14),
+
           AppTextField(
             label: AppLocalizations.of(context)!.mobileNumber,
             controller: mobileController,
@@ -397,79 +606,127 @@ Text(_profile?.data.role?.skill ?? ""),      ],
 
   Widget _applicationSettingsContainer() {
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.08),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _switchTile(
-            title: "Enable Push Notifications",
-            subtitle: "Receive real-time alerts and updates",
-            value: pushNotification,
-            // onChanged: (v) => setState(() => pushNotification = v),
-             onChanged: toggleNotification,
+          Row(
+            children: [
+              Icon(
+                Icons.settings_outlined,
+                color: AppColors.app_background_clr,
+                size: 22,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "Application Settings",
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ],
           ),
+
+          const SizedBox(height: 20),
+
           _switchTile(
-            title: "Dark Mode",
-            subtitle: "Reduce eye strain in low light",
+            icon: Icons.notifications_none_rounded,
+            title: AppLocalizations.of(context)!.enablePushNotifications,
+            subtitle: AppLocalizations.of(context)!.receiveAlerts,
+            value: pushNotification,
+            onChanged: toggleNotification,
+          ),
+
+          const SizedBox(height: 14),
+
+          _switchTile(
+            icon: Icons.dark_mode_outlined,
+            title: AppLocalizations.of(context)!.darkMode,
+            subtitle: AppLocalizations.of(context)!.reduceEyeStrain,
             value: ref.watch(themeProvider) == ThemeMode.dark,
             onChanged: (v) {
               ref.read(themeProvider.notifier).setTheme(v);
             },
           ),
-          // _switchTile(
-          //   title: "Privacy Controls",
-          //   subtitle: "Manage data sharing preferences",
-          //   value: privacyControl,
-          //   onChanged: (v) => setState(() => privacyControl = v),
-          // ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              /// Language Label
-              const Text(
-                " Choose Language",
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                  color: Colors.black,
-                ),
-              ),
 
-              /// Language Options
-              Row(children: [_languageOption("ENG"), _languageOption("BH")]),
-            ],
+          const SizedBox(height: 20),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              color: Theme.of(
+                context,
+              ).colorScheme.surfaceVariant.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.language_outlined,
+                      color: AppColors.app_background_clr,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+
+                    Text(
+                      AppLocalizations.of(context)!.chooseLanguage,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+
+                Row(
+                  children: [
+                    _languageOption(
+                      AppLocalizations.of(context)!.languageEnglishShort,
+                      'en',
+                    ),
+                    _languageOption(
+                      AppLocalizations.of(context)!.languageArabicShort,
+                      'ar',
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _languageOption(String value) {
+  Widget _languageOption(String label, String languageCode) {
     final locale = ref.watch(languageProvider);
-    bool isActive =
-        (value == "ENG" && locale.languageCode == 'en') ||
-        (value == "BH" && locale.languageCode == 'ar');
+    final isActive = locale.languageCode == languageCode;
     return GestureDetector(
       onTap: () {
-        if (value == "ENG") {
-          ref.read(languageProvider.notifier).changeLanguage('en');
-        } else if (value == "BH") {
-          ref.read(languageProvider.notifier).changeLanguage('ar');
-        }
+        ref.read(languageProvider.notifier).changeLanguage(languageCode);
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-        margin: const EdgeInsets.only(right: 5),
+        margin: const EdgeInsetsDirectional.only(end: 5),
         decoration: BoxDecoration(
-          color: isActive
-              ? AppColors.app_background_clr
-              : Colors.transparent,
+          color: isActive ? AppColors.app_background_clr : Colors.transparent,
           border: Border.all(
             color: isActive
                 ? AppColors.app_background_clr
@@ -478,7 +735,7 @@ Text(_profile?.data.role?.skill ?? ""),      ],
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
-          value,
+          label,
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
@@ -490,41 +747,64 @@ Text(_profile?.data.role?.skill ?? ""),      ],
   }
 
   Widget _switchTile({
+    required IconData icon,
     required String title,
     required String subtitle,
     required bool value,
     required Function(bool) onChanged,
   }) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.app_background_clr.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, size: 20, color: AppColors.app_background_clr),
+          ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: const TextStyle(fontSize: 12, color: Colors.black),
-              ),
-            ],
+
+                const SizedBox(height: 4),
+
+                Text(
+                  subtitle,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                ),
+              ],
+            ),
           ),
-        ),
-        Transform.scale(
-          scale: 0.8,
-          child: Switch(
-            value: value,
-            activeColor: AppColors.app_background_clr,
-            onChanged: onChanged,
+
+          Transform.scale(
+            scale: 0.85,
+            child: Switch(
+              value: value,
+              activeColor: AppColors.app_background_clr,
+              onChanged: onChanged,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

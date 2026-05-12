@@ -53,11 +53,21 @@ final TimerService _timerService = TimerService();
   String? _voicePath;
   Duration _recordDuration = Duration.zero;
   Timer? _recordTimer;
-  final List<Map<String, dynamic>> status = [
-    {"title": "Accepted"},
-    {"title": "In Progress"},
-    {"title": "completed"},
-  ];
+  static const int _statusOptionCount = 3;
+
+  String _statusLabel(BuildContext context, int index) {
+    final loc = AppLocalizations.of(context)!;
+    switch (index) {
+      case 0:
+        return loc.accepted;
+      case 1:
+        return loc.inProgress;
+      case 2:
+        return loc.completed;
+      default:
+        return '';
+    }
+  }
   bool get isCompletedSelected => selectedIndexes.contains(2);
   @override
   void initState() {
@@ -87,7 +97,11 @@ WidgetsBinding.instance.addObserver(this);
     try {
       if (!await _audioRecorder.hasPermission()) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Microphone permission denied")),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.microphonePermissionDenied,
+            ),
+          ),
         );
         return;
       }
@@ -351,10 +365,9 @@ Text(
                   mainAxisSpacing: 10,
                   childAspectRatio: 4,
                 ),
-                itemCount: status.length,
+                itemCount: _statusOptionCount,
 
                 itemBuilder: (context, index) {
-                  final statusItem = status[index];
                   final bool isSelected = selectedIndexes.contains(index);
 
                   return InkWell(
@@ -383,7 +396,7 @@ Text(
                       ),
                       child: Center(
                         child: Text(
-                          statusItem['title'],
+                          _statusLabel(context, index),
                           style: TextStyle(
                             color: isSelected
                                 ? Colors.white
@@ -415,7 +428,9 @@ Text(
               ),
               const SizedBox(height: 5),
               Text(
-                "${selectedImages.length} / 10 images selected",
+                AppLocalizations.of(context)!.imagesSelectedCount(
+                  selectedImages.length,
+                ),
                 style: TextStyle(
                   fontSize: 12,
                   color: selectedImages.length == 10 ? Colors.red : Colors.grey,
@@ -438,7 +453,7 @@ Text(
 
               const SizedBox(height: 15),
               Text(
-                "Voice Note (Optional)",
+                AppLocalizations.of(context)!.voiceNoteOptional,
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 10),
@@ -512,10 +527,12 @@ Text(
               children: [
                 Text(
                   _isRecording
-                      ? "Recording... ${_formatDuration(_recordDuration)}"
+                      ? AppLocalizations.of(context)!.recordingInProgress(
+                          _formatDuration(_recordDuration),
+                        )
                       : _voicePath != null
-                          ? "Voice note ready"
-                          : "Tap mic to record",
+                          ? AppLocalizations.of(context)!.voiceNoteReady
+                          : AppLocalizations.of(context)!.tapMicToRecord,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,

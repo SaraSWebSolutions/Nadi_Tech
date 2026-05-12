@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
+import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/routes/route_name.dart';
 import 'package:tech_app/widgets/inputs/primary_button.dart';
 
@@ -62,7 +63,7 @@ class _AcceptedViewState extends State<AcceptedView> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              "Coustomer Details",
+                              AppLocalizations.of(context)!.customerDetails,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w500,
@@ -76,14 +77,27 @@ class _AcceptedViewState extends State<AcceptedView> {
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          _infoRow("Name", "MohammadSiraj"),
-                          const Divider(),
-                          _infoRow("Email", "MohammadSiraj@gmail.in"),
-                          const Divider(),
-                          _infoRow("Phone", "+973 78787887"),
+                          _infoRow(
+                            context,
+                            AppLocalizations.of(context)!.name,
+                            "MohammadSiraj",
+                          ),
                           const Divider(),
                           _infoRow(
-                            "Address",
+                            context,
+                            AppLocalizations.of(context)!.email,
+                            "MohammadSiraj@gmail.in",
+                          ),
+                          const Divider(),
+                          _infoRow(
+                            context,
+                            AppLocalizations.of(context)!.phone,
+                            "+973 78787887",
+                          ),
+                          const Divider(),
+                          _infoRow(
+                            context,
+                            AppLocalizations.of(context)!.address,
                             "Building 12 Appartment1,floor2,Muharg",
                           ),
                           const Divider(),
@@ -91,7 +105,7 @@ class _AcceptedViewState extends State<AcceptedView> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                "Loation",
+                                AppLocalizations.of(context)!.locationLabel,
                                 style: TextStyle(
                                   color: AppColors.lightgray_clr,
                                   fontSize: 12,
@@ -115,7 +129,11 @@ class _AcceptedViewState extends State<AcceptedView> {
                           ),
 
                           const Divider(),
-                          _infoRow("Distane:", "7km"),
+                          _infoRow(
+                            context,
+                            AppLocalizations.of(context)!.distance,
+                            AppLocalizations.of(context)!.distanceKm('7'),
+                          ),
                         ],
                       ),
                     ),
@@ -167,7 +185,7 @@ class _AcceptedViewState extends State<AcceptedView> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              "Service Details",
+                              AppLocalizations.of(context)!.serviceDetails,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w500,
@@ -181,18 +199,35 @@ class _AcceptedViewState extends State<AcceptedView> {
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          _infoRow("Service Type", "MohammadSiraj"),
+                          _infoRow(
+                            context,
+                            AppLocalizations.of(context)!.serviceType,
+                            "MohammadSiraj",
+                          ),
                           const Divider(),
                           _infoRow(
-                            "Description",
+                            context,
+                            AppLocalizations.of(context)!.description,
                             "kjshruihkbxzkheruiwhjkasfhiuwryjkdbzfjklgweuiargkjszdfhiuwer8kjdhgiseurodioeshtoi",
                           ),
                           const Divider(),
-                          _infoRow("Date Required", "2025-10-15"),
+                          _infoRow(
+                            context,
+                            AppLocalizations.of(context)!.dateRequired,
+                            "2025-10-15",
+                          ),
                           const Divider(),
-                          _infoRow("Time Window", "10:00AM - 12:00Am"),
+                          _infoRow(
+                            context,
+                            AppLocalizations.of(context)!.timeWindow,
+                            "10:00AM - 12:00Am",
+                          ),
                           const Divider(),
-                          _infoRow("Date Created", "2025-10-15"),
+                          _infoRow(
+                            context,
+                            AppLocalizations.of(context)!.dateCreated,
+                            "2025-10-15",
+                          ),
                         ],
                       ),
                     ),
@@ -210,7 +245,7 @@ class _AcceptedViewState extends State<AcceptedView> {
                   onPressed: () {
                     context.push(RouteName.updated_status);
                   },
-                  text: "Start",
+                  text: AppLocalizations.of(context)!.start,
                 ),
               ),
              
@@ -222,7 +257,7 @@ class _AcceptedViewState extends State<AcceptedView> {
     );
   }
 
-  Widget _infoRow(String label, String value) {
+  Widget _infoRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -235,7 +270,7 @@ class _AcceptedViewState extends State<AcceptedView> {
           Expanded(
             child: Text(
               value,
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.end,
               overflow: TextOverflow.ellipsis,
               maxLines: 5,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),

@@ -56,7 +56,7 @@ class _BulkRequestState extends ConsumerState<BulkRequest> {
 
       for (final item in materialSelections) {
         if (item.product == null || item.quantityController.text.isEmpty) {
-          throw "Please fill all materials";
+          throw AppLocalizations.of(context)!.fillAllMaterials;
         }
 
         requests.add({
@@ -72,7 +72,7 @@ class _BulkRequestState extends ConsumerState<BulkRequest> {
       SnackbarHelper.show(
         context,
         backgroundColor: AppColors.scoundry_clr,
-        message: "Material requests submitted successfully",
+        message: AppLocalizations.of(context)!.materialRequestSuccess,
       );
       context.push(RouteName.inventory_list);
     } catch (e) {
@@ -219,8 +219,9 @@ class _BulkRequestState extends ConsumerState<BulkRequest> {
                       selection.product = product;
                     });
                   },
-                  validator: (value) =>
-                      value == null ? "Please select product" : null,
+                  validator: (value) => value == null
+                      ? AppLocalizations.of(context)!.pleaseSelectProduct
+                      : null,
                 ),
 
                 const SizedBox(height: 16),

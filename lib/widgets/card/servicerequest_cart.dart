@@ -305,7 +305,11 @@ String formatDateOnly(DateTime date) {
                 const Divider(),
                 _infoRow(
                   AppLocalizations.of(context)!.address,
-                  "building ${widget.data.address.building}, floor ${widget.data.address.floor}, aptNo ${widget.data.address.aptNo}",
+                  AppLocalizations.of(context)!.addressFormatted(
+                    widget.data.address.building,
+                    widget.data.address.floor,
+                    widget.data.address.aptNo,
+                  ),
                 ),
                 // const Divider(),
                 // Row(
@@ -326,7 +330,10 @@ String formatDateOnly(DateTime date) {
                 //   ],
                 // ),
                 const Divider(),
-                _infoRow(AppLocalizations.of(context)!.distance, "7km"),
+                _infoRow(
+                  AppLocalizations.of(context)!.distance,
+                  AppLocalizations.of(context)!.distanceKm('7'),
+                ),
               ],
             ),
           ),

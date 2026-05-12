@@ -141,7 +141,9 @@ class _MyRequestListState extends ConsumerState<MyRequestList> {
                                             text: TextSpan(
                                               children: [
                                                 TextSpan(
-                                                  text: "Qty: ",
+                                                  text: AppLocalizations.of(
+                                                    context,
+                                                  )!.qtyLabel,
                                                   style: TextStyle(
                                                     color: Colors.grey.shade600,
                                                     fontSize: 13,

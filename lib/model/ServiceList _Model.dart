@@ -1,5 +1,3 @@
-
-
 import 'dart:convert';
 
 ServiceListModel serviceListFromJson(String str) =>
@@ -19,7 +17,10 @@ class ServiceListModel {
   factory ServiceListModel.fromJson(Map<String, dynamic> json) {
     return ServiceListModel(
       count: json["count"] ?? 0,
-      data: (json["data"] as List).map((x) => Datum.fromJson(x)).toList(),
+
+      data: json["data"] is List
+          ? (json["data"] as List).map((x) => Datum.fromJson(x)).toList()
+          : [],
     );
   }
 
@@ -45,11 +46,11 @@ class Datum {
   final DateTime scheduleService;
   final bool immediateAssistance;
   final String serviceStatus;
-final String? voice;
+  final String? voice;
   final String? reason;
   final bool technicianAccepted;
   final int payment;
- final String? scheduleServiceTime;
+  final String? scheduleServiceTime;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -58,7 +59,7 @@ final String? voice;
   final List<String> media;
   final String assignmentStatus;
   final String? assignmentReason;
- 
+
   final TechnicianUserService? technicianUserService;
 
   Datum({
@@ -84,7 +85,7 @@ final String? voice;
     required this.scheduleServiceTime,
     this.assignmentReason,
     this.technicianUserService,
-      this.voice,
+    this.voice,
   });
 
   factory Datum.fromJson(Map<String, dynamic> json) {
@@ -99,12 +100,12 @@ final String? voice;
 
       otherIssue: json["otherIssue"],
       feedback: json["feedback"],
-   voice: json["voice"],
+      voice: json["voice"],
       scheduleService:
           DateTime.tryParse(json["scheduleService"] ?? "") ?? DateTime.now(),
       immediateAssistance: json["immediateAssistance"] ?? false,
       serviceStatus: json["serviceStatus"] ?? "",
-   scheduleServiceTime: json['scheduleServiceTime'] ,
+      scheduleServiceTime: json['scheduleServiceTime'],
       reason: json["reason"],
       technicianAccepted: json["technicianAccepted"] ?? false,
       payment: json["payment"] ?? 0,
@@ -114,7 +115,7 @@ final String? voice;
 
       serviceRequestId: json["serviceRequestID"] ?? "",
       address: Address.fromJson(json["address"] ?? {}),
-      media: json["media"] != null ? List<String>.from(json["media"]) : [],
+      media: json["media"] is List ? List<String>.from(json["media"]) : [],
       assignmentStatus: json["assignmentStatus"] ?? "",
       assignmentReason: json["assignmentReason"],
       technicianUserService: json["technicianUserService"] != null
@@ -152,10 +153,10 @@ class TechnicianUserService {
       id: json["_id"] ?? "",
       userServiceId: json["userServiceId"] ?? "",
       adminNotified: json["adminNotified"] ?? false,
-      assignments: json["assignments"] != null
-          ? List<Assignment>.from(
-              json["assignments"].map((x) => Assignment.fromJson(x)),
-            )
+      assignments: json["assignments"] is List
+          ? (json["assignments"] as List)
+                .map((x) => Assignment.fromJson(x))
+                .toList()
           : [],
     );
   }
@@ -180,7 +181,7 @@ class Assignment {
   final List<UsedPart> usedParts;
   final bool paymentRaised;
   final DateTime? workStartedAt;
-    final DateTime? statusChangedAt;
+  final DateTime? statusChangedAt;
   final DateTime? updatedAt;
   Assignment({
     required this.technicianId,
@@ -191,8 +192,8 @@ class Assignment {
     required this.usedParts,
     required this.paymentRaised,
     this.workStartedAt,
-    this.updatedAt, this.statusChangedAt,
-
+    this.updatedAt,
+    this.statusChangedAt,
   });
 
   factory Assignment.fromJson(Map<String, dynamic> json) {
@@ -201,14 +202,13 @@ class Assignment {
       status: json["status"] ?? "",
       notes: json["notes"],
       media: json["media"] != null ? List<String>.from(json["media"]) : [],
-          statusChangedAt:
-        DateTime.tryParse(json["statusChangedAt"] ?? ""),
-      
+      statusChangedAt: DateTime.tryParse(json["statusChangedAt"] ?? ""),
+
       workDuration: json["workDuration"] ?? 0,
-      usedParts: json["usedParts"] != null
-          ? List<UsedPart>.from(
-              json["usedParts"].map((x) => UsedPart.fromJson(x)),
-            )
+      usedParts: json["usedParts"] is List
+          ? (json["usedParts"] as List)
+                .map((x) => UsedPart.fromJson(x))
+                .toList()
           : [],
       paymentRaised: json["paymentRaised"] ?? false,
       workStartedAt: DateTime.tryParse(json["workStartedAt"] ?? ""),
@@ -225,7 +225,7 @@ class Assignment {
     "usedParts": usedParts.map((x) => x.toJson()).toList(),
     "paymentRaised": paymentRaised,
     "workStartedAt": workStartedAt?.toIso8601String(),
-      "statusChangedAt": statusChangedAt?.toIso8601String(),
+    "statusChangedAt": statusChangedAt?.toIso8601String(),
   };
 }
 
@@ -417,8 +417,6 @@ class UserId {
   }
 }
 
-
-
 /// ===============================
 /// BASIC INFO
 /// ===============================
@@ -443,6 +441,4 @@ class BasicInfo {
       gender: json["gender"] ?? "",
     );
   }
-  
 }
-

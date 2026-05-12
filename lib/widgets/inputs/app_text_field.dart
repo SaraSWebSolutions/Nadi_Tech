@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
-import 'package:flutter/services.dart'; // ✅ add this
 
 class AppTextField extends StatefulWidget {
   final String label;
   final TextInputType? keyboardType;
-  final Icon? surfixIcon;
+  final Widget? surfixIcon;
   final bool isPassword;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
   final int? maxLines;
   final bool readOnly;
   final bool enabled;
-  final List<TextInputFormatter>? inputFormatters; // ✅ NEW
+  final List<TextInputFormatter>? inputFormatters;
+
   const AppTextField({
     super.key,
     required this.label,
@@ -36,58 +37,106 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context); // ✅ IMPORTANT
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return TextFormField(
-      inputFormatters: widget.inputFormatters, // ✅ ADD THIS
-
       controller: widget.controller,
       validator: widget.validator,
       keyboardType: widget.keyboardType,
       readOnly: widget.readOnly,
       enabled: widget.enabled,
+      inputFormatters: widget.inputFormatters,
       maxLines: widget.maxLines ?? 1,
       obscureText: widget.isPassword ? _obscure : false,
-      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+
+      style: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+        color: theme.colorScheme.onSurface,
+      ),
+
+      cursorColor: AppColors.app_background_clr,
+
       decoration: InputDecoration(
         labelText: widget.label,
 
-        /// ✅ LABEL COLOR
+        /// CONTENT PADDING
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 18,
+        ),
+
+        /// FILLED
+        filled: true,
+
+        fillColor: widget.readOnly
+            ? (isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100)
+            : (isDark ? const Color(0xFF1E1E1E) : Colors.white),
+
+        /// LABEL STYLE
         labelStyle: TextStyle(
           fontSize: 14,
-          color: theme.textTheme.bodyMedium?.color,
+          fontWeight: FontWeight.w500,
+          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
         ),
+
         floatingLabelStyle: const TextStyle(
-          fontSize: 12,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
           color: AppColors.app_background_clr,
         ),
-        filled: true,
-        fillColor: theme.colorScheme.surface,
+
+        /// ENABLED BORDER
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: theme.dividerColor, width: 1),
-        ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppColors.app_background_clr,
-            width: 1.5,
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: isDark
+                ? Colors.white.withOpacity(0.08)
+                : Colors.grey.shade300,
+            width: 1,
           ),
         ),
+
+        /// FOCUSED BORDER
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(
+            color: AppColors.app_background_clr,
+            width: 1.6,
+          ),
+        ),
+
+        /// ERROR BORDER
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: Colors.red),
         ),
+
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: Colors.red, width: 1.5),
         ),
+
+        /// DISABLED BORDER
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: isDark
+                ? Colors.white.withOpacity(0.05)
+                : Colors.grey.shade200,
+          ),
+        ),
+
+        /// PASSWORD / SUFFIX ICON
         suffixIcon: widget.isPassword
             ? IconButton(
+                splashRadius: 22,
                 icon: Icon(
-                  _obscure ? Icons.visibility_off : Icons.visibility,
-                  color: theme.iconTheme.color,
+                  _obscure
+                      ? Icons.visibility_off_rounded
+                      : Icons.visibility_rounded,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
                 ),
                 onPressed: () {
                   setState(() {
@@ -96,6 +145,9 @@ class _AppTextFieldState extends State<AppTextField> {
                 },
               )
             : widget.surfixIcon,
+
+        /// ERROR STYLE
+        errorStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
       ),
     );
   }

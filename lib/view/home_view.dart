@@ -133,7 +133,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                           ref.read(homeTabProvider.notifier).state = index;
                         },
                         child: Container(
-                          margin: const EdgeInsets.only(right: 10),
+                          margin: const EdgeInsetsDirectional.only(end: 10),
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                           decoration: BoxDecoration(
                             color: isSelected
@@ -348,7 +348,13 @@ class _HomeViewState extends ConsumerState<HomeView> {
                         );
                       },
                     ),
-                    error: (err, st) => Center(child: Text("Error: $err")),
+                    error: (err, st) => Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.errorWithDetail(
+                          err.toString(),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],

@@ -149,5 +149,93 @@
   "reduceEyeStrain": "تقليل إجهاد العين في الضوء المنخفض",
   "privacyControls": "إعدادات الخصوصية",
   "manageDataSharing": "إدارة تفضيلات مشاركة البيانات",
-  "language": "اللغة"
+  "language": "اللغة",
+
+  "appTitle": "طاقم نادي",
+  "welcome": "مرحباً!",
+  "enterEmail": "أدخل البريد الإلكتروني",
+  "enterPassword": "أدخل كلمة المرور",
+  "rememberMe": "تذكرني",
+  "forgotPassword": "نسيت كلمة المرور؟",
+  "login": "تسجيل الدخول",
+  "loginSuccessful": "تم تسجيل الدخول بنجاح",
+  "tapAgainToExit": "اضغط مرة أخرى للخروج",
+  "liveChat": "محادثة مباشرة",
+
+  "forgotPasswordTitle": "نسيت كلمة المرور!",
+  "sendResetLink": "إرسال رابط إعادة التعيين",
+  "emailIsRequired": "البريد الإلكتروني مطلوب",
+  "enterValidEmail": "أدخل بريداً إلكترونياً صالحاً",
+  "passwordIsRequired": "كلمة المرور مطلوبة",
+  "passwordResetLinkSent": "تم إرسال رابط إعادة تعيين كلمة المرور",
+
+  "logoutConfirmMessage": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+  "chooseLanguage": "اختر اللغة",
+  "languageEnglishShort": "ENG",
+  "languageArabicShort": "BH",
+
+  "noInternetTitle": "لا يوجد اتصال بالإنترنت",
+  "noInternetMessage": "يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.",
+
+  "notificationsTitle": "الإشعارات",
+  "noNotifications": "لا توجد إشعارات",
+  "deleteNotificationTitle": "حذف الإشعار",
+  "deleteNotificationConfirm": "هل أنت متأكد أنك تريد حذف هذا الإشعار؟",
+
+  "chatsTitle": "المحادثات",
+  "searchMessagesHint": "ابحث في الرسائل…",
+  "noChatsFound": "لا توجد محادثات",
+
+  "qtyLabel": "الكمية:",
+  "addMedia": "إضافة وسائط",
+
+  "chat": "محادثة",
+  "admin": "المسؤول",
+
+  "errorWithDetail": "خطأ: {detail}",
+  "@errorWithDetail": {
+    "placeholders": {
+      "detail": {}
+    }
+  },
+
+  "microphonePermissionDenied": "تم رفض إذن الميكروفون",
+  "voiceNoteOptional": "ملاحظة صوتية (اختياري)",
+  "recordingInProgress": "جاري التسجيل… {duration}",
+  "@recordingInProgress": {
+    "placeholders": {
+      "duration": {}
+    }
+  },
+  "voiceNoteReady": "الملاحظة الصوتية جاهزة",
+  "tapMicToRecord": "اضغط على الميكروفون للتسجيل",
+
+  "bhdAmount": "د.ب: {amount}",
+  "@bhdAmount": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+
+  "addressFormatted": "المبنى {building}، الطابق {floor}، الشقة {aptNo}",
+  "@addressFormatted": {
+    "placeholders": {
+      "building": {},
+      "floor": {},
+      "aptNo": {}
+    }
+  },
+
+  "distanceKm": "{km} كم",
+  "@distanceKm": {
+    "placeholders": {
+      "km": {}
+    }
+  },
+
+  "locationLabel": "الموقع",
+  "noInventoryFound": "لا يوجد مخزون",
+  "editProfile": "تعديل الملف الشخصي",
+    "writeMessage": "اكتب رسالة..."
+
 }

@@ -361,4 +361,154 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get language => 'اللغة';
+
+  @override
+  String get appTitle => 'طاقم نادي';
+
+  @override
+  String get welcome => 'مرحباً!';
+
+  @override
+  String get enterEmail => 'أدخل البريد الإلكتروني';
+
+  @override
+  String get enterPassword => 'أدخل كلمة المرور';
+
+  @override
+  String get rememberMe => 'تذكرني';
+
+  @override
+  String get forgotPassword => 'نسيت كلمة المرور؟';
+
+  @override
+  String get login => 'تسجيل الدخول';
+
+  @override
+  String get loginSuccessful => 'تم تسجيل الدخول بنجاح';
+
+  @override
+  String get tapAgainToExit => 'اضغط مرة أخرى للخروج';
+
+  @override
+  String get liveChat => 'محادثة مباشرة';
+
+  @override
+  String get forgotPasswordTitle => 'نسيت كلمة المرور!';
+
+  @override
+  String get sendResetLink => 'إرسال رابط إعادة التعيين';
+
+  @override
+  String get emailIsRequired => 'البريد الإلكتروني مطلوب';
+
+  @override
+  String get enterValidEmail => 'أدخل بريداً إلكترونياً صالحاً';
+
+  @override
+  String get passwordIsRequired => 'كلمة المرور مطلوبة';
+
+  @override
+  String get passwordResetLinkSent => 'تم إرسال رابط إعادة تعيين كلمة المرور';
+
+  @override
+  String get logoutConfirmMessage => 'هل أنت متأكد أنك تريد تسجيل الخروج؟';
+
+  @override
+  String get chooseLanguage => 'اختر اللغة';
+
+  @override
+  String get languageEnglishShort => 'ENG';
+
+  @override
+  String get languageArabicShort => 'BH';
+
+  @override
+  String get noInternetTitle => 'لا يوجد اتصال بالإنترنت';
+
+  @override
+  String get noInternetMessage =>
+      'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.';
+
+  @override
+  String get notificationsTitle => 'الإشعارات';
+
+  @override
+  String get noNotifications => 'لا توجد إشعارات';
+
+  @override
+  String get deleteNotificationTitle => 'حذف الإشعار';
+
+  @override
+  String get deleteNotificationConfirm =>
+      'هل أنت متأكد أنك تريد حذف هذا الإشعار؟';
+
+  @override
+  String get chatsTitle => 'المحادثات';
+
+  @override
+  String get searchMessagesHint => 'ابحث في الرسائل…';
+
+  @override
+  String get noChatsFound => 'لا توجد محادثات';
+
+  @override
+  String get qtyLabel => 'الكمية:';
+
+  @override
+  String get addMedia => 'إضافة وسائط';
+
+  @override
+  String get chat => 'محادثة';
+
+  @override
+  String get admin => 'المسؤول';
+
+  @override
+  String errorWithDetail(Object detail) {
+    return 'خطأ: $detail';
+  }
+
+  @override
+  String get microphonePermissionDenied => 'تم رفض إذن الميكروفون';
+
+  @override
+  String get voiceNoteOptional => 'ملاحظة صوتية (اختياري)';
+
+  @override
+  String recordingInProgress(Object duration) {
+    return 'جاري التسجيل… $duration';
+  }
+
+  @override
+  String get voiceNoteReady => 'الملاحظة الصوتية جاهزة';
+
+  @override
+  String get tapMicToRecord => 'اضغط على الميكروفون للتسجيل';
+
+  @override
+  String bhdAmount(Object amount) {
+    return 'د.ب: $amount';
+  }
+
+  @override
+  String addressFormatted(Object building, Object floor, Object aptNo) {
+    return 'المبنى $building، الطابق $floor، الشقة $aptNo';
+  }
+
+  @override
+  String distanceKm(Object km) {
+    return '$km كم';
+  }
+
+  @override
+  String get locationLabel => 'الموقع';
+
+  @override
+  String get noInventoryFound => 'لا يوجد مخزون';
+
+  @override
+  String get editProfile => 'تعديل الملف الشخصي';
+
+  @override
+  String get writeMessage => 'اكتب رسالة...';
 }

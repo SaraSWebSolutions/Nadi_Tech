@@ -2,6 +2,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tech_app/l10n/app_localizations.dart';
 
 class ServicerequestVoice extends ConsumerStatefulWidget {
   final String voiceUrl;
@@ -44,14 +45,16 @@ class _ServicerequestVoiceState extends ConsumerState<ServicerequestVoice> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            "Voice Note",
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+          Text(
+            AppLocalizations.of(context)!.voiceNote,
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
           Row(
             children: [
               Text(
-                _isPlaying ? "Playing..." : "Tap to play",
+                _isPlaying
+                    ? AppLocalizations.of(context)!.playing
+                    : AppLocalizations.of(context)!.tapToPlay,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,

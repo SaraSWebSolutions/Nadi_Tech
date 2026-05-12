@@ -199,7 +199,12 @@ class RequestCart extends StatelessWidget {
     );
   }
 
-  Widget _sparePartRow(String label, String qty, String amount) {
+  Widget _sparePartRow(
+    BuildContext context,
+    String label,
+    String qty,
+    String amount,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child:
@@ -227,7 +232,7 @@ class RequestCart extends StatelessWidget {
           Text(label, textAlign: TextAlign.start),
           Row(
             children: [
-              Text("Qty:"),
+              Text(AppLocalizations.of(context)!.qtyLabel),
               const SizedBox(width: 5),
               Text(qty),
             ],
@@ -273,9 +278,12 @@ class RequestCart extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                "Media Files",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              Text(
+                AppLocalizations.of(context)!.mediaFiles,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 12),
               if (images.isNotEmpty)
@@ -575,9 +583,11 @@ class RequestCart extends StatelessWidget {
                             children: assignment.usedParts
                                 .map(
                                   (part) => _sparePartRow(
+                                    context,
                                     part.productName,
                                     part.count.toString(),
-                                    "BHD: ${part.price}",
+                                    AppLocalizations.of(context)!
+                                        .bhdAmount(part.price.toString()),
                                   ),
                                 )
                                 .toList(),
@@ -690,7 +700,9 @@ class RequestCart extends StatelessWidget {
                     children: [
                        Text(AppLocalizations.of(context)!.totalAmount),
                       Text(
-                        "BHD: ${payment.toString()}",
+                        AppLocalizations.of(context)!.bhdAmount(
+                          payment.toString(),
+                        ),
                         style: TextStyle(
                           color: AppColors.scoundry_clr,
                           fontWeight: FontWeight.bold,

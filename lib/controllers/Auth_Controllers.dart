@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/model/Auth_Model.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
 import 'package:tech_app/services/Auth_Service.dart';
@@ -10,15 +11,15 @@ class AuthControllers {
   
 
 
-  String? validateEmail(String? value) {
-    if (value == null || value.isEmpty) return "Email is required";
+  String? validateEmail(String? value, AppLocalizations l10n) {
+    if (value == null || value.isEmpty) return l10n.emailIsRequired;
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) return "Enter valid email";
+    if (!emailRegex.hasMatch(value)) return l10n.enterValidEmail;
     return null;
   }
 
-  String? validatePassword(String? value) {
-    if (value == null || value.isEmpty) return "Password is required";
+  String? validatePassword(String? value, AppLocalizations l10n) {
+    if (value == null || value.isEmpty) return l10n.passwordIsRequired;
     return null;
   }
 

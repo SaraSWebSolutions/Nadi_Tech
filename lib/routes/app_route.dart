@@ -14,7 +14,11 @@ import 'package:tech_app/view/spare_part_used.dart';
 import 'package:tech_app/widgets/card/servicerequest_cart.dart';
 import 'package:tech_app/model/ServiceList _Model.dart';
 import 'package:tech_app/view/nodifications.dart';
+import 'package:flutter/material.dart';
+
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 final Approute = GoRouter(
+  navigatorKey: rootNavigatorKey,
   initialLocation: RouteName.splash,
   routes: [
     GoRoute(
@@ -29,7 +33,7 @@ final Approute = GoRouter(
       path: RouteName.bottom_nav,
       builder: (context, state) => const BottomNav(),
     ),
-      GoRoute(
+    GoRoute(
       path: RouteName.forgotpassword,
       builder: (context, state) => const ForgotPassword(),
     ),
@@ -37,21 +41,17 @@ final Approute = GoRouter(
       path: RouteName.inventory_list,
       builder: (context, state) => const MaterialInventoryView(),
     ),
-      GoRoute(
-  path: "/chatDetails",
-  builder: (context, state) {
+    GoRoute(
+      path: "/chatDetails",
+      builder: (context, state) {
+        final data = state.extra as Map<String, dynamic>;
 
-    final data = state.extra as Map<String, dynamic>;
+        final adminId = data["id"] as String?;
+        final adminName = data["name"] as String?;
 
-    final adminId = data["id"] as String?;
-    final adminName = data["name"] as String?;
-
-    return ChatDetailsScreen(
-      adminId: adminId,
-      adminName: adminName,
-    );
-  },
-),
+        return ChatDetailsScreen(adminId: adminId, adminName: adminName);
+      },
+    ),
 
     GoRoute(
       path: RouteName.sparepart_used,
@@ -81,11 +81,11 @@ final Approute = GoRouter(
     ),
     GoRoute(
       path: RouteName.editprofile,
-      builder: (context, state){
+      builder: (context, state) {
         final profile = state.extra as TechnicianProfile;
-        return EditProfile(profile:profile);
+        return EditProfile(profile: profile);
       },
-      )
+    ),
 
     // GoRoute(
     //   path: RouteName.updated_status,

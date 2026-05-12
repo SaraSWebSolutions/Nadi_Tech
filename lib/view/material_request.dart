@@ -37,17 +37,17 @@ class _MaterialRequestState extends ConsumerState<MaterialRequest> {
     loadProducts();
   }
 
-Future<void> loadProducts() async {
-  final lang = ref.read(languageProvider).languageCode;
+  Future<void> loadProducts() async {
+    final lang = ref.read(languageProvider).languageCode;
 
-  final result = await _productlist.fetchproductlist(lang);
+    final result = await _productlist.fetchproductlist(lang);
 
-  if (!mounted) return;
+    if (!mounted) return;
 
-  setState(() {
-    products = result;
-  });
-}
+    setState(() {
+      products = result;
+    });
+  }
 
   Future<void> submitrequest() async {
     try {
@@ -70,7 +70,7 @@ Future<void> loadProducts() async {
       SnackbarHelper.show(
         context,
         backgroundColor: AppColors.app_background_clr,
-        message: "material requests submitted successfully",
+        message: AppLocalizations.of(context)!.materialRequestSuccess,
       );
       context.pop();
     } catch (e) {
@@ -89,12 +89,13 @@ Future<void> loadProducts() async {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-         appBar: AppBar(
+      appBar: AppBar(
         backgroundColor: AppColors.scoundry_clr,
-         iconTheme: const IconThemeData(
-    color: Colors.white,
-  ),
-        title:  Text(AppLocalizations.of(context)!.materialRequest,style: TextStyle(color: Colors.white),),
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          AppLocalizations.of(context)!.materialRequest,
+          style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
         elevation: 0,
       ),
@@ -107,15 +108,18 @@ Future<void> loadProducts() async {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-        
-                  Text(AppLocalizations.of(context)!.materialName, style: TextStyle(fontSize: 15)),
+                  Text(
+                    AppLocalizations.of(context)!.materialName,
+                    style: TextStyle(fontSize: 15),
+                  ),
                   const SizedBox(height: 15),
                   AppDropdown(
-                    label:AppLocalizations.of(context)!.selectProduct,
+                    label: AppLocalizations.of(context)!.selectProduct,
                     items: products.map((e) => e.productName).toList(),
                     value: selectedProduct?.productName,
-                    validator: (value) =>
-                        value == null ? "Please select product" : null,
+                    validator: (value) => value == null
+                        ? AppLocalizations.of(context)!.pleaseSelectProduct
+                        : null,
                     onChanged: (value) {
                       final Product = products.firstWhere(
                         (e) => e.productName == value,
@@ -159,7 +163,7 @@ Future<void> loadProducts() async {
                     onPressed: () {
                       context.push(RouteName.bulk_request);
                     },
-                    text:AppLocalizations.of(context)!.addBulkRequest,
+                    text: AppLocalizations.of(context)!.addBulkRequest,
                     icon: Icon(Icons.add, size: 25, color: Colors.white),
                   ),
                   const SizedBox(height: 20),

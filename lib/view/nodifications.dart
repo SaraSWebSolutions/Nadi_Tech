@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tech_app/core/utils/Time_Date.dart';
+import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/provider/notification_Service_Provider.dart';
 import 'package:tech_app/services/NotificationApiService.dart';
 
@@ -17,12 +18,14 @@ class _NotificationsState extends ConsumerState<Notifications> {
     final Notificationapiservice _notificationapi = Notificationapiservice();
     final notificationAsync = ref.watch(notificationServiceProvider);
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Notifications"),
+        title: Text(l10n.notificationsTitle),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsetsDirectional.only(end: 12),
             child: TextButton(
               onPressed: () async {
                 await _notificationapi.deleteallnotifications();
@@ -37,12 +40,14 @@ class _NotificationsState extends ConsumerState<Notifications> {
       body: notificationAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
 
-        error: (err, _) => Center(child: Text("Error: $err")),
+        error: (err, _) => Center(
+          child: Text(l10n.errorWithDetail(err.toString())),
+        ),
 
         data: (notifications) {
           if (notifications.isEmpty) {
-            return const Center(
-              child: Text("No notifications", style: TextStyle()),
+            return Center(
+              child: Text(l10n.noNotifications, style: TextStyle()),
             );
           }
 
@@ -59,8 +64,8 @@ class _NotificationsState extends ConsumerState<Notifications> {
                   key: Key(n.id.toString()),
                   direction: DismissDirection.endToStart,
                   background: Container(
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
+                    alignment: AlignmentDirectional.centerEnd,
+                    padding: const EdgeInsetsDirectional.only(end: 20),
                     decoration: BoxDecoration(
                       color: Colors.red,
                       borderRadius: BorderRadius.circular(16),
@@ -71,23 +76,24 @@ class _NotificationsState extends ConsumerState<Notifications> {
                   confirmDismiss: (direction) async {
                     final confirm = await showDialog<bool>(
                       context: context,
-                      builder: (context) {
+                      builder: (dialogContext) {
+                        final dlg = AppLocalizations.of(dialogContext)!;
                         return AlertDialog(
-                          title: const Text("Delete Notification"),
-                          content: const Text(
-                            "Are you sure you want to delete this notification?",
-                          ),
+                          title: Text(dlg.deleteNotificationTitle),
+                          content: Text(dlg.deleteNotificationConfirm),
                           actions: [
                             TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: const Text("Cancel"),
+                              onPressed: () =>
+                                  Navigator.pop(dialogContext, false),
+                              child: Text(dlg.cancel),
                             ),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red,
                               ),
-                              onPressed: () => Navigator.pop(context, true),
-                              child: const Text("Delete"),
+                              onPressed: () =>
+                                  Navigator.pop(dialogContext, true),
+                              child: Text(dlg.delete),
                             ),
                           ],
                         );

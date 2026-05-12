@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
+import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/core/utils/Time_Date.dart';
 import 'package:tech_app/model/ServiceList%20_Model.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
@@ -155,7 +156,13 @@ Used Parts    : ${a.usedParts.map((p) => '${p.productName} x${p.count} = ${p.tot
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
+                  Icon(
+                    Directionality.of(context) == TextDirection.rtl
+                        ? Icons.arrow_back_ios
+                        : Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Colors.white,
+                  ),
                 ],
               ),
             ),
@@ -207,7 +214,9 @@ Used Parts    : ${a.usedParts.map((p) => '${p.productName} x${p.count} = ${p.tot
                 if (widget.payment != null) ...[
                   _infoRow(
                     image: Image.asset("assets/images/curuncy.png"),
-                    text: " BHD: ${widget.payment.toString()}",
+                    text: AppLocalizations.of(context)!.bhdAmount(
+                      widget.payment.toString(),
+                    ),
                   ),
                 ],
                 const SizedBox(height: 5),

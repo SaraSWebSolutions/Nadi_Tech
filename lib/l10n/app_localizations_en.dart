@@ -363,4 +363,154 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get language => 'Language';
+
+  @override
+  String get appTitle => 'Nadi Staff';
+
+  @override
+  String get welcome => 'Welcome!';
+
+  @override
+  String get enterEmail => 'Enter email';
+
+  @override
+  String get enterPassword => 'Enter password';
+
+  @override
+  String get rememberMe => 'Remember me';
+
+  @override
+  String get forgotPassword => 'Forgot password?';
+
+  @override
+  String get login => 'Login';
+
+  @override
+  String get loginSuccessful => 'Login successful';
+
+  @override
+  String get tapAgainToExit => 'Tap again to exit';
+
+  @override
+  String get liveChat => 'Live Chat';
+
+  @override
+  String get forgotPasswordTitle => 'Forgot password!';
+
+  @override
+  String get sendResetLink => 'Send reset link';
+
+  @override
+  String get emailIsRequired => 'Email is required';
+
+  @override
+  String get enterValidEmail => 'Enter a valid email';
+
+  @override
+  String get passwordIsRequired => 'Password is required';
+
+  @override
+  String get passwordResetLinkSent => 'Password reset link sent';
+
+  @override
+  String get logoutConfirmMessage => 'Are you sure you want to log out?';
+
+  @override
+  String get chooseLanguage => 'Choose language';
+
+  @override
+  String get languageEnglishShort => 'ENG';
+
+  @override
+  String get languageArabicShort => 'BH';
+
+  @override
+  String get noInternetTitle => 'No internet connection';
+
+  @override
+  String get noInternetMessage =>
+      'Please check your internet connection and try again.';
+
+  @override
+  String get notificationsTitle => 'Notifications';
+
+  @override
+  String get noNotifications => 'No notifications';
+
+  @override
+  String get deleteNotificationTitle => 'Delete notification';
+
+  @override
+  String get deleteNotificationConfirm =>
+      'Are you sure you want to delete this notification?';
+
+  @override
+  String get chatsTitle => 'Chats';
+
+  @override
+  String get searchMessagesHint => 'Search messages…';
+
+  @override
+  String get noChatsFound => 'No chats found';
+
+  @override
+  String get qtyLabel => 'Qty:';
+
+  @override
+  String get addMedia => 'Add media';
+
+  @override
+  String get chat => 'Chat';
+
+  @override
+  String get admin => 'Admin';
+
+  @override
+  String errorWithDetail(Object detail) {
+    return 'Error: $detail';
+  }
+
+  @override
+  String get microphonePermissionDenied => 'Microphone permission denied';
+
+  @override
+  String get voiceNoteOptional => 'Voice note (optional)';
+
+  @override
+  String recordingInProgress(Object duration) {
+    return 'Recording… $duration';
+  }
+
+  @override
+  String get voiceNoteReady => 'Voice note ready';
+
+  @override
+  String get tapMicToRecord => 'Tap microphone to record';
+
+  @override
+  String bhdAmount(Object amount) {
+    return 'BHD: $amount';
+  }
+
+  @override
+  String addressFormatted(Object building, Object floor, Object aptNo) {
+    return 'Building $building, floor $floor, apt $aptNo';
+  }
+
+  @override
+  String distanceKm(Object km) {
+    return '$km km';
+  }
+
+  @override
+  String get locationLabel => 'Location';
+
+  @override
+  String get noInventoryFound => 'No inventory found';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get writeMessage => 'Write a message...';
 }

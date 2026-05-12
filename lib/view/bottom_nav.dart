@@ -28,7 +28,7 @@ class _BottomNavState extends ConsumerState<BottomNav> {
     screens = [
       () => HomeView(),
       () => MaterialInventoryView(),
-      ()=> ChatsView(),
+      () => ChatsView(),
       () => MyRequestList(),
       () => ProfileView(),
     ];
@@ -43,14 +43,14 @@ class _BottomNavState extends ConsumerState<BottomNav> {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        ImageIcon(
-          const AssetImage("assets/icons/chat.png"),
-          size: 26,
+        Icon(
+          active ? Icons.chat_bubble : Icons.chat_bubble_outline,
+          size: 28,
           color: active ? AppColors.app_background_clr : Colors.grey,
         ),
         if (totalUnread > 0)
-          Positioned(
-            right: -8,
+          PositionedDirectional(
+            end: -8,
             top: -6,
             child: Container(
               constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
@@ -115,37 +115,53 @@ class _BottomNavState extends ConsumerState<BottomNav> {
             selectedItemColor: AppColors.app_background_clr,
             items: [
               BottomNavigationBarItem(
-                icon: const ImageIcon(
-                    AssetImage("assets/icons/home.png"), size: 26),
-                activeIcon: const ImageIcon(
-                    AssetImage("assets/icons/home.png"), size: 26),
+                icon: const Icon(Icons.home_outlined, size: 30),
+                activeIcon: const Icon(Icons.home, size: 30),
+                // icon: const ImageIcon(
+                //   AssetImage("assets/icons/home.png"),
+                //   size: 26,
+                // ),
+                // activeIcon: const ImageIcon(
+                //   AssetImage("assets/icons/home.png"),
+                //   size: 26,
+                // ),
                 label: AppLocalizations.of(context)!.home,
               ),
               BottomNavigationBarItem(
-                icon: const ImageIcon(
-                    AssetImage("assets/icons/chat.png"), size: 26),
-                activeIcon: const ImageIcon(
-                    AssetImage("assets/icons/chat.png"), size: 26),
+                icon: const Icon(Icons.inventory_2_outlined, size: 26),
+                activeIcon: const Icon(Icons.inventory, size: 26),
+                // icon: const ImageIcon(
+                //   AssetImage("assets/images/inven.png"),
+                //   size: 26,
+                // ),
+                // activeIcon: const ImageIcon(
+                //   AssetImage("assets/images/inven.png"),
+                //   size: 26,
+                // ),
                 label: AppLocalizations.of(context)!.inventory,
               ),
               // Live Chat tab with unread badge
               BottomNavigationBarItem(
                 icon: _chatIconWithBadge(totalUnread, active: false),
                 activeIcon: _chatIconWithBadge(totalUnread, active: true),
-                label: 'Live Chat',
+                label: AppLocalizations.of(context)!.liveChat,
               ),
               BottomNavigationBarItem(
-                icon: const ImageIcon(
-                    AssetImage("assets/icons/services.png"), size: 27),
-                activeIcon: const ImageIcon(
-                    AssetImage("assets/icons/services.png"), size: 27),
+                icon: const Icon(Icons.request_page_outlined, size: 30),
+                activeIcon: const Icon(Icons.request_page, size: 30),
+                // icon: const ImageIcon(
+                //   AssetImage("assets/icons/services.png"),
+                //   size: 27,
+                // ),
+                // activeIcon: const ImageIcon(
+                //   AssetImage("assets/icons/services.png"),
+                //   size: 27,
+                // ),
                 label: AppLocalizations.of(context)!.requestList,
               ),
               BottomNavigationBarItem(
-                icon: const ImageIcon(
-                    AssetImage("assets/icons/profile.png"), size: 26),
-                activeIcon: const ImageIcon(
-                    AssetImage("assets/icons/profile.png"), size: 26),
+                icon: const Icon(Icons.person_outline, size: 30),
+                activeIcon: const Icon(Icons.person, size: 30),
                 label: AppLocalizations.of(context)!.profile,
               ),
             ],
@@ -164,9 +180,9 @@ class _BottomNavState extends ConsumerState<BottomNav> {
             now.difference(lastBackPressed!) > const Duration(seconds: 2)) {
           lastBackPressed = now;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Tap again to exit"),
-              duration: Duration(seconds: 2),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.tapAgainToExit),
+              duration: const Duration(seconds: 2),
             ),
           );
           return false; // prevent exit

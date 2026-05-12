@@ -167,9 +167,9 @@ class _HeaderState extends ConsumerState<Header>
                           return const SizedBox.shrink();
                         }
                         AppBadgePlus.updateBadge(unreadCount);
-                        return Positioned(
+                        return PositionedDirectional(
                           top: 4,
-                          right: 4,
+                          end: 4,
                           child: Container(
                             height: 16,
                             width: 16,
