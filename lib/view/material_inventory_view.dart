@@ -12,6 +12,7 @@ import 'package:tech_app/widgets/card/shimmer_loader.dart';
 import 'package:tech_app/widgets/header.dart';
 import 'package:tech_app/widgets/inputs/primary_button.dart';
 import 'package:tech_app/widgets/no_internet_widget.dart';
+import 'package:flutter/services.dart';
 
 class MaterialInventoryView extends ConsumerStatefulWidget {
   const MaterialInventoryView({super.key});
@@ -27,13 +28,35 @@ class _MaterialInventoryViewState extends ConsumerState<MaterialInventoryView> {
     super.initState();
     Future.microtask(() => ref.refresh(inventorylistprovider));
   }
-
+DateTime? _lastBackPressTime;
   @override
   Widget build(BuildContext context) {
     final inventoryAsync = ref.watch(inventorylistprovider);
     final connectivity = ref.watch(connectivityProvider);
 
-    return Scaffold(
+    return PopScope(
+  canPop: false,
+  onPopInvoked: (didPop) async {
+    final now = DateTime.now();
+
+    if (_lastBackPressTime == null ||
+        now.difference(_lastBackPressTime!) > const Duration(seconds: 2)) {
+      _lastBackPressTime = now;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Press back again to exit"),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      return;
+    }
+
+    // Exit app on second press
+    await SystemNavigator.pop();
+  },
+  child:  Scaffold(
       body: SafeArea(
         child: connectivity.when(
           data: (isOnline) {
@@ -159,6 +182,7 @@ class _MaterialInventoryViewState extends ConsumerState<MaterialInventoryView> {
           error: (e, s) => NoInternetScreen(),
         ),
       ),
+    ),
     );
   }
 }

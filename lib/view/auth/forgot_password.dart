@@ -57,38 +57,41 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+ @override
+Widget build(BuildContext context) {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final screenHeight = MediaQuery.of(context).size.height;
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final isArabic = Localizations.localeOf(context).languageCode == "ar";
 
-    final isArabic = Localizations.localeOf(context).languageCode == "ar";
+  return Scaffold(
+    resizeToAvoidBottomInset: true,
+    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: const AssetImage("assets/images/back.png"),
-            fit: BoxFit.cover,
-
-            colorFilter: isDark
-                ? ColorFilter.mode(
-                    Colors.black.withOpacity(0.55),
-                    BlendMode.darken,
-                  )
-                : null,
+    body: Stack(
+      children: [
+        /// ✅ BACKGROUND IMAGE
+        Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: const AssetImage("assets/images/back.png"),
+              fit: BoxFit.cover,
+              colorFilter: isDark
+                  ? ColorFilter.mode(
+                      Colors.black.withOpacity(0.55),
+                      BlendMode.darken,
+                    )
+                  : null,
+            ),
           ),
         ),
 
-        child: SafeArea(
+        /// ✅ MAIN CONTENT
+        SafeArea(
           child: Column(
             children: [
-              /// ✅ FIXED HEADER (WON'T MOVE WITH KEYBOARD)
+              /// ⭐ FIXED HEADER (NEVER MOVES)
               Padding(
                 padding: const EdgeInsetsDirectional.only(
                   start: 16,
@@ -96,7 +99,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   top: 16,
                   bottom: 10,
                 ),
-
                 child: Row(
                   children: [
                     InkWell(
@@ -107,29 +109,24 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           context.go(RouteName.login);
                         }
                       },
-
                       borderRadius: BorderRadius.circular(30),
-
                       child: Container(
                         padding: const EdgeInsets.all(8),
-
                         decoration: BoxDecoration(
                           color: isDark
                               ? Colors.white.withOpacity(0.12)
                               : Colors.black.withOpacity(0.3),
-
                           shape: BoxShape.circle,
-
                           border: Border.all(
                             color: isDark
                                 ? Colors.white.withOpacity(0.08)
                                 : Colors.transparent,
                           ),
                         ),
-
                         child: Icon(
-                          isArabic ? Icons.arrow_forward : Icons.arrow_back,
-
+                          isArabic
+                              ? Icons.arrow_forward
+                              : Icons.arrow_back,
                           color: Colors.white,
                           size: 20,
                         ),
@@ -139,14 +136,14 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 ),
               ),
 
-              /// ✅ BODY SCROLLS ONLY
+              /// ⭐ SCROLLABLE CONTENT ONLY
               Expanded(
                 child: SingleChildScrollView(
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
-
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: screenHeight * 0.85),
+                    constraints:
+                        BoxConstraints(minHeight: screenHeight * 0.85),
 
                     child: Column(
                       children: [
@@ -161,31 +158,24 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 
                         Container(
                           width: double.infinity,
-
                           constraints: BoxConstraints(
                             minHeight: screenHeight * 0.55,
                           ),
-
                           padding: const EdgeInsets.all(20),
-
                           decoration: BoxDecoration(
                             color: isDark
                                 ? const Color(0xFF1E1E1E)
                                 : Colors.white,
-
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(30),
                               topRight: Radius.circular(30),
                             ),
-
                             boxShadow: [
                               BoxShadow(
                                 color: isDark
                                     ? Colors.black.withOpacity(0.25)
                                     : Colors.black.withOpacity(0.06),
-
                                 blurRadius: 12,
-
                                 offset: const Offset(0, -2),
                               ),
                             ],
@@ -195,29 +185,23 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                             textDirection: isArabic
                                 ? TextDirection.rtl
                                 : TextDirection.ltr,
-
                             child: Form(
                               key: _fromkey,
-
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.stretch,
                                 children: [
                                   const SizedBox(height: 15),
 
                                   Text(
-                                    AppLocalizations.of(
-                                      context,
-                                    )!.forgotPasswordTitle,
-
+                                    AppLocalizations.of(context)!
+                                        .forgotPasswordTitle,
                                     textAlign: isArabic
                                         ? TextAlign.right
                                         : TextAlign.left,
-
                                     style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
-
                                       color: isDark
                                           ? Colors.white
                                           : Colors.black87,
@@ -227,18 +211,14 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                   const SizedBox(height: 10),
 
                                   Text(
-                                    AppLocalizations.of(
-                                      context,
-                                    )!.passwordResetLinkSent,
-
+                                    AppLocalizations.of(context)!
+                                        .passwordResetLinkSent,
                                     textAlign: isArabic
                                         ? TextAlign.right
                                         : TextAlign.left,
-
                                     style: TextStyle(
                                       fontSize: 14,
                                       height: 1.5,
-
                                       color: isDark
                                           ? Colors.white70
                                           : Colors.black54,
@@ -248,18 +228,17 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                   const SizedBox(height: 24),
 
                                   AppTextField(
-                                    label: AppLocalizations.of(context)!.email,
-
+                                    label: AppLocalizations.of(context)!
+                                        .email,
                                     controller: _email,
-
-                                    keyboardType: TextInputType.emailAddress,
-
+                                    keyboardType:
+                                        TextInputType.emailAddress,
                                     validator: (value) {
-                                      final l10n = AppLocalizations.of(
-                                        context,
-                                      )!;
+                                      final l10n =
+                                          AppLocalizations.of(context)!;
 
-                                      if (value == null || value.isEmpty) {
+                                      if (value == null ||
+                                          value.isEmpty) {
                                         return l10n.emailIsRequired;
                                       }
 
@@ -278,13 +257,10 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                     Width: double.infinity,
                                     isLoading: isLoading,
                                     radius: 14,
-
-                                    color: AppColors.app_background_clr,
-
-                                    text: AppLocalizations.of(
-                                      context,
-                                    )!.sendResetLink,
-
+                                    color:
+                                        AppColors.app_background_clr,
+                                    text: AppLocalizations.of(context)!
+                                        .sendResetLink,
                                     onPressed: updatePassword,
                                   ),
 
@@ -302,7 +278,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
             ],
           ),
         ),
-      ),
-    );
-  }
+      ],
+    ),
+  );
+}
 }
