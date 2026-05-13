@@ -21,6 +21,7 @@ import 'package:tech_app/widgets/card/request_cart.dart';
 import 'package:tech_app/widgets/inputs/primary_button.dart';
 import 'package:tech_app/model/ServiceList _Model.dart';
 import 'package:tech_app/provider/home_tab_provider.dart';
+
 class ServicerequestCart extends ConsumerStatefulWidget {
   final Datum data;
 
@@ -69,22 +70,25 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
         status,
         reason,
       );
-debugPrint("RESULT: $result");
+      debugPrint("RESULT: $result");
       SnackbarHelper.show(
         context,
         backgroundColor: AppColors.app_background_clr,
-        message: status == "accept" ? AppLocalizations.of(context)!.serviceAccepted :  AppLocalizations.of(context)!.serviceRejected,
+        message: status == "accept"
+            ? AppLocalizations.of(context)!.serviceAccepted
+            : AppLocalizations.of(context)!.serviceRejected,
       );
       //   REFRESH SERVICE LIST API
       ref.invalidate(serviceListProvider);
-    // 🔥 SET TAB BASED ON ACTION
-    if (status == "accept") {
-      ref.read(homeTabProvider.notifier).state = 2; // Accepted tab
-    } else {
-      ref.read(homeTabProvider.notifier).state = 3; // Rejected tab
-    }
+      // 🔥 SET TAB BASED ON ACTION
+      if (status == "accept") {
+        ref.read(homeTabProvider.notifier).state = 2; // Accepted tab
+      } else {
+        ref.read(homeTabProvider.notifier).state = 3; // Rejected tab
+      }
 
-    context.go(RouteName.bottom_nav);    } catch (e) {
+      context.go(RouteName.bottom_nav);
+    } catch (e) {
       SnackbarHelper.show(
         context,
         backgroundColor: Colors.red,
@@ -97,26 +101,32 @@ debugPrint("RESULT: $result");
   Future<void> startwork() async {
     try {
       await Appperfernces.saveuserServiceId(widget.data.id);
-      await _startwork.fetchstartwork(widget.data.id);
 
-     // ✅ START GLOBAL TIMER
-    // ref.read(serviceTimerProvider.notifier).start();
+      final response = await _startwork.fetchstartwork(widget.data.id);
+      debugPrint("START WORK RESPONSE => $response");
+      // // ❗ STOP if API failed
+      if (response == null ||
+          response["message"] == "Get user approval before starting work") {
+        SnackbarHelper.show(
+          context,
+          backgroundColor: Colors.red,
+          message: response["message"],
+        );
 
+        return; // ⛔ STOP HERE
+      }
+
+      // ✅ SUCCESS FLOW ONLY
       SnackbarHelper.show(
         context,
         backgroundColor: AppColors.app_background_clr,
         message: AppLocalizations.of(context)?.startWork,
       );
 
-      //  REFRESH SERVICE LIST
-       // ✅ Refresh list
-    ref.invalidate(serviceListProvider);
+      ref.invalidate(serviceListProvider);
+      ref.read(homeTabProvider.notifier).state = 4;
 
-    // ✅ SWITCH TAB → In Progress
-    ref.read(homeTabProvider.notifier).state = 4; // index of In Progress tab
-
-    // ✅ GO TO MAIN SCREEN
-    context.go(RouteName.bottom_nav);
+      context.go(RouteName.bottom_nav);
     } catch (e) {
       SnackbarHelper.show(
         context,
@@ -129,7 +139,6 @@ debugPrint("RESULT: $result");
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -137,7 +146,7 @@ debugPrint("RESULT: $result");
               // CUSTOMER & SERVICE DETAILS
               if (widget.data.assignmentStatus != "in-progress" &&
                   widget.data.assignmentStatus != "completed" &&
-                   widget.data.assignmentStatus != "on-hold") ...[
+                  widget.data.assignmentStatus != "on-hold") ...[
                 _buildCustomerDetails(),
                 const SizedBox(height: 20),
                 _buildServiceDetails(),
@@ -183,7 +192,7 @@ debugPrint("RESULT: $result");
                     Width: double.infinity,
                     color: AppColors.scoundry_clr,
                     onPressed: startwork,
-                    text:   AppLocalizations.of(context)!.startWork  ,
+                    text: AppLocalizations.of(context)!.startWork,
                   ),
                 ),
               ],
@@ -208,7 +217,7 @@ debugPrint("RESULT: $result");
               ],
 
               // IN-PROGRESS OR ON-HOLD
-              if (widget.data.assignmentStatus == "in-progress" ) ...[
+              if (widget.data.assignmentStatus == "in-progress") ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 15,
@@ -221,8 +230,7 @@ debugPrint("RESULT: $result");
                 ),
               ],
 
-                if (
-                  widget.data.assignmentStatus == "on-hold") ...[
+              if (widget.data.assignmentStatus == "on-hold") ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 15,
@@ -243,9 +251,9 @@ debugPrint("RESULT: $result");
     );
   }
 
-String formatDateOnly(DateTime date) {
-  return DateFormat('dd/MM/yyyy').format(date);
-}
+  String formatDateOnly(DateTime date) {
+    return DateFormat('dd/MM/yyyy').format(date);
+  }
 
   Widget _buildCustomerDetails() {
     return Container(
@@ -253,10 +261,14 @@ String formatDateOnly(DateTime date) {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(15),
-        boxShadow:  [
+        boxShadow: [
           BoxShadow(
-            color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.35):Colors.black.withOpacity(0.15),
-            blurRadius: 6, offset: Offset(0, 3)),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withOpacity(0.35)
+                : Colors.black.withOpacity(0.15),
+            blurRadius: 6,
+            offset: Offset(0, 3),
+          ),
         ],
       ),
       child: Column(
@@ -283,7 +295,7 @@ String formatDateOnly(DateTime date) {
                   child: Icon(Icons.person, color: AppColors.scoundry_clr),
                 ),
                 const SizedBox(width: 12),
-                 Expanded(
+                Expanded(
                   child: Text(
                     AppLocalizations.of(context)!.customerDetails,
                     style: TextStyle(
@@ -299,9 +311,15 @@ String formatDateOnly(DateTime date) {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _infoRow(AppLocalizations.of(context)!.name, widget.data.userId.basicInfo.fullName),
+                _infoRow(
+                  AppLocalizations.of(context)!.name,
+                  widget.data.userId.basicInfo.fullName,
+                ),
                 const Divider(),
-                _infoRow(AppLocalizations.of(context)!.email, widget.data.userId.basicInfo.email),
+                _infoRow(
+                  AppLocalizations.of(context)!.email,
+                  widget.data.userId.basicInfo.email,
+                ),
                 const Divider(),
                 _infoRow(
                   AppLocalizations.of(context)!.address,
@@ -348,10 +366,14 @@ String formatDateOnly(DateTime date) {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(15),
-        boxShadow:  [
+        boxShadow: [
           BoxShadow(
-            color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.35):Colors.black.withOpacity(0.15),
-             blurRadius: 6, offset: Offset(0, 3)),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withOpacity(0.35)
+                : Colors.black.withOpacity(0.15),
+            blurRadius: 6,
+            offset: Offset(0, 3),
+          ),
         ],
       ),
       child: Column(
@@ -378,9 +400,9 @@ String formatDateOnly(DateTime date) {
                   child: Icon(Icons.person, color: AppColors.scoundry_clr),
                 ),
                 const SizedBox(width: 12),
-                 Expanded(
+                Expanded(
                   child: Text(
-                   AppLocalizations.of(context)!.serviceDetails,
+                    AppLocalizations.of(context)!.serviceDetails,
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
@@ -394,9 +416,15 @@ String formatDateOnly(DateTime date) {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _infoRow(AppLocalizations.of(context)!.serviceType, widget.data.serviceId.name),
+                _infoRow(
+                  AppLocalizations.of(context)!.serviceType,
+                  widget.data.serviceId.name,
+                ),
                 const Divider(),
-                _infoRow(AppLocalizations.of(context)!.description, widget.data.feedback ?? ""),
+                _infoRow(
+                  AppLocalizations.of(context)!.description,
+                  widget.data.feedback ?? "",
+                ),
                 const Divider(),
                 _infoRow(
                   AppLocalizations.of(context)!.status,
@@ -407,8 +435,8 @@ String formatDateOnly(DateTime date) {
                     widget.data.media.isNotEmpty) ...[
                   const Divider(),
                   _infoRow(
-                   AppLocalizations.of(context)!.viewMedia,
-                   AppLocalizations.of(context)!.tapToView,
+                    AppLocalizations.of(context)!.viewMedia,
+                    AppLocalizations.of(context)!.tapToView,
                     media: widget.data.media,
                   ),
                 ],
@@ -434,68 +462,73 @@ String formatDateOnly(DateTime date) {
                         });
                       }
                     },
-                    child: 
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //   children: [
-                    //      Text(
-                    //       AppLocalizations.of(context)!.voiceNote,
-                    //       style: TextStyle(fontSize: 12, color: Colors.grey),
-                    //     ),
-                    //     Row(
-                    //       children: [
-                    //         Text(
-                    //           _isPlaying ? AppLocalizations.of(context)!.playing: AppLocalizations.of(context)!.tapToPlay,
-                    //           style: const TextStyle(
-                    //             fontSize: 14,
-                    //             fontWeight: FontWeight.w500,
-                    //             color: Colors.blue,
-                    //             decoration: TextDecoration.underline,
-                    //           ),
-                    //         ),
-                    //         const SizedBox(width: 8),
-                    //         Icon(
-                    //           _isPlaying
-                    //               ? Icons.pause_circle
-                    //               : Icons.play_circle,
-                    //           color: Colors.blue,
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ],
-                    // ),
-                    Row(
-  children: [
-    Expanded(
-      child: Text(
-        AppLocalizations.of(context)!.voiceNote,
-        textAlign: TextAlign.start,
-        style: TextStyle(fontSize: 12, color: Colors.grey),
-      ),
-    ),
-    Row(
-      children: [
-        Text(
-          _isPlaying
-              ? AppLocalizations.of(context)!.playing
-              : AppLocalizations.of(context)!.tapToPlay,
-          textAlign: TextAlign.end,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.blue,
-            decoration: TextDecoration.underline,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Icon(
-          _isPlaying ? Icons.pause_circle : Icons.play_circle,
-          color: Colors.blue,
-        ),
-      ],
-    ),
-  ],
-)
+                    child:
+                        // Row(
+                        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //   children: [
+                        //      Text(
+                        //       AppLocalizations.of(context)!.voiceNote,
+                        //       style: TextStyle(fontSize: 12, color: Colors.grey),
+                        //     ),
+                        //     Row(
+                        //       children: [
+                        //         Text(
+                        //           _isPlaying ? AppLocalizations.of(context)!.playing: AppLocalizations.of(context)!.tapToPlay,
+                        //           style: const TextStyle(
+                        //             fontSize: 14,
+                        //             fontWeight: FontWeight.w500,
+                        //             color: Colors.blue,
+                        //             decoration: TextDecoration.underline,
+                        //           ),
+                        //         ),
+                        //         const SizedBox(width: 8),
+                        //         Icon(
+                        //           _isPlaying
+                        //               ? Icons.pause_circle
+                        //               : Icons.play_circle,
+                        //           color: Colors.blue,
+                        //         ),
+                        //       ],
+                        //     ),
+                        //   ],
+                        // ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                AppLocalizations.of(context)!.voiceNote,
+                                textAlign: TextAlign.start,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  _isPlaying
+                                      ? AppLocalizations.of(context)!.playing
+                                      : AppLocalizations.of(context)!.tapToPlay,
+                                  textAlign: TextAlign.end,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.blue,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  _isPlaying
+                                      ? Icons.pause_circle
+                                      : Icons.play_circle,
+                                  color: Colors.blue,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                   ),
                 ],
               ],
@@ -603,86 +636,86 @@ String formatDateOnly(DateTime date) {
   // }
 
   Widget _infoRow(
-  String label,
-  String value, {
-  List<String>? media,
-  bool isStatus = false,
-}) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        /// LABEL
-        Expanded(
-          flex: 4,
-          child: Text(
-            label,
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              color: Theme.of(context).textTheme.bodyMedium?.color,
-              fontSize: 12,
+    String label,
+    String value, {
+    List<String>? media,
+    bool isStatus = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// LABEL
+          Expanded(
+            flex: 4,
+            child: Text(
+              label,
+              textAlign: TextAlign.start,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+                fontSize: 12,
+              ),
             ),
           ),
-        ),
 
-        /// VALUE
-        Expanded(
-          flex: 6,
-          child: Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: media != null && media.isNotEmpty
-                ? InkWell(
-                    onTap: () {
-                      _showMediaDialog(context, media);
-                    },
-                    child: Text(
-                      value,
-                      textAlign: TextAlign.end,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  )
-                : isStatus
-                    ? Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _statusBgColor(value),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          value.toUpperCase(),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: _statusTextColor(value),
-                          ),
-                        ),
-                      )
-                    : Text(
+          /// VALUE
+          Expanded(
+            flex: 6,
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: media != null && media.isNotEmpty
+                  ? InkWell(
+                      onTap: () {
+                        _showMediaDialog(context, media);
+                      },
+                      child: Text(
                         value,
                         textAlign: TextAlign.end,
-                        maxLines: 5,
-                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
+                    )
+                  : isStatus
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _statusBgColor(value),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        value.toUpperCase(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _statusTextColor(value),
+                        ),
+                      ),
+                    )
+                  : Text(
+                      value,
+                      textAlign: TextAlign.end,
+                      maxLines: 5,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   // Media Dialog
   void _showMediaDialog(BuildContext context, List<String> mediaList) {
@@ -721,7 +754,7 @@ String formatDateOnly(DateTime date) {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                 Text(
+                Text(
                   AppLocalizations.of(context)!.mediaFiles,
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
@@ -738,11 +771,8 @@ String formatDateOnly(DateTime date) {
                             final imgUrl =
                                 "${ImageBaseUrl.baseUrl}/${images[index].trim()}";
                             return GestureDetector(
-                              onTap: () => _openFullScreenImage(
-                                context,
-                                images,
-                                index,
-                              ),
+                              onTap: () =>
+                                  _openFullScreenImage(context, images, index),
                               child: InteractiveViewer(
                                 minScale: 1,
                                 maxScale: 4,
@@ -797,10 +827,8 @@ String formatDateOnly(DateTime date) {
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black.withOpacity(0.92),
-        pageBuilder: (_, __, ___) => _FullScreenImageViewer(
-          images: images,
-          controller: controller,
-        ),
+        pageBuilder: (_, __, ___) =>
+            _FullScreenImageViewer(images: images, controller: controller),
       ),
     );
   }
@@ -827,7 +855,7 @@ String formatDateOnly(DateTime date) {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-               Text(
+              Text(
                 AppLocalizations.of(context)!.rejectReason,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
@@ -852,7 +880,7 @@ String formatDateOnly(DateTime date) {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    text:  AppLocalizations.of(context)!.cancel,
+                    text: AppLocalizations.of(context)!.cancel,
                     Width: 133,
                   ),
                   PrimaryButton(
@@ -864,7 +892,9 @@ String formatDateOnly(DateTime date) {
                         SnackbarHelper.show(
                           context,
                           backgroundColor: Colors.red,
-                          message: AppLocalizations.of(context)!.pleaseEnterReason,
+                          message: AppLocalizations.of(
+                            context,
+                          )!.pleaseEnterReason,
                         );
                         return;
                       }
@@ -908,8 +938,7 @@ class _FullScreenImageViewer extends StatelessWidget {
               controller: controller,
               itemCount: images.length,
               itemBuilder: (context, index) {
-                final url =
-                    "${ImageBaseUrl.baseUrl}/${images[index].trim()}";
+                final url = "${ImageBaseUrl.baseUrl}/${images[index].trim()}";
                 return InteractiveViewer(
                   minScale: 1,
                   maxScale: 5,
@@ -917,9 +946,8 @@ class _FullScreenImageViewer extends StatelessWidget {
                     child: CachedNetworkImage(
                       imageUrl: url,
                       fit: BoxFit.contain,
-                      placeholder: (_, __) => const Center(
-                        child: CircularProgressIndicator(),
-                      ),
+                      placeholder: (_, __) =>
+                          const Center(child: CircularProgressIndicator()),
                       errorWidget: (_, __, ___) => const Icon(
                         Icons.broken_image,
                         color: Colors.white,
@@ -934,11 +962,7 @@ class _FullScreenImageViewer extends StatelessWidget {
               top: 8,
               right: 8,
               child: IconButton(
-                icon: const Icon(
-                  Icons.close,
-                  color: Colors.white,
-                  size: 30,
-                ),
+                icon: const Icon(Icons.close, color: Colors.white, size: 30),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
