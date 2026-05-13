@@ -70,6 +70,14 @@ DateTime? _lastBackPressTime;
                   child: Header(
                     title: AppLocalizations.of(context)!.materialInventory,
                     showRefreshIcon: true,
+                    showBackButton: true,
+  onBackPressed: () {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      // context.go(RouteName.bottom_nav);
+    }
+  },
                   ),
                 ),
                 const Divider(),

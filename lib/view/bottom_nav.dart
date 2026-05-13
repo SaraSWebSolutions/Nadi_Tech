@@ -147,8 +147,8 @@ class _BottomNavState extends ConsumerState<BottomNav> {
                 label: AppLocalizations.of(context)!.liveChat,
               ),
               BottomNavigationBarItem(
-                icon: const Icon(Icons.request_page_outlined, size: 30),
-                activeIcon: const Icon(Icons.request_page, size: 30),
+                icon: const Icon(Icons.build_outlined, size: 30),
+                activeIcon: const Icon(Icons.build, size: 30),
                 // icon: const ImageIcon(
                 //   AssetImage("assets/icons/services.png"),
                 //   size: 27,
