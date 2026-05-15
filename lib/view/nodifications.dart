@@ -13,9 +13,27 @@ class Notifications extends ConsumerStatefulWidget {
 }
 
 class _NotificationsState extends ConsumerState<Notifications> {
+  final Notificationapiservice _notificationapi = Notificationapiservice();
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        // ✅ Mark all notifications as read in backend
+        await _notificationapi.markAllAsRead();
+
+        // ✅ Refresh notification provider
+        ref.refresh(notificationServiceProvider);
+      } catch (e) {
+        debugPrint("Mark all as read error: $e");
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Notificationapiservice _notificationapi = Notificationapiservice();
     final notificationAsync = ref.watch(notificationServiceProvider);
 
     final l10n = AppLocalizations.of(context)!;
@@ -29,6 +47,7 @@ class _NotificationsState extends ConsumerState<Notifications> {
             child: TextButton(
               onPressed: () async {
                 await _notificationapi.deleteallnotifications();
+
                 ref.refresh(notificationServiceProvider);
               },
               child: Image.asset("assets/images/notification.png"),
@@ -40,29 +59,30 @@ class _NotificationsState extends ConsumerState<Notifications> {
       body: notificationAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
 
-        error: (err, _) => Center(
-          child: Text(l10n.errorWithDetail(err.toString())),
-        ),
+        error: (err, _) =>
+            Center(child: Text(l10n.errorWithDetail(err.toString()))),
 
         data: (notifications) {
           if (notifications.isEmpty) {
-            return Center(
-              child: Text(l10n.noNotifications, style: TextStyle()),
-            );
+            return Center(child: Text(l10n.noNotifications));
           }
 
           return RefreshIndicator(
             onRefresh: () async {
               ref.refresh(notificationServiceProvider);
             },
+
             child: ListView.builder(
               itemCount: notifications.length,
+
               itemBuilder: (context, index) {
                 final n = notifications[index];
 
                 return Dismissible(
                   key: Key(n.id.toString()),
+
                   direction: DismissDirection.endToStart,
+
                   background: Container(
                     alignment: AlignmentDirectional.centerEnd,
                     padding: const EdgeInsetsDirectional.only(end: 20),
@@ -78,21 +98,25 @@ class _NotificationsState extends ConsumerState<Notifications> {
                       context: context,
                       builder: (dialogContext) {
                         final dlg = AppLocalizations.of(dialogContext)!;
+
                         return AlertDialog(
                           title: Text(dlg.deleteNotificationTitle),
                           content: Text(dlg.deleteNotificationConfirm),
                           actions: [
                             TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(dialogContext, false),
+                              onPressed: () {
+                                Navigator.pop(dialogContext, false);
+                              },
                               child: Text(dlg.cancel),
                             ),
+
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red,
                               ),
-                              onPressed: () =>
-                                  Navigator.pop(dialogContext, true),
+                              onPressed: () {
+                                Navigator.pop(dialogContext, true);
+                              },
                               child: Text(dlg.delete),
                             ),
                           ],
@@ -105,6 +129,7 @@ class _NotificationsState extends ConsumerState<Notifications> {
 
                   onDismissed: (direction) async {
                     await _notificationapi.deletesinglenotification(id: n.id);
+
                     ref.refresh(notificationServiceProvider);
                   },
 
@@ -113,11 +138,14 @@ class _NotificationsState extends ConsumerState<Notifications> {
                       horizontal: 16,
                       vertical: 8,
                     ),
+
                     child: Container(
                       padding: const EdgeInsets.all(14),
+
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
+
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.08),
@@ -126,16 +154,19 @@ class _NotificationsState extends ConsumerState<Notifications> {
                           ),
                         ],
                       ),
+
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
                             height: 42,
                             width: 42,
+
                             decoration: BoxDecoration(
                               color: Colors.blue.withOpacity(0.15),
                               shape: BoxShape.circle,
                             ),
+
                             child: Icon(
                               n.type == "Service Request"
                                   ? Icons.work_outline
@@ -144,7 +175,9 @@ class _NotificationsState extends ConsumerState<Notifications> {
                               size: 22,
                             ),
                           ),
+
                           const SizedBox(width: 12),
+
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,7 +190,9 @@ class _NotificationsState extends ConsumerState<Notifications> {
                                     color: Colors.black,
                                   ),
                                 ),
+
                                 const SizedBox(height: 6),
+
                                 Text(
                                   n.message,
                                   style: const TextStyle(
@@ -166,7 +201,9 @@ class _NotificationsState extends ConsumerState<Notifications> {
                                     color: Colors.black,
                                   ),
                                 ),
+
                                 const SizedBox(height: 8),
+
                                 Text(
                                   formatDateForUI(n.time),
                                   style: const TextStyle(

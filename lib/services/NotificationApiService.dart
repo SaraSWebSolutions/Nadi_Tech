@@ -39,4 +39,8 @@ class Notificationapiservice {
       throw e;
     }
   }
+
+  Future<void> markAllAsRead() async {
+    await _dio.post("/api/techNotifications/all-mark-as-read");
+  }
 }
