@@ -25,6 +25,26 @@ class _LoginViewState extends State<LoginView> {
   final _fromkey = GlobalKey<FormState>();
   final _authcontroller = AuthControllers();
   @override
+  void initState() {
+    super.initState();
+    _loadRememberedEmail();
+  }
+
+  Future<void> _loadRememberedEmail() async {
+    final rememberedEmail = await Appperfernces.getRememberedEmail();
+
+    final rememberMe = await Appperfernces.getRememberMe();
+
+    if (rememberMe && rememberedEmail != null) {
+      _authcontroller.email.text = rememberedEmail;
+
+      setState(() {
+        isChecked = true;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
@@ -141,8 +161,16 @@ class _LoginViewState extends State<LoginView> {
                                   children: [
                                     Checkbox(
                                       value: isChecked,
-                                      onChanged: (v) {
+                                      onChanged: (v) async {
                                         setState(() => isChecked = v!);
+
+                                        await Appperfernces.setRememberMe(
+                                          isChecked,
+                                        );
+
+                                        if (!isChecked) {
+                                          await Appperfernces.clearRememberedEmail();
+                                        }
                                       },
                                     ),
                                     Expanded(
@@ -194,6 +222,13 @@ class _LoginViewState extends State<LoginView> {
                                 setState(() => isLoading = false);
 
                                 if (errorMessage == null) {
+                                  if (isChecked) {
+                                    await Appperfernces.saveRememberedEmail(
+                                      _authcontroller.email.text.trim(),
+                                    );
+                                  } else {
+                                    await Appperfernces.clearRememberedEmail();
+                                  }
                                   await Appperfernces.setLoggedIn(true);
                                   // Connect MQTT for chat notifications
                                   final techId =

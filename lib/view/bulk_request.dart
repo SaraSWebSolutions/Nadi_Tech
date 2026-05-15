@@ -89,57 +89,75 @@ class _BulkRequestState extends ConsumerState<BulkRequest> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: AppColors.scoundry_clr,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        elevation: 0,
-        title: Text(AppLocalizations.of(context)!.bulkRequest),
-      ),
-
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              ...materialSelections.asMap().entries.map(
-                (entry) => materialCard(entry.key),
-              ),
+        child: Column(
+          children: [
+            Header(
+              title: AppLocalizations.of(context)!.bulkRequest,
+              showBackButton: true,
+              showNotificationIcon: false,
+              showRefreshIcon: false,
+              showProfileIcon: false,
+              onBackPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(RouteName.bottom_nav);
+                }
+              },
+            ),
 
-              PrimaryButton(
-                radius: 12,
-                color: AppColors.primary_clr,
-                height: 55,
-                Width: double.infinity,
-                onPressed: () {
-                  setState(() {
-                    materialSelections.add(
-                      MaterialSelection(
-                        quantityController: TextEditingController(),
+            const Divider(height: 1),
+
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    ...materialSelections.asMap().entries.map(
+                      (entry) => materialCard(entry.key),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    PrimaryButton(
+                      radius: 12,
+                      color: AppColors.primary_clr,
+                      height: 55,
+                      Width: double.infinity,
+                      onPressed: () {
+                        setState(() {
+                          materialSelections.add(
+                            MaterialSelection(
+                              quantityController: TextEditingController(),
+                            ),
+                          );
+                        });
+                      },
+                      text: AppLocalizations.of(context)!.addNewMaterial,
+                      icon: const Icon(
+                        Icons.add,
+                        size: 25,
+                        color: Colors.white,
                       ),
-                    );
-                  });
-                },
-                text: AppLocalizations.of(context)!.addNewMaterial,
-                icon: Icon(Icons.add, size: 25, color: Colors.white),
-              ),
+                    ),
 
-              const SizedBox(height: 10),
+                    const SizedBox(height: 10),
 
-              PrimaryButton(
-                radius: 12,
-                color: AppColors.scoundry_clr,
-                height: 55,
-                isLoading: isLoading,
-                Width: double.infinity,
-                onPressed: () {
-                  submitrequest();
-                },
-                text: AppLocalizations.of(context)!.submitRequest,
+                    PrimaryButton(
+                      radius: 12,
+                      color: AppColors.scoundry_clr,
+                      height: 55,
+                      isLoading: isLoading,
+                      Width: double.infinity,
+                      onPressed: submitrequest,
+                      text: AppLocalizations.of(context)!.submitRequest,
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

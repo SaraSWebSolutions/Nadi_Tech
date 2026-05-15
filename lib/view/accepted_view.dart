@@ -248,7 +248,7 @@ class _AcceptedViewState extends State<AcceptedView> {
                   text: AppLocalizations.of(context)!.start,
                 ),
               ),
-             
+
               const SizedBox(height: 10),
             ],
           ),
@@ -280,6 +280,4 @@ class _AcceptedViewState extends State<AcceptedView> {
       ),
     );
   }
-
-
 }

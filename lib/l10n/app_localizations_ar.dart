@@ -83,7 +83,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get optionalNotesHint => 'إذا كانت هناك مشكلة أخرى يرجى ذكرها هنا';
 
   @override
-  String get addBulkRequest => 'إضافة طلب جماعي +';
+  String get addBulkRequest => 'إضافة طلب جماعي';
 
   @override
   String get requestMaterial => 'طلب المواد';

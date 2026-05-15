@@ -6,6 +6,7 @@ import 'package:tech_app/provider/Chats_List_Provider.dart';
 import 'package:tech_app/provider/connectivity_provider.dart';
 import 'package:tech_app/provider/stream_unread_provider.dart';
 import 'package:tech_app/l10n/app_localizations.dart';
+import 'package:tech_app/widgets/header.dart';
 import 'package:tech_app/widgets/no_internet_widget.dart';
 
 class ChatsView extends ConsumerStatefulWidget {
@@ -53,27 +54,21 @@ class _ChatsViewState extends ConsumerState<ChatsView> {
             child: Column(
               children: [
                 /// TOP BAR
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    start: 15,
-                    end: 15,
-                    top: 20,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)!.chatsTitle,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 20,
-                        ),
-                      ),
-                      const SizedBox(),
-                    ],
-                  ),
+                // Padding(
+                // padding: const EdgeInsetsDirectional.only(
+                //   start: 15,
+                //   end: 15,
+                //   top: 20,
+                // ),
+                Header(
+                  title: AppLocalizations.of(context)!.chatsTitle,
+                  showBackButton: false,
+                  showNotificationIcon: false,
+                  showRefreshIcon: false,
+                  showProfileIcon: false,
                 ),
 
+                //),
                 const Divider(),
 
                 /// SEARCH BAR

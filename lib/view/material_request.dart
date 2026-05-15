@@ -52,36 +52,46 @@ class _MaterialRequestState extends ConsumerState<MaterialRequest> {
   Future<void> submitrequest() async {
     try {
       final int quantity = int.parse(_quantity.text);
+
       setState(() {
         isLoading = true;
       });
+
       final payload = <String, dynamic>{
         "requests": [
-          {"productId": selectedProduct!.id, "quantity": quantity},
+          {
+            "productId": selectedProduct!.id,
+            "quantity": quantity,
+            "notes": _optionalissuse.text.trim(), // ✅ ADD THIS
+          },
         ],
       };
 
       final result = await _materialrequestService.fetchmaterialrequest(
         payload: payload,
       );
+
       setState(() {
         isLoading = false;
       });
+
       SnackbarHelper.show(
         context,
         backgroundColor: AppColors.app_background_clr,
         message: AppLocalizations.of(context)!.materialRequestSuccess,
       );
+
       context.pop();
     } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+
       SnackbarHelper.show(
         context,
         backgroundColor: Colors.red,
         message: e.toString(),
       );
-      setState(() {
-        isLoading = false;
-      });
     }
   }
 
@@ -89,101 +99,134 @@ class _MaterialRequestState extends ConsumerState<MaterialRequest> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: AppColors.scoundry_clr,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          AppLocalizations.of(context)!.materialRequest,
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Form(
-              key: _fromkey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.materialName,
-                    style: TextStyle(fontSize: 15),
-                  ),
-                  const SizedBox(height: 15),
-                  AppDropdown(
-                    label: AppLocalizations.of(context)!.selectProduct,
-                    items: products.map((e) => e.productName).toList(),
-                    value: selectedProduct?.productName,
-                    validator: (value) => value == null
-                        ? AppLocalizations.of(context)!.pleaseSelectProduct
-                        : null,
-                    onChanged: (value) {
-                      final Product = products.firstWhere(
-                        (e) => e.productName == value,
-                      );
-                      setState(() {
-                        selectedProduct = Product;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 25),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 🔹 CUSTOM HEADER
+            Header(
+              title: AppLocalizations.of(context)!.materialRequest,
+              showBackButton: true,
+              showNotificationIcon: false,
+              showRefreshIcon: false,
+              showProfileIcon: false,
+              onBackPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(RouteName.bottom_nav);
+                }
+              },
+            ),
 
-                  Text(AppLocalizations.of(context)!.quantityNeeded),
-                  const SizedBox(height: 15),
-                  AppTextField(
-                    label: AppLocalizations.of(context)!.exampleQuantity,
-                    controller: _quantity,
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return AppLocalizations.of(context)!.enterQuantity;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 25),
+            const Divider(height: 1),
 
-                  Text(AppLocalizations.of(context)!.optionalNotes),
-                  const SizedBox(height: 15),
-                  AppTextField(
-                    label: AppLocalizations.of(context)!.optionalNotesHint,
-                    controller: _optionalissuse,
-                    maxLines: 4,
-                  ),
-                  const SizedBox(height: 35),
+            // 🔹 CONTENT
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Form(
+                    key: _fromkey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!.materialName,
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                        const SizedBox(height: 15),
 
-                  PrimaryButton(
-                    radius: 12,
-                    color: AppColors.primary_clr,
-                    Width: double.infinity,
-                    height: 50,
-                    onPressed: () {
-                      context.push(RouteName.bulk_request);
-                    },
-                    text: AppLocalizations.of(context)!.addBulkRequest,
-                    icon: Icon(Icons.add, size: 25, color: Colors.white),
+                        AppDropdown(
+                          label: AppLocalizations.of(context)!.selectProduct,
+                          items: products.map((e) => e.productName).toList(),
+                          value: selectedProduct?.productName,
+                          validator: (value) => value == null
+                              ? AppLocalizations.of(
+                                  context,
+                                )!.pleaseSelectProduct
+                              : null,
+                          onChanged: (value) {
+                            final product = products.firstWhere(
+                              (e) => e.productName == value,
+                            );
+                            setState(() {
+                              selectedProduct = product;
+                            });
+                          },
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        Text(AppLocalizations.of(context)!.quantityNeeded),
+                        const SizedBox(height: 15),
+
+                        AppTextField(
+                          label: AppLocalizations.of(context)!.exampleQuantity,
+                          controller: _quantity,
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return AppLocalizations.of(
+                                context,
+                              )!.enterQuantity;
+                            }
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        Text(AppLocalizations.of(context)!.optionalNotes),
+                        const SizedBox(height: 15),
+
+                        AppTextField(
+                          label: AppLocalizations.of(
+                            context,
+                          )!.optionalNotesHint,
+                          controller: _optionalissuse,
+                          maxLines: 4,
+                        ),
+
+                        const SizedBox(height: 35),
+
+                        PrimaryButton(
+                          radius: 12,
+                          color: AppColors.primary_clr,
+                          Width: double.infinity,
+                          height: 50,
+                          onPressed: () {
+                            context.push(RouteName.bulk_request);
+                          },
+                          text: AppLocalizations.of(context)!.addBulkRequest,
+                          icon: const Icon(
+                            Icons.add,
+                            size: 25,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        PrimaryButton(
+                          radius: 12,
+                          color: AppColors.app_background_clr,
+                          Width: double.infinity,
+                          height: 50,
+                          isLoading: isLoading,
+                          onPressed: () {
+                            if (_fromkey.currentState!.validate()) {
+                              submitrequest();
+                            }
+                          },
+                          text: AppLocalizations.of(context)!.submitRequest,
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  PrimaryButton(
-                    radius: 12,
-                    color: AppColors.app_background_clr,
-                    Width: double.infinity,
-                    height: 50,
-                    isLoading: isLoading,
-                    onPressed: () {
-                      if (_fromkey.currentState!.validate()) {
-                        submitrequest();
-                      }
-                    },
-                    text: AppLocalizations.of(context)!.submitRequest,
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

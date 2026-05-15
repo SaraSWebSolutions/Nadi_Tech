@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
 import 'package:tech_app/provider/active_chat_provider.dart';
 import 'package:tech_app/services/Stream_Chat_Service.dart';
+import 'package:tech_app/widgets/header.dart';
 
 class ChatDetailsScreen extends StatefulWidget {
   final String? adminId;
@@ -53,61 +55,80 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
   Widget build(BuildContext context) {
     if (channel == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.adminName ?? AppLocalizations.of(context)!.chat),
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              Header(
+                title: widget.adminName ?? AppLocalizations.of(context)!.chat,
+                showBackButton: true,
+                showNotificationIcon: false,
+                showRefreshIcon: false,
+                onBackPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+
+              const Divider(height: 1),
+
+              const Expanded(child: Center(child: CircularProgressIndicator())),
+            ],
+          ),
         ),
-        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return StreamChat(
-      client: client, // ✅ REQUIRED
+      client: client,
       child: StreamChannel(
-        channel: channel!, // ✅ CORRECT
+        channel: channel!,
         child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 1,
-            leading: BackButton(color: Colors.black),
-            title: Row(
-              children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: AppColors.primary_clr,
-                  child: Text(
-                    widget.adminName != null && widget.adminName!.isNotEmpty
-                        ? widget.adminName![0].toUpperCase()
-                        : AppLocalizations.of(context)!.admin[0],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    widget.adminName ?? AppLocalizations.of(context)!.admin,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          resizeToAvoidBottomInset: true,
+
           body: Column(
             children: [
+              /// ================= HEADER =================
+              SafeArea(
+                bottom: false,
+                child: Column(
+                  children: [
+                    Header(
+                      title:
+                          widget.adminName != null &&
+                              widget.adminName!.isNotEmpty
+                          ? widget.adminName!
+                          : AppLocalizations.of(context)!.admin,
+
+                      showBackButton: true,
+                      showNotificationIcon: false,
+                      showRefreshIcon: false,
+
+                      onBackPressed: () {
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                    ),
+
+                    const Divider(height: 1),
+                  ],
+                ),
+              ),
+
+              /// ================= CHAT LIST =================
               Expanded(
                 child: StreamMessageListView(
-                  showFloatingDateDivider:
-                      false, // ✅ IMPORTANT (removes duplicate)
+                  showFloatingDateDivider: false,
 
                   messageBuilder: (context, details, messages, defaultMessage) {
                     final message = details.message;
+
                     final currentUser = StreamChat.of(
                       context,
                     ).client.state.currentUser;
@@ -142,7 +163,9 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                               ),
                             ),
                           ),
+
                           const SizedBox(width: 6),
+
                           Expanded(
                             child: defaultMessage.copyWith(
                               showUsername: false,
@@ -155,12 +178,13 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                   },
                 ),
               ),
+
+              /// ================= INPUT AREA =================
               StreamChatTheme(
                 data: StreamChatThemeData.fromTheme(Theme.of(context)).copyWith(
                   ownMessageTheme: StreamMessageThemeData(
                     messageBackgroundColor: AppColors.app_background_clr,
 
-                    // ✅ Better visible border
                     messageBorderColor: Colors.white.withOpacity(0.15),
 
                     messageTextStyle: const TextStyle(
@@ -175,29 +199,21 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                   ),
 
                   otherMessageTheme: StreamMessageThemeData(
-                    // ✅ Better dark mode bubble
                     messageBackgroundColor:
                         Theme.of(context).brightness == Brightness.dark
                         ? const Color(0xFF1F1F1F)
                         : Colors.grey.shade200,
 
-                    // ✅ Visible border
                     messageBorderColor:
                         Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white.withOpacity(0.12)
-                        : Colors.black.withOpacity(0.06),
+                        ? Colors.white.withOpacity(0.08)
+                        : Colors.grey.shade300,
 
-                    // ✅ Better readable text
                     messageTextStyle: TextStyle(
                       color: Theme.of(context).brightness == Brightness.dark
                           ? Colors.white
                           : Colors.black87,
                       fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
-
-                    avatarTheme: const StreamAvatarThemeData(
-                      constraints: BoxConstraints.tightFor(width: 0, height: 0),
                     ),
                   ),
 
@@ -205,29 +221,66 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                     inputBackgroundColor:
                         Theme.of(context).brightness == Brightness.dark
                         ? const Color(0xFF1A1A1A)
-                        : Theme.of(context).colorScheme.surface,
+                        : Colors.white,
 
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(30),
+
+                    inputTextStyle: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black87,
+                      fontSize: 15,
+                    ),
 
                     inputDecoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)?.writeMessage,
+                      hintText: AppLocalizations.of(context)!.writeMessage,
 
-                      hintStyle: TextStyle(color: Theme.of(context).hintColor),
+                      hintStyle: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white54
+                            : Colors.grey.shade500,
+                      ),
 
-                      border: InputBorder.none,
+                      filled: true,
+
+                      fillColor: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF1F1F1F)
+                          : Colors.grey.shade100,
 
                       contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 18,
                         vertical: 10,
+                      ),
+
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white.withOpacity(0.06)
+                              : Colors.grey.shade300,
+                        ),
+                      ),
+
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide(
+                          color: AppColors.app_background_clr,
+                          width: 1.2,
+                        ),
                       ),
                     ),
 
-                    actionButtonColor: Theme.of(context).iconTheme.color,
+                    sendButtonColor: AppColors.app_background_clr,
 
-                    sendButtonColor:
+                    actionButtonColor:
                         Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Theme.of(context).colorScheme.onSurface,
+                        ? Colors.white70
+                        : Colors.grey.shade700,
                   ),
                 ),
 
@@ -236,19 +289,21 @@ class _ChatDetailsScreenState extends State<ChatDetailsScreen> {
                       ? const Color(0xFF0D0D0D)
                       : Colors.white,
 
+                  padding: EdgeInsets.only(
+                    left: 8,
+                    right: 8,
+                    top: 4,
+                    bottom: MediaQuery.of(context).viewPadding.bottom > 0
+                        ? 2
+                        : 4,
+                  ),
+
                   child: StreamMessageInput(
                     attachmentButtonBuilder: (context, onPressed) =>
                         const SizedBox.shrink(),
                   ),
                 ),
               ),
-
-              /// ✅ FILE UPLOAD REMOVED HERE
-              // StreamMessageInput(
-              //   attachmentButtonBuilder: (context, onPressed) {
-              //     return const SizedBox.shrink();
-              //   },
-              // ),
             ],
           ),
         ),

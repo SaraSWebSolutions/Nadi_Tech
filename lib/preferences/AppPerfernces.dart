@@ -1,4 +1,4 @@
-   import 'dart:convert';
+import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tech_app/model/TechnicianProfile_Model.dart';
@@ -7,15 +7,18 @@ class Appperfernces {
   static const String _tokenKey = "auth_token";
   static const String _profileKey = "technician_profile";
   static const String _loginKey = "is_logged_in";
-  static const String _fcmtokenkey ="fcmtoken";
-    static const String _userServiceIdKey = "user_service_id";
-    static const String _techIdKey = "technician_id";
-    static const _lastSeenKey = "last_seen_notification_time";
-    static Future<void> clearLastSeenNotificationTime(String userId) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.remove("last_seen_$userId");
-}
- /// ✅ SAVE TIME
+  static const String _fcmtokenkey = "fcmtoken";
+  static const String _userServiceIdKey = "user_service_id";
+  static const String _techIdKey = "technician_id";
+  static const _lastSeenKey = "last_seen_notification_time";
+  static const String rememberEmailKey = "remember_email";
+  static const String rememberMeKey = "remember_me";
+  static Future<void> clearLastSeenNotificationTime(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove("last_seen_$userId");
+  }
+
+  /// ✅ SAVE TIME
   static Future<void> saveLastSeenNotificationTime(DateTime time) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_lastSeenKey, time.toIso8601String());
@@ -30,6 +33,7 @@ class Appperfernces {
 
     return DateTime.tryParse(value);
   }
+
   // ==== TOKEN ====
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -41,23 +45,23 @@ class Appperfernces {
     return prefs.getString(_tokenKey);
   }
 
+  // ==== TECHNICIAN ID ====
+  static Future<void> saveTechId(String techId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_techIdKey, techId);
+  }
 
-// ==== TECHNICIAN ID ====
-static Future<void> saveTechId(String techId) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString(_techIdKey, techId);
-}
+  static Future<String?> getTechId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_techIdKey);
+  }
 
-static Future<String?> getTechId() async {
-  final prefs = await SharedPreferences.getInstance();
-  return prefs.getString(_techIdKey);
-}
+  static Future<void> clearTechId() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_techIdKey);
+  }
 
-static Future<void> clearTechId() async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.remove(_techIdKey);
-}
-    // ==== USER SERVICE ID ====
+  // ==== USER SERVICE ID ====
   static Future<void> saveuserServiceId(String userServiceId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userServiceIdKey, userServiceId);
@@ -69,21 +73,22 @@ static Future<void> clearTechId() async {
   }
 
   static Future<void> clearUserServiceId() async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.remove(_userServiceIdKey);
-}
-// === FCM TOKEN ===
-static Future<void> saveFcmToken(String fcmToken) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString(_fcmtokenkey, fcmToken);
-}
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_userServiceIdKey);
+  }
 
-static Future<String?> getFcmToken() async {
-  final prefs = await SharedPreferences.getInstance();
-  return prefs.getString(_fcmtokenkey);
-}
+  // === FCM TOKEN ===
+  static Future<void> saveFcmToken(String fcmToken) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_fcmtokenkey, fcmToken);
+  }
 
-    // ================== LOGIN FLAG ==================
+  static Future<String?> getFcmToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_fcmtokenkey);
+  }
+
+  // ================== LOGIN FLAG ==================
   static Future<void> setLoggedIn(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_loginKey, value);
@@ -111,10 +116,33 @@ static Future<String?> getFcmToken() async {
     return TechnicianProfile.fromJson(jsonMap);
   }
 
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
 
-  static Future<void> clearAll() async { 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
+  static Future<void> saveRememberedEmail(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(rememberEmailKey, email);
+  }
 
+  static Future<String?> getRememberedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(rememberEmailKey);
+  }
+
+  static Future<void> clearRememberedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(rememberEmailKey);
+  }
+
+  static Future<void> setRememberMe(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(rememberMeKey, value);
+  }
+
+  static Future<bool> getRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(rememberMeKey) ?? false;
   }
 }

@@ -30,7 +30,7 @@
  "bulkRequest": "Bulk Request",
    "optionalNotes": "Optional Notes",
   "optionalNotesHint": "If other issue please mention here",
-  "addBulkRequest": "Add Bulk Request +",
+  "addBulkRequest": "Add Bulk Request",
 
 
   "requestMaterial": "Request Material",

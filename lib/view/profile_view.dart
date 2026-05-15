@@ -97,20 +97,47 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
 
   Future<void> _logout(BuildContext context) async {
     try {
-      // Call backend logout
+      // ✅ SAVE REMEMBER DATA BEFORE CLEAR
+      final rememberedEmail = await Appperfernces.getRememberedEmail();
+
+      final rememberMe = await Appperfernces.getRememberMe();
+
+      // Backend logout
       await _lockoutService.fetchlogout();
+
       MqttNotificationService.disconnect();
-      // Clear local storage
+
+      // Clear app session
       await Appperfernces.clearAll();
+
+      // ✅ RESTORE REMEMBER DATA
+      if (rememberMe && rememberedEmail != null) {
+        await Appperfernces.setRememberMe(true);
+
+        await Appperfernces.saveRememberedEmail(rememberedEmail);
+      }
+
       await Appperfernces.setLoggedIn(false);
 
-      // Navigate to splash
       context.go(RouteName.splash);
     } catch (e) {
       debugPrint('❌ Logout failed: $e');
-      // Still force logout if backend fails
+
+      final rememberedEmail = await Appperfernces.getRememberedEmail();
+
+      final rememberMe = await Appperfernces.getRememberMe();
+
       await Appperfernces.clearAll();
+
+      // ✅ RESTORE AGAIN
+      if (rememberMe && rememberedEmail != null) {
+        await Appperfernces.setRememberMe(true);
+
+        await Appperfernces.saveRememberedEmail(rememberedEmail);
+      }
+
       await Appperfernces.setLoggedIn(false);
+
       context.go(RouteName.splash);
     }
   }
@@ -258,7 +285,22 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
       body: SafeArea(
         child: Column(
           children: [
-            Header(title: AppLocalizations.of(context)!.profileManagement),
+            /// ✅ COMMON HEADER
+            Header(
+              title: AppLocalizations.of(context)!.profileManagement,
+              showBackButton: false,
+              showNotificationIcon: false,
+              showRefreshIcon: false,
+              showProfileIcon: false,
+
+              // onBackPressed: () {
+              //   if (context.canPop()) {
+              //     context.pop();
+              //   } else {
+              //     context.go(RouteName.bottom_nav);
+              //   }
+              // },
+            ),
             const Divider(height: 1),
 
             Expanded(
@@ -283,137 +325,27 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                       const SizedBox(height: 30),
 
                       /// LOGOUT BUTTON
-                      InkWell(
-                        borderRadius: BorderRadius.circular(18),
-                        onTap: () {
-                          _showLogoutConfirmDialog(context);
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 16,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.orange.shade400,
-                                Colors.deepOrange.shade400,
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(18),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.orange.withOpacity(0.25),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.18),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.logout_rounded,
-                                  color: Colors.white,
-                                  size: 22,
-                                ),
-                              ),
-
-                              const SizedBox(width: 14),
-
-                              Expanded(
-                                child: Text(
-                                  AppLocalizations.of(context)!.logOut,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-
-                              const Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ],
-                          ),
-                        ),
+                      _dangerActionTile(
+                        icon: Icons.logout_rounded,
+                        title: AppLocalizations.of(context)!.logOut,
+                        subtitle: AppLocalizations.of(
+                          context,
+                        )!.logoutConfirmMessage,
+                        color: AppColors.app_background_clr,
+                        onTap: () => _showLogoutConfirmDialog(context),
                       ),
 
                       const SizedBox(height: 18),
 
                       /// DELETE ACCOUNT BUTTON
-                      InkWell(
-                        borderRadius: BorderRadius.circular(18),
-                        onTap: () {
-                          _showDeleteAccountDialog(context);
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 16,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.red.shade400,
-                                Colors.red.shade700,
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(18),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.red.withOpacity(0.25),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.18),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.delete_forever_rounded,
-                                  color: Colors.white,
-                                  size: 22,
-                                ),
-                              ),
-
-                              const SizedBox(width: 14),
-
-                              Expanded(
-                                child: Text(
-                                  AppLocalizations.of(context)!.accountDelete,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-
-                              const Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ],
-                          ),
-                        ),
+                      _dangerActionTile(
+                        icon: Icons.delete_forever_rounded,
+                        title: AppLocalizations.of(context)!.accountDelete,
+                        subtitle: AppLocalizations.of(
+                          context,
+                        )!.selectReasonDelete,
+                        color: Colors.redAccent,
+                        onTap: () => _showDeleteAccountDialog(context),
                       ),
 
                       /// EXTRA BOTTOM SPACE
@@ -422,6 +354,73 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                   ),
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _dangerActionTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: isDark ? color.withOpacity(0.08) : color.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.25)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+
+            const SizedBox(width: 14),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16,
+              color: color.withOpacity(0.7),
             ),
           ],
         ),
@@ -717,6 +716,16 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   Widget _languageOption(String label, String languageCode) {
     final locale = ref.watch(languageProvider);
     final isActive = locale.languageCode == languageCode;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final textColor = isActive
+        ? Colors.white
+        : (isDark ? Colors.white70 : Colors.black87);
+
+    final borderColor = isActive
+        ? AppColors.app_background_clr
+        : (isDark ? Colors.white24 : Colors.grey.shade400);
+
     return GestureDetector(
       onTap: () {
         ref.read(languageProvider.notifier).changeLanguage(languageCode);
@@ -727,19 +736,15 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
         margin: const EdgeInsetsDirectional.only(end: 5),
         decoration: BoxDecoration(
           color: isActive ? AppColors.app_background_clr : Colors.transparent,
-          border: Border.all(
-            color: isActive
-                ? AppColors.app_background_clr
-                : Colors.grey.shade400,
-          ),
+          border: Border.all(color: borderColor),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
           label,
           style: TextStyle(
             fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: isActive ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.w600,
+            color: textColor,
           ),
         ),
       ),

@@ -9,6 +9,7 @@ import 'package:tech_app/view/home_view.dart';
 import 'package:tech_app/view/material_inventory_view.dart';
 import 'package:tech_app/view/profile_view.dart';
 import 'package:tech_app/view/livechat_view.dart';
+import 'package:tech_app/provider/bottom_nav_provider.dart';
 
 class BottomNav extends ConsumerStatefulWidget {
   const BottomNav({super.key});
@@ -18,27 +19,24 @@ class BottomNav extends ConsumerStatefulWidget {
 }
 
 class _BottomNavState extends ConsumerState<BottomNav> {
-  int _selectedIndex = 0;
   DateTime? lastBackPressed;
+
   late final List<Widget Function()> screens;
 
   @override
   void initState() {
     super.initState();
+
     screens = [
       () => HomeView(),
       () => MaterialInventoryView(),
       () => ChatsView(),
       () => MyRequestList(),
-      () => ProfileView(),
+      () => const ProfileView(),
     ];
   }
 
-  void changeTab(int index) {
-    setState(() => _selectedIndex = index);
-  }
-
-  /// Badge-wrapped icon for the Live Chat tab
+  /// Chat badge icon
   Widget _chatIconWithBadge(int totalUnread, {bool active = false}) {
     return Stack(
       clipBehavior: Clip.none,
@@ -48,6 +46,7 @@ class _BottomNavState extends ConsumerState<BottomNav> {
           size: 28,
           color: active ? AppColors.app_background_clr : Colors.grey,
         ),
+
         if (totalUnread > 0)
           PositionedDirectional(
             end: -8,
@@ -78,9 +77,11 @@ class _BottomNavState extends ConsumerState<BottomNav> {
   }
 
   Widget _buildBottomNav() {
-    // Total unread across all chats
     final unreadMap = ref.watch(streamUnreadCountsProvider).value ?? {};
     final totalUnread = unreadMap.values.fold(0, (sum, c) => sum + c);
+
+    /// ✅ CURRENT TAB FROM PROVIDER
+    final currentIndex = ref.watch(bottomNavProvider);
 
     return SafeArea(
       top: false,
@@ -106,59 +107,44 @@ class _BottomNavState extends ConsumerState<BottomNav> {
             topRight: Radius.circular(25),
           ),
           child: BottomNavigationBar(
-            currentIndex: _selectedIndex,
-            onTap: (index) => setState(() => _selectedIndex = index),
+            currentIndex: currentIndex,
+
+            /// ✅ UPDATE PROVIDER
+            onTap: (index) {
+              ref.read(bottomNavProvider.notifier).state = index;
+            },
+
             backgroundColor: Theme.of(context).colorScheme.surface,
             elevation: 0,
             type: BottomNavigationBarType.fixed,
             unselectedItemColor: Colors.grey,
             selectedItemColor: AppColors.app_background_clr,
+
             items: [
               BottomNavigationBarItem(
                 icon: const Icon(Icons.home_outlined, size: 30),
                 activeIcon: const Icon(Icons.home, size: 30),
-                // icon: const ImageIcon(
-                //   AssetImage("assets/icons/home.png"),
-                //   size: 26,
-                // ),
-                // activeIcon: const ImageIcon(
-                //   AssetImage("assets/icons/home.png"),
-                //   size: 26,
-                // ),
                 label: AppLocalizations.of(context)!.home,
               ),
+
               BottomNavigationBarItem(
                 icon: const Icon(Icons.inventory_2_outlined, size: 26),
                 activeIcon: const Icon(Icons.inventory, size: 26),
-                // icon: const ImageIcon(
-                //   AssetImage("assets/images/inven.png"),
-                //   size: 26,
-                // ),
-                // activeIcon: const ImageIcon(
-                //   AssetImage("assets/images/inven.png"),
-                //   size: 26,
-                // ),
                 label: AppLocalizations.of(context)!.inventory,
               ),
-              // Live Chat tab with unread badge
+
               BottomNavigationBarItem(
                 icon: _chatIconWithBadge(totalUnread, active: false),
                 activeIcon: _chatIconWithBadge(totalUnread, active: true),
                 label: AppLocalizations.of(context)!.liveChat,
               ),
+
               BottomNavigationBarItem(
                 icon: const Icon(Icons.build_outlined, size: 30),
                 activeIcon: const Icon(Icons.build, size: 30),
-                // icon: const ImageIcon(
-                //   AssetImage("assets/icons/services.png"),
-                //   size: 27,
-                // ),
-                // activeIcon: const ImageIcon(
-                //   AssetImage("assets/icons/services.png"),
-                //   size: 27,
-                // ),
                 label: AppLocalizations.of(context)!.requestList,
               ),
+
               BottomNavigationBarItem(
                 icon: const Icon(Icons.person_outline, size: 30),
                 activeIcon: const Icon(Icons.person, size: 30),
@@ -173,25 +159,35 @@ class _BottomNavState extends ConsumerState<BottomNav> {
 
   @override
   Widget build(BuildContext context) {
+    /// ✅ WATCH PROVIDER
+    final currentIndex = ref.watch(bottomNavProvider);
+
     return WillPopScope(
       onWillPop: () async {
         DateTime now = DateTime.now();
+
         if (lastBackPressed == null ||
             now.difference(lastBackPressed!) > const Duration(seconds: 2)) {
           lastBackPressed = now;
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context)!.tapAgainToExit),
               duration: const Duration(seconds: 2),
             ),
           );
-          return false; // prevent exit
+
+          return false;
         }
+
         SystemNavigator.pop();
         return true;
       },
+
       child: Scaffold(
-        body: screens[_selectedIndex](),
+        /// ✅ SCREEN FROM PROVIDER
+        body: screens[currentIndex](),
+
         bottomNavigationBar: _buildBottomNav(),
       ),
     );

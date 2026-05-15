@@ -19,6 +19,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tech_app/widgets/header.dart';
 import 'package:tech_app/widgets/no_internet_widget.dart';
 import 'package:tech_app/provider/home_tab_provider.dart';
+import 'package:tech_app/model/TechnicianProfile_Model.dart';
+import 'package:tech_app/services/TechnicianProfile_Service.dart';
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
@@ -31,6 +33,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
   int selectedIndex = 0;
   final TimerService _timerService = TimerService();
   bool timerLoaded = false;
+  final TechnicianprofileService _profileService = TechnicianprofileService();
+
+  TechnicianProfile? _profile;
   final ScrollController _scrollController = ScrollController();
   void _scrollToIndex(int index) {
     if (!_scrollController.hasClients) return;
@@ -57,6 +62,49 @@ class _HomeViewState extends ConsumerState<HomeView> {
       final index = ref.read(homeTabProvider);
       _scrollToIndex(index);
     });
+
+    loadProfile();
+  }
+
+  Future<void> loadProfile() async {
+    try {
+      final response = await _profileService.tech_profile();
+
+      if (!mounted) return;
+
+      setState(() {
+        _profile = response;
+      });
+    } catch (e) {
+      debugPrint("Profile load error: $e");
+    }
+  }
+
+  Color getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return Colors.green;
+      case 'pending':
+        return Colors.orange;
+      case 'in-progress':
+        return Colors.blue;
+      case 'rejected':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Widget statusIcon(IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.25)),
+      ),
+      child: Icon(icon, size: 18, color: color),
+    );
   }
 
   @override
@@ -66,57 +114,50 @@ class _HomeViewState extends ConsumerState<HomeView> {
         _scrollToIndex(next);
       });
     });
+
     final serviceList = ref.watch(serviceListProvider);
     final selectedIndex = ref.watch(homeTabProvider);
-    // ghange data format
+
     String formatDate(DateTime date) {
       return DateFormat('dd/MM/yyyy hh:mm a').format(date);
     }
 
     final connectivity = ref.watch(connectivityProvider);
     final lang = AppLocalizations.of(context)!;
-    //  FILTER TITLES
+
     final List<StatusFilter> filters = [
-      // StatusFilter('All', 'all'),
-      // StatusFilter('Accepted', 'accepted'),
-      // StatusFilter('In-progress', 'in-progress'),
-      // StatusFilter('Pending', 'pending'),
-      // StatusFilter('Completed', 'completed'),
-      // StatusFilter('Rejected', 'rejected'),
       StatusFilter(lang.all, 'all'),
       StatusFilter(lang.pending, 'pending'),
-
       StatusFilter(lang.accepted, 'accepted'),
       StatusFilter(lang.rejected, 'rejected'),
-
       StatusFilter(lang.inProgress, 'in-progress'),
       StatusFilter(lang.completed, 'completed'),
     ];
-    final timerState = ref.watch(timerProvider);
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: connectivity.when(
           data: (isOnline) {
-            if (!isOnline) {
-              return NoInternetScreen();
-            }
+            if (!isOnline) return NoInternetScreen();
+
             return Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15),
-
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Header(
                     title: AppLocalizations.of(context)!.incomeRequest,
+                    showNotificationIcon: true,
+                    profile: _profile,
                   ),
                 ),
 
                 const Divider(),
                 const SizedBox(height: 10),
 
-                //  FILTER LIST
+                /// ================= FILTER =================
                 SizedBox(
-                  height: 30,
+                  height: 35,
                   child: ListView.builder(
                     controller: _scrollController,
                     scrollDirection: Axis.horizontal,
@@ -126,62 +167,53 @@ class _HomeViewState extends ConsumerState<HomeView> {
                       final filter = filters[index];
                       final isSelected = selectedIndex == index;
 
-                      return InkWell(
-                        onTap: () {
-                          if (selectedIndex == index) return;
-
-                          ref.read(homeTabProvider.notifier).state = index;
-                        },
-                        child: Container(
-                          margin: const EdgeInsetsDirectional.only(end: 10),
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.app_background_clr
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(25),
-                            border: Border.all(
-                              color: AppColors.app_background_clr,
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(25),
+                          onTap: () {
+                            if (selectedIndex == index) return;
+                            ref.read(homeTabProvider.notifier).state = index;
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                filter.label,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : AppColors.app_background_clr,
-                                ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.app_background_clr
+                                  : Theme.of(context).cardColor,
+                              borderRadius: BorderRadius.circular(25),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: AppColors.app_background_clr
+                                            .withOpacity(0.25),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ]
+                                  : [],
+                              border: Border.all(
+                                color: isSelected
+                                    ? Colors.transparent
+                                    : AppColors.app_background_clr.withOpacity(
+                                        0.4,
+                                      ),
                               ),
-                              const SizedBox(width: 8),
-                              // Container(
-                              //   height: 20,
-                              //   width: 20,
-                              //   alignment: Alignment.center,
-                              //   decoration: BoxDecoration(
-                              //     shape: BoxShape.circle,
-                              //     color: isSelected
-                              //         ? Colors.white
-                              //         : AppColors.primary_clr,
-                              //   ),
-                              //   child: Text(
-                              //     serviceList.asData?.value?.data.length
-                              //             .toString() ??
-                              //         '0',
-                              //     style: TextStyle(
-                              //       fontSize: 12,
-                              //       fontWeight: FontWeight.w600,
-                              //       color: isSelected
-                              //           ? AppColors.scoundry_clr
-                              //           : Colors.white,
-                              //     ),
-                              //   ),
-                              // ),
-                            ],
+                            ),
+                            child: Text(
+                              filter.label,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected
+                                    ? Colors.white
+                                    : AppColors.app_background_clr,
+                              ),
+                            ),
                           ),
                         ),
                       );
@@ -191,35 +223,12 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
                 const SizedBox(height: 20),
 
+                /// ================= LIST =================
                 Expanded(
                   child: serviceList.when(
                     data: (data) {
                       if (data == null || data.data.isEmpty) {
-                        return Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SvgPicture.asset(
-                                "assets/images/no_request_found.svg",
-                                width: 120, // reduce size
-                                height: 120,
-                                colorFilter: const ColorFilter.mode(
-                                  Color.fromRGBO(13, 95, 72, 1), // green color
-                                  BlendMode.srcIn,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                AppLocalizations.of(context)!.noRequestFound,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color.fromRGBO(13, 95, 72, 1),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
+                        return const Center(child: Text("No requests found"));
                       }
 
                       return RefreshIndicator(
@@ -235,133 +244,85 @@ class _HomeViewState extends ConsumerState<HomeView> {
                             itemBuilder: (context, index) {
                               final item = data.data[index];
 
-                              // Choose widget based on serviceStatus
-                              if (item.assignmentStatus.toLowerCase() ==
-                                  'completed') {
-                                return AnimationConfiguration.staggeredList(
-                                  position: index,
-                                  duration: const Duration(milliseconds: 1000),
-                                  child: SlideAnimation(
-                                    verticalOffset: 40,
-                                    curve: Curves.easeOutCubic,
-                                    child: FadeInAnimation(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 15,
-                                          vertical: 10,
-                                        ),
-                                        child: IncomeCard(
-                                          name: item.userId.basicInfo.fullName,
-                                          service: item.serviceId.name,
-                                          issue: item.issuesId.issue,
-                                          assignments:
-                                              item
-                                                  .technicianUserService
-                                                  ?.assignments ??
-                                              [],
-                                          // status: item.serviceStatus,
-                                          payment: item.payment,
+                              final status = item.assignmentStatus
+                                  .toLowerCase();
+                              final color = getStatusColor(status);
 
-                                          assignmentStatus:
-                                              item.assignmentStatus,
-                                          onClick: () {
-                                            context.push(
-                                              RouteName.service_card,
-                                              extra:
-                                                  item, // send the full item to next page
-                                            );
-                                          },
-                                        ),
+                              return AnimationConfiguration.staggeredList(
+                                position: index,
+                                duration: const Duration(milliseconds: 400),
+                                child: SlideAnimation(
+                                  verticalOffset: 30,
+                                  child: FadeInAnimation(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 15,
+                                        vertical: 10,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          /// ================= STATUS =================
+                                          // Row(
+                                          //   children: [
+                                          //     statusIcon(Icons.circle, color),
+                                          //     const SizedBox(width: 8),
+                                          //     Text(
+                                          //       item.assignmentStatus,
+                                          //       style: TextStyle(
+                                          //         fontWeight: FontWeight.w600,
+                                          //         color: color,
+                                          //       ),
+                                          //     ),
+                                          //   ],
+                                          // ),
+                                          const SizedBox(height: 10),
+
+                                          /// ================= CARD =================
+                                          IncomeCard(
+                                            name:
+                                                item.userId.basicInfo.fullName,
+                                            service: item.serviceId.name,
+                                            issue: item.issuesId.issue,
+                                            schedule: formatDate(
+                                              item.scheduleService,
+                                            ),
+                                            assignmentStatus:
+                                                item.assignmentStatus,
+                                            assignments:
+                                                item
+                                                    .technicianUserService
+                                                    ?.assignments ??
+                                                [],
+                                            payment: item.payment,
+                                            onClick: () {
+                                              context.push(
+                                                RouteName.service_card,
+                                                extra: item,
+                                              );
+                                            },
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                );
-                              } else if (item.assignmentStatus.toLowerCase() ==
-                                  'in-progress') {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 15,
-                                    vertical: 10,
-                                  ),
-                                  child: IncomeCard(
-                                    name: item.userId.basicInfo.fullName,
-                                    service: item.serviceId.name,
-                                    issue: item.issuesId.issue,
-                                    schedule: formatDate(item.scheduleService),
-                                    // status: item.serviceStatus,
-                                    assignmentStatus: item.assignmentStatus,
-                                    assignments:
-                                        item
-                                            .technicianUserService
-                                            ?.assignments ??
-                                        [],
-                                    onClick: () {
-                                      context.push(
-                                        RouteName.service_card,
-                                        extra:
-                                            item, // send the full item to next page
-                                      );
-                                    },
-                                  ),
-                                );
-                              } else {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 15,
-                                    vertical: 10,
-                                  ),
-                                  child: IncomeCard(
-                                    name: item.userId.basicInfo.fullName,
-                                    service: item.serviceId.name,
-                                    issue: item.issuesId.issue,
-                                    schedule: formatDate(item.scheduleService),
-                                    // status: item.serviceStatus,
-                                    assignmentStatus: item.assignmentStatus,
-                                    assignments:
-                                        item
-                                            .technicianUserService
-                                            ?.assignments ??
-                                        [],
-                                    onClick: () {
-                                      context.push(
-                                        RouteName.service_card,
-                                        extra:
-                                            item, // send the full item to next page
-                                      );
-                                    },
-                                  ),
-                                );
-                              }
+                                ),
+                              );
                             },
                           ),
                         ),
                       );
                     },
-                    loading: () => ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: 5,
-                      itemBuilder: (context, index) {
-                        return const ShimmerLoader(
-                          height: 140,
-                          width: double.infinity,
-                        );
-                      },
-                    ),
-                    error: (err, st) => Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.errorWithDetail(
-                          err.toString(),
-                        ),
-                      ),
-                    ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, st) => Center(child: Text(err.toString())),
                   ),
                 ),
               ],
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-
           error: (e, s) => NoInternetScreen(),
         ),
       ),

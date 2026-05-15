@@ -18,6 +18,7 @@ import 'package:tech_app/services/AcceptRequest_Service.dart';
 import 'package:tech_app/services/StartWork_Service.dart';
 import 'package:tech_app/view/update_request_view.dart';
 import 'package:tech_app/widgets/card/request_cart.dart';
+import 'package:tech_app/widgets/header.dart';
 import 'package:tech_app/widgets/inputs/primary_button.dart';
 import 'package:tech_app/model/ServiceList _Model.dart';
 import 'package:tech_app/provider/home_tab_provider.dart';
@@ -140,112 +141,144 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // CUSTOMER & SERVICE DETAILS
-              if (widget.data.assignmentStatus != "in-progress" &&
-                  widget.data.assignmentStatus != "completed" &&
-                  widget.data.assignmentStatus != "on-hold") ...[
-                _buildCustomerDetails(),
-                const SizedBox(height: 20),
-                _buildServiceDetails(),
-              ],
+        child: Column(
+          children: [
+            // 🔹 FIXED HEADER (always stable at top)
+            Header(
+              title: AppLocalizations.of(context)!.serviceDetails,
+              showBackButton: true,
+              showNotificationIcon: false,
+              showRefreshIcon: false,
+              showProfileIcon: false,
+              onBackPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(RouteName.bottom_nav);
+                }
+              },
+            ),
 
-              const SizedBox(height: 10),
+            const Divider(height: 1),
 
-              // ACTION BUTTONS
-              if (widget.data.assignmentStatus == "pending") ...[
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: PrimaryButton(
-                    radius: 13,
-                    height: 50,
-                    Width: double.infinity,
-                    color: AppColors.scoundry_clr,
-                    onPressed: () {
-                      acceptrequest(status: "accept");
-                    },
-                    text: AppLocalizations.of(context)!.accept,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: PrimaryButton(
-                    radius: 13,
-                    height: 50,
-                    Width: double.infinity,
-                    color: Colors.red,
-                    onPressed: () {
-                      _showRejectReasonSheet(context);
-                    },
-                    text: AppLocalizations.of(context)!.reject,
-                  ),
-                ),
-              ],
-              if (widget.data.assignmentStatus == "accepted") ...[
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: PrimaryButton(
-                    radius: 13,
-                    height: 50,
-                    Width: double.infinity,
-                    color: AppColors.scoundry_clr,
-                    onPressed: startwork,
-                    text: AppLocalizations.of(context)!.startWork,
-                  ),
-                ),
-              ],
+            // 🔹 CONTENT SCROLL AREA ONLY
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 10),
 
-              // COMPLETED SERVICE
-              if (widget.data.assignmentStatus == "completed") ...[
-                RequestCart(
-                  userServiceId: widget.data.id,
-                  clientname: widget.data.userId.basicInfo.fullName,
-                  serviceRequestID: widget.data.serviceRequestId,
-                  servicetype: widget.data.serviceId.name,
-                  assignmentStatus: widget.data.assignmentStatus,
-                  scheduleService: widget.data.scheduleService,
-                  status: widget.data.serviceStatus,
-                  createdAt: widget.data.createdAt,
-                  feedback: widget.data.feedback ?? '',
-                  payment: widget.data.payment,
-                  media: widget.data.media,
-                  assignments:
-                      widget.data.technicianUserService?.assignments ?? [],
-                ),
-              ],
+                    // CUSTOMER & SERVICE DETAILS
+                    if (widget.data.assignmentStatus != "in-progress" &&
+                        widget.data.assignmentStatus != "completed" &&
+                        widget.data.assignmentStatus != "on-hold") ...[
+                      _buildCustomerDetails(),
+                      const SizedBox(height: 20),
+                      _buildServiceDetails(),
+                    ],
 
-              // IN-PROGRESS OR ON-HOLD
-              if (widget.data.assignmentStatus == "in-progress") ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                    vertical: 10,
-                  ),
-                  child: UpdateRequestView(
-                    serviceRequestId: widget.data.assignmentStatus,
-                    userServiceId: widget.data.id,
-                  ),
-                ),
-              ],
+                    const SizedBox(height: 10),
 
-              if (widget.data.assignmentStatus == "on-hold") ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                    vertical: 10,
-                  ),
-                  child: UpdateRequestView(
-                    serviceRequestId: widget.data.assignmentStatus,
-                    userServiceId: widget.data.id,
-                  ),
-                ),
-              ],
+                    // ACTION BUTTONS
+                    if (widget.data.assignmentStatus == "pending") ...[
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: PrimaryButton(
+                          radius: 13,
+                          height: 50,
+                          Width: double.infinity,
+                          color: AppColors.scoundry_clr,
+                          onPressed: () {
+                            acceptrequest(status: "accept");
+                          },
+                          text: AppLocalizations.of(context)!.accept,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: PrimaryButton(
+                          radius: 13,
+                          height: 50,
+                          Width: double.infinity,
+                          color: Colors.red,
+                          onPressed: () {
+                            _showRejectReasonSheet(context);
+                          },
+                          text: AppLocalizations.of(context)!.reject,
+                        ),
+                      ),
+                    ],
 
-              const SizedBox(height: 10),
-            ],
-          ),
+                    if (widget.data.assignmentStatus == "accepted") ...[
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: PrimaryButton(
+                          radius: 13,
+                          height: 50,
+                          Width: double.infinity,
+                          color: AppColors.scoundry_clr,
+                          onPressed: startwork,
+                          text: AppLocalizations.of(context)!.startWork,
+                        ),
+                      ),
+                    ],
+
+                    // COMPLETED SERVICE
+                    if (widget.data.assignmentStatus == "completed") ...[
+                      RequestCart(
+                        userServiceId: widget.data.id,
+                        clientname: widget.data.userId.basicInfo.fullName,
+                        serviceRequestID: widget.data.serviceRequestId,
+                        servicetype: widget.data.serviceId.name,
+                        assignmentStatus: widget.data.assignmentStatus,
+                        scheduleService: widget.data.scheduleService,
+                        status: widget.data.serviceStatus,
+                        createdAt: widget.data.createdAt,
+                        feedback: widget.data.feedback ?? '',
+                        payment: widget.data.payment,
+                        media: widget.data.media,
+                        assignments:
+                            widget.data.technicianUserService?.assignments ??
+                            [],
+                      ),
+                    ],
+
+                    // IN-PROGRESS
+                    if (widget.data.assignmentStatus == "in-progress") ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 15,
+                          vertical: 10,
+                        ),
+                        child: UpdateRequestView(
+                          serviceRequestId: widget.data.assignmentStatus,
+                          userServiceId: widget.data.id,
+                        ),
+                      ),
+                    ],
+
+                    // ON-HOLD
+                    if (widget.data.assignmentStatus == "on-hold") ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 15,
+                          vertical: 10,
+                        ),
+                        child: UpdateRequestView(
+                          serviceRequestId: widget.data.assignmentStatus,
+                          userServiceId: widget.data.id,
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

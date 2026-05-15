@@ -84,7 +84,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get optionalNotesHint => 'If other issue please mention here';
 
   @override
-  String get addBulkRequest => 'Add Bulk Request +';
+  String get addBulkRequest => 'Add Bulk Request';
 
   @override
   String get requestMaterial => 'Request Material';

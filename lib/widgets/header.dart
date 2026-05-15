@@ -3,25 +3,39 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/provider/InventoryList_provider.dart';
+import 'package:tech_app/provider/bottom_nav_provider.dart';
 import 'package:tech_app/provider/notification_Service_Provider.dart';
 import 'package:tech_app/routes/route_name.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
-import 'package:app_badge_plus/app_badge_plus.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:tech_app/core/network/dio_client.dart';
+import 'package:tech_app/model/TechnicianProfile_Model.dart';
 
 class Header extends ConsumerStatefulWidget {
   final String title;
-  final bool showRefreshIcon;
-final bool showBackButton;
-final VoidCallback? onBackPressed;
-const Header({
-  super.key,
-  required this.title,
-  this.showRefreshIcon = false,
 
-  // ✅ ADD THIS
-  this.showBackButton = false,
-  this.onBackPressed,
-});
+  final bool showBackButton;
+  final VoidCallback? onBackPressed;
+
+  final bool showRefreshIcon;
+  final bool showNotificationIcon;
+  final bool showProfileIcon;
+
+  final TechnicianProfile? profile;
+  final VoidCallback? onProfileTap;
+
+  const Header({
+    super.key,
+    required this.title,
+    this.showBackButton = false,
+    this.onBackPressed,
+    this.showRefreshIcon = false,
+    this.showNotificationIcon = true,
+    this.showProfileIcon = true,
+    this.profile,
+    this.onProfileTap,
+  });
+
   @override
   ConsumerState<Header> createState() => _HeaderState();
 }
@@ -29,6 +43,7 @@ const Header({
 class _HeaderState extends ConsumerState<Header>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+
   DateTime? _lastSeenTime;
 
   @override
@@ -37,12 +52,14 @@ class _HeaderState extends ConsumerState<Header>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 500),
     );
 
     Appperfernces.getLastSeenNotificationTime().then((val) {
       if (mounted) {
-        setState(() => _lastSeenTime = val);
+        setState(() {
+          _lastSeenTime = val;
+        });
       }
     });
   }
@@ -53,183 +70,257 @@ class _HeaderState extends ConsumerState<Header>
     super.dispose();
   }
 
+  Widget _iconButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color bg = AppColors.app_background_clr,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(30),
+      child: Container(
+        height: 42,
+        width: 42,
+        decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+        child: Icon(icon, size: 22, color: Colors.white),
+      ),
+    );
+  }
+
   Future<void> _onRefresh() async {
     try {
       _controller.repeat();
+
       await ref.refresh(inventorylistprovider.future);
     } finally {
       _controller.reset();
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final notificationAsync = ref.watch(notificationServiceProvider); // ✅ FIXED
-
-   return Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-  child: Row(
-    children: [
-      /// 🔙 BACK BUTTON (NEW)
-      if (widget.showBackButton)
-        InkWell(
-          onTap: widget.onBackPressed,
-          borderRadius: BorderRadius.circular(30),
-          child: Container(
-            height: 38,
-            width: 38,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color.fromRGBO(183, 213, 205, 1),
-            ),
-            alignment: Alignment.center,
-            child: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-              size: 22,
-            ),
+  Widget _buildProfileImage() {
+    return InkWell(
+      onTap:
+          widget.onProfileTap ??
+          () {
+            ref.read(bottomNavProvider.notifier).state = 4;
+          },
+      borderRadius: BorderRadius.circular(30),
+      child: Container(
+        height: 44,
+        width: 44,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AppColors.app_background_clr.withOpacity(0.15),
+            width: 2,
           ),
-        )
-      else
-        const SizedBox(width: 38),
-
-      const SizedBox(width: 10),
-
-      /// 📌 TITLE (TAKES SPACE PROPERLY)
-      Expanded(
-        child: Text(
-          widget.title,
-          textAlign: TextAlign.start,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
-      ),
-
-      /// RIGHT SIDE (refresh OR notification)
-      widget.showRefreshIcon
-          ? InkWell(
-              onTap: _onRefresh,
-              child: AnimatedBuilder(
-                animation: _controller,
-                builder: (_, child) {
-                  return Transform.rotate(
-                    angle: _controller.value * 5.3,
-                    child: child,
-                  );
-                },
-                child: Container(
-                  height: 38,
-                  width: 38,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color.fromRGBO(183, 213, 205, 1),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.refresh_outlined,
-                    color: Colors.white,
-                    size: 27,
-                  ),
-                ),
-              ),
-            )
-          : Stack(
-              children: [
-                /// 🔔 NOTIFICATION ICON (YOUR EXISTING CODE)
-                InkWell(
-                  onTap: () async {
-                    DateTime seenTime = DateTime.now().toUtc();
-
-                    final asyncValue = ref.read(notificationServiceProvider);
-                    final currentList = asyncValue.value;
-
-                    if (currentList != null && currentList.isNotEmpty) {
-                      seenTime = currentList
-                          .map((n) => n.time)
-                          .reduce((a, b) => a.isAfter(b) ? a : b);
-                    }
-
-                    await Appperfernces.saveLastSeenNotificationTime(seenTime);
-
-                    if (mounted) {
-                      setState(() => _lastSeenTime = seenTime);
-                    }
-
-                    context.push(RouteName.nodification).then((_) async {
-                      Appperfernces.getLastSeenNotificationTime().then((val) {
-                        if (mounted) setState(() => _lastSeenTime = val);
-                      });
-
-                      await ref.refresh(notificationServiceProvider.future);
-                    });
-                  },
-                  child: Container(
-                    height: 38,
-                    width: 38,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color.fromARGB(255, 186, 193, 227),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.notifications_none_outlined,
-                      color: Colors.white,
-                      size: 27,
-                    ),
-                  ),
-                ),
-
-                /// 🔴 BADGE (UNCHANGED)
-                notificationAsync.when(
-                  data: (list) {
-                    int unreadCount = 0;
-
-                    if (_lastSeenTime == null) {
-                      return const SizedBox.shrink();
-                    } else {
-                      unreadCount = list
-                          .where((n) => n.time.isAfter(_lastSeenTime!))
-                          .length;
-                    }
-
-                    if (unreadCount == 0) {
-                      AppBadgePlus.updateBadge(0);
-                      return const SizedBox.shrink();
-                    }
-
-                    AppBadgePlus.updateBadge(unreadCount);
-
-                    return PositionedDirectional(
-                      top: 4,
-                      end: 4,
-                      child: Container(
-                        height: 16,
-                        width: 16,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.red,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          "$unreadCount",
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
+        child: ClipOval(
+          child: (widget.profile?.data.image?.isNotEmpty ?? false)
+              ? CachedNetworkImage(
+                  imageUrl:
+                      '${ImageBaseUrl.baseUrl}/${widget.profile!.data.image}',
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) {
+                    return Container(
+                      color: Colors.grey.shade300,
+                      child: const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     );
                   },
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
+                  errorWidget: (context, url, error) {
+                    return Container(
+                      color: Colors.grey.shade300,
+                      child: Icon(
+                        Icons.person,
+                        color: Colors.grey.shade700,
+                        size: 24,
+                      ),
+                    );
+                  },
+                )
+              : Container(
+                  color: Colors.grey.shade300,
+                  child: Icon(
+                    Icons.person,
+                    color: Colors.grey.shade700,
+                    size: 24,
+                  ),
                 ),
-              ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackButton(BuildContext context) {
+    return _iconButton(
+      icon: Icons.arrow_back_ios_new_rounded,
+      onTap:
+          widget.onBackPressed ??
+          () {
+            Navigator.pop(context);
+          },
+      bg: AppColors.app_background_clr,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final notificationAsync = ref.watch(notificationServiceProvider);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+      child: SizedBox(
+        height: 50,
+        child: Row(
+          children: [
+            /// ================= LEFT =================
+            SizedBox(
+              width: 44,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: widget.showBackButton
+                    ? _buildBackButton(context)
+                    : widget.showProfileIcon
+                    ? _buildProfileImage()
+                    : const SizedBox.shrink(),
+              ),
             ),
-    ],
-  ),
-);
+
+            /// ================= TITLE =================
+            Expanded(
+              child: Center(
+                child: Text(
+                  widget.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+
+            /// ================= RIGHT =================
+            SizedBox(
+              width: 90,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (widget.showRefreshIcon)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: AnimatedBuilder(
+                        animation: _controller,
+                        builder: (_, child) {
+                          return Transform.rotate(
+                            angle: _controller.value * 6.28,
+                            child: child,
+                          );
+                        },
+                        child: _iconButton(
+                          icon: Icons.refresh,
+                          onTap: _onRefresh,
+                        ),
+                      ),
+                    ),
+
+                  if (widget.showNotificationIcon)
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        _iconButton(
+                          icon: Icons.notifications_none,
+                          onTap: () async {
+                            final now = DateTime.now().toUtc();
+
+                            final list = ref
+                                .read(notificationServiceProvider)
+                                .value;
+
+                            DateTime seenTime = now;
+
+                            if (list != null && list.isNotEmpty) {
+                              seenTime = list
+                                  .map((e) => e.time)
+                                  .reduce((a, b) => a.isAfter(b) ? a : b);
+                            }
+
+                            await Appperfernces.saveLastSeenNotificationTime(
+                              seenTime,
+                            );
+
+                            if (mounted) {
+                              setState(() {
+                                _lastSeenTime = seenTime;
+                              });
+                            }
+
+                            context.push(RouteName.nodification);
+                          },
+                        ),
+
+                        notificationAsync.when(
+                          data: (list) {
+                            if (_lastSeenTime == null) {
+                              return const SizedBox();
+                            }
+
+                            final unread = list
+                                .where((e) => e.time.isAfter(_lastSeenTime!))
+                                .length;
+
+                            if (unread == 0) {
+                              return const SizedBox();
+                            }
+
+                            return Positioned(
+                              right: -2,
+                              top: -2,
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    unread > 99 ? '99+' : unread.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          loading: () => const SizedBox(),
+                          error: (_, __) => const SizedBox(),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

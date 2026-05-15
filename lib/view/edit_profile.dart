@@ -3,13 +3,16 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/core/network/dio_client.dart';
 import 'package:tech_app/core/utils/snackbar_helper.dart';
 import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/model/TechnicianProfile_Model.dart';
+import 'package:tech_app/routes/route_name.dart';
 import 'package:tech_app/services/EditProfile_Service.dart';
+import 'package:tech_app/widgets/header.dart';
 import 'package:tech_app/widgets/inputs/app_text_field.dart';
 import 'package:tech_app/widgets/inputs/primary_button.dart';
 
@@ -150,45 +153,22 @@ class _EditProfileState extends State<EditProfile> {
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Row(
-                children: [
-                  InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Theme.of(
-                            context,
-                          ).dividerColor.withOpacity(0.1),
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        size: 20,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  // Text(
-                  //   AppLocalizations.of(context)!.editProfile,
-                  //   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  //     fontWeight: FontWeight.w700,
-                  //   ),
-                  // ),
-                ],
-              ),
+            Header(
+              title: AppLocalizations.of(context)!.editProfile,
+              showBackButton: true,
+              showNotificationIcon: false,
+              showRefreshIcon: false,
+              showProfileIcon: false,
+              onBackPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(RouteName.bottom_nav);
+                }
+              },
             ),
+
+            const SizedBox(height: 10),
 
             /// PROFILE IMAGE
             Stack(

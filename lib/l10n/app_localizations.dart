@@ -245,7 +245,7 @@ abstract class AppLocalizations {
   /// No description provided for @addBulkRequest.
   ///
   /// In en, this message translates to:
-  /// **'Add Bulk Request +'**
+  /// **'Add Bulk Request'**
   String get addBulkRequest;
 
   /// No description provided for @requestMaterial.
