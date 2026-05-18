@@ -22,10 +22,9 @@ class _NotificationsState extends ConsumerState<Notifications> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         // ✅ Mark all notifications as read in backend
-        await _notificationapi.markAllAsRead();
-
-        // ✅ Refresh notification provider
-        ref.refresh(notificationServiceProvider);
+        await ref
+    .read(notificationServiceProvider.notifier)
+    .markAllAsRead();
       } catch (e) {
         debugPrint("Mark all as read error: $e");
       }
@@ -46,10 +45,9 @@ class _NotificationsState extends ConsumerState<Notifications> {
             padding: const EdgeInsetsDirectional.only(end: 12),
             child: TextButton(
               onPressed: () async {
-                await _notificationapi.deleteallnotifications();
-
-                ref.refresh(notificationServiceProvider);
-              },
+                await ref
+    .read(notificationServiceProvider.notifier)
+    .deleteAll();            },
               child: Image.asset("assets/images/notification.png"),
             ),
           ),
@@ -68,9 +66,13 @@ class _NotificationsState extends ConsumerState<Notifications> {
           }
 
           return RefreshIndicator(
-            onRefresh: () async {
-              ref.refresh(notificationServiceProvider);
-            },
+          onRefresh: () async {
+
+  await ref
+      .read(notificationServiceProvider.notifier)
+      .refresh();
+
+},
 
             child: ListView.builder(
               itemCount: notifications.length,
@@ -128,9 +130,9 @@ class _NotificationsState extends ConsumerState<Notifications> {
                   },
 
                   onDismissed: (direction) async {
-                    await _notificationapi.deletesinglenotification(id: n.id);
-
-                    ref.refresh(notificationServiceProvider);
+                   await ref
+    .read(notificationServiceProvider.notifier)
+    .deleteSingle(n.id);
                   },
 
                   child: Padding(

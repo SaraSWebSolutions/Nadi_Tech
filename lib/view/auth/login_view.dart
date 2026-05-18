@@ -5,6 +5,7 @@ import 'package:tech_app/controllers/Auth_Controllers.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/core/utils/snackbar_helper.dart';
 import 'package:tech_app/l10n/app_localizations.dart';
+import 'package:tech_app/provider/bottom_nav_provider.dart';
 import 'package:tech_app/provider/notification_Service_Provider.dart';
 import 'package:tech_app/routes/route_name.dart';
 import 'package:tech_app/widgets/inputs/app_text_field.dart';
@@ -12,14 +13,14 @@ import 'package:tech_app/widgets/inputs/primary_button.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
 import 'package:tech_app/services/MqttNotificationService.dart';
 
-class LoginView extends StatefulWidget {
+class LoginView extends ConsumerStatefulWidget {
   const LoginView({super.key});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  ConsumerState<LoginView> createState() => _LoginViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _LoginViewState extends ConsumerState<LoginView> {
   bool isChecked = false;
   bool isLoading = false;
   final _fromkey = GlobalKey<FormState>();
@@ -260,7 +261,9 @@ class _LoginViewState extends State<LoginView> {
                                     backgroundColor:
                                         AppColors.app_background_clr,
                                   );
-                                  context.go(RouteName.bottom_nav);
+                                 ref.read(bottomNavProvider.notifier).state = 0;
+
+context.go(RouteName.bottom_nav);
                                 } else {
                                   SnackbarHelper.show(
                                     context,

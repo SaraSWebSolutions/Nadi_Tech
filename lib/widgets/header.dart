@@ -44,7 +44,6 @@ class _HeaderState extends ConsumerState<Header>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
-  DateTime? _lastSeenTime;
 
   @override
   void initState() {
@@ -55,13 +54,13 @@ class _HeaderState extends ConsumerState<Header>
       duration: const Duration(milliseconds: 500),
     );
 
-    Appperfernces.getLastSeenNotificationTime().then((val) {
-      if (mounted) {
-        setState(() {
-          _lastSeenTime = val;
-        });
-      }
-    });
+    // Appperfernces.getLastSeenNotificationTime().then((val) {
+    //   if (mounted) {
+    //     setState(() {
+    //       _lastSeenTime = val;
+    //     });
+    //   }
+    // });
   }
 
   @override
@@ -241,78 +240,55 @@ class _HeaderState extends ConsumerState<Header>
                       children: [
                         _iconButton(
                           icon: Icons.notifications_none,
-                          onTap: () async {
-                            final now = DateTime.now().toUtc();
-
-                            final list = ref
-                                .read(notificationServiceProvider)
-                                .value;
-
-                            DateTime seenTime = now;
-
-                            if (list != null && list.isNotEmpty) {
-                              seenTime = list
-                                  .map((e) => e.time)
-                                  .reduce((a, b) => a.isAfter(b) ? a : b);
-                            }
-
-                            await Appperfernces.saveLastSeenNotificationTime(
-                              seenTime,
-                            );
-
-                            if (mounted) {
-                              setState(() {
-                                _lastSeenTime = seenTime;
-                              });
-                            }
-
-                            context.push(RouteName.nodification);
-                          },
+                          onTap: () {
+  context.push(RouteName.nodification);
+},
                         ),
 
-                        notificationAsync.when(
-                          data: (list) {
-                            if (_lastSeenTime == null) {
-                              return const SizedBox();
-                            }
+                       notificationAsync.when(
 
-                            final unread = list
-                                .where((e) => e.time.isAfter(_lastSeenTime!))
-                                .length;
+  data: (list) {
+final unread = list
+    .where((e) => e.read == false)
+    .length;
 
-                            if (unread == 0) {
-                              return const SizedBox();
-                            }
+    if (unread == 0) {
+      return const SizedBox();
+    }
 
-                            return Positioned(
-                              right: -2,
-                              top: -2,
-                              child: Container(
-                                padding: const EdgeInsets.all(5),
-                                decoration: const BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
-                                ),
-                                constraints: const BoxConstraints(
-                                  minWidth: 18,
-                                  minHeight: 18,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    unread > 99 ? '99+' : unread.toString(),
-                                    style: const TextStyle(
-                                      fontSize: 9,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                          loading: () => const SizedBox(),
-                          error: (_, __) => const SizedBox(),
-                        ),
+    return Positioned(
+      right: -2,
+      top: -2,
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: const BoxDecoration(
+          color: Colors.red,
+          shape: BoxShape.circle,
+        ),
+        constraints: const BoxConstraints(
+          minWidth: 18,
+          minHeight: 18,
+        ),
+        child: Center(
+          child: Text(
+            unread > 99
+                ? '99+'
+                : unread.toString(),
+            style: const TextStyle(
+              fontSize: 9,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  },
+
+  loading: () => const SizedBox(),
+
+  error: (_, __) => const SizedBox(),
+),
                       ],
                     ),
                 ],

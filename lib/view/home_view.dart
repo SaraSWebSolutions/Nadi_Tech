@@ -233,17 +233,25 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
                       return RefreshIndicator(
                         color: AppColors.app_background_clr,
-                        onRefresh: () async {
-                          ref.invalidate(serviceListProvider);
-                          await ref.refresh(notificationServiceProvider.future);
-                        },
+                     onRefresh: () async {
+
+  // Refresh service list
+  ref.invalidate(serviceListProvider);
+
+  // Refresh notifications
+await ref
+    .read(notificationServiceProvider.notifier)
+    .refresh();
+},
                         child: AnimationLimiter(
                           child: ListView.builder(
                             physics: const AlwaysScrollableScrollPhysics(),
                             itemCount: data.data.length,
                             itemBuilder: (context, index) {
                               final item = data.data[index];
+                              debugPrint("ID: ${item.id}");
 
+debugPrint(item.toString());
                               final status = item.assignmentStatus
                                   .toLowerCase();
                               final color = getStatusColor(status);
@@ -284,7 +292,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                             name:
                                                 item.userId.basicInfo.fullName,
                                             service: item.serviceId.name,
-                                            issue: item.issuesId.issue,
+issue: item.issuesId.issueEn,
                                             schedule: formatDate(
                                               item.scheduleService,
                                             ),

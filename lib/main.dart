@@ -10,6 +10,7 @@ import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
 import 'package:tech_app/provider/active_chat_provider.dart';
 import 'package:tech_app/provider/language_provider.dart';
+import 'package:tech_app/provider/notification_Service_Provider.dart';
 import 'package:tech_app/services/MqttNotificationService.dart';
 import 'package:tech_app/provider/theme_provider.dart';
 import 'package:tech_app/routes/app_route.dart';
@@ -80,8 +81,12 @@ void main() async {
   });
 
   /// FOREGROUND MESSAGE
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
     final data = message.data;
+        // refresh notifications provider
+  await container
+      .read(notificationServiceProvider.notifier)
+      .refresh();
     _badgeCount++;
 
     // Update app icon badge

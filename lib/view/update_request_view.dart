@@ -213,22 +213,38 @@ void didChangeAppLifecycleState(AppLifecycleState state) {
       debugPrint("Toggle error: $e");
     }
   }
-  Future<void> pickImage(ImageSource source) async {
-    final XFile? image = await _picker.pickImage(
-      source: source,
-      imageQuality: 80,
-    );
+Future<void> pickImage(ImageSource source) async {
+  const int maxImages = 10;
 
-    if (image != null) {
-      setState(() {
-        selectedImages.add(image);
-      });
-    }
+  if (selectedImages.length >= maxImages) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("You can upload only 10 images"),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
   }
+
+  final XFile? image = await _picker.pickImage(
+    source: source,
+    imageQuality: 80,
+  );
+
+  if (image == null) return;
+
+  if (selectedImages.length < maxImages) {
+    setState(() {
+      selectedImages.add(image);
+    });
+  }
+}
   Future<void> SaveUpdates() async {
     try {
-      final files = selectedImages.map((xfile) => File(xfile.path)).toList();
-      setState(() => isLoading = true);
+ final files = selectedImages
+        .take(10)
+        .map((xfile) => File(xfile.path))
+        .toList();      setState(() => isLoading = true);
       final result = await _updateService.fetchupdatedservice(
         images: files,
         userServiceId: widget.userServiceId,
@@ -441,9 +457,19 @@ Text(
               // UPLOAD BUTTON
               MediaUploadWidget(
                 images: selectedImages,
-                onAddTap: () {
-                  showImagePickerSheet(context);
-                },
+               onAddTap: () {
+  if (selectedImages.length >= 10) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Maximum 10 images allowed"),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
+
+  showImagePickerSheet(context);
+},
                 onRemoveTap: (index) {
                   setState(() {
                     selectedImages.removeAt(index);

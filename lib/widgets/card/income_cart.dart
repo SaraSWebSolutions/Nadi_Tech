@@ -112,7 +112,16 @@ Used Parts    : ${a.usedParts.map((p) => '${p.productName} x${p.count} = ${p.tot
     final timerState = ref.watch(timerProvider);
 
     logAssignments();
-
+debugPrint("""
+======== INCOME CARD ========
+Name       : ${widget.name}
+Service    : ${widget.service}
+Issue      : ${widget.issue}
+Schedule   : ${widget.schedule}
+Status     : ${widget.assignmentStatus}
+Payment    : ${widget.payment}
+=============================
+""");
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,

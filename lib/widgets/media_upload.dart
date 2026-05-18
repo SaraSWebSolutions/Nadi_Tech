@@ -65,17 +65,21 @@ class MediaUploadWidget extends StatelessWidget {
 
               /// REMOVE ICON
               Positioned(
-                top: 4,
-                right: 4,
-                child: GestureDetector(
-                  onTap: () => onRemoveTap(index),
-                  child: const CircleAvatar(
-                    radius: 12,
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.close, size: 16),
-                  ),
-                ),
-              ),
+  top: 4,
+  right: 4,
+  child: GestureDetector(
+    onTap: () => onRemoveTap(index),
+    child: const CircleAvatar(
+      radius: 12,
+      backgroundColor: Colors.white,
+      child: Icon(
+        Icons.close,
+        size: 16,
+        color: Colors.black, // ✅ ADD THIS
+      ),
+    ),
+  ),
+),
 
               /// VIEW ICON
               Positioned.fill(

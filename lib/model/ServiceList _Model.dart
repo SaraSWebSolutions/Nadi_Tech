@@ -316,6 +316,8 @@ class IssuesId {
   final String issue;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? issueAr;
+final String? issueEn;
 
   IssuesId({
     required this.id,
@@ -323,6 +325,8 @@ class IssuesId {
     required this.issue,
     required this.createdAt,
     required this.updatedAt,
+       required this.issueEn,
+          required this.issueAr,
   });
 
   factory IssuesId.fromJson(Map<String, dynamic> json) {
@@ -330,6 +334,9 @@ class IssuesId {
       id: json["_id"] ?? "",
       serviceId: json["serviceId"] ?? "",
       issue: json["issue"] ?? "",
+      
+issueAr: json["issue_ar"],
+issueEn: json["issue_en"],
       createdAt: DateTime.tryParse(json["createdAt"] ?? "") ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json["updatedAt"] ?? "") ?? DateTime.now(),
     );

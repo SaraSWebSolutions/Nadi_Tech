@@ -5,6 +5,7 @@ import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/core/utils/snackbar_helper.dart';
 import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/model/Inventory_Material_Model.dart';
+import 'package:tech_app/provider/bottom_nav_provider.dart';
 import 'package:tech_app/provider/language_provider.dart';
 import 'package:tech_app/routes/route_name.dart';
 import 'package:tech_app/services/MaterialRequest_service.dart';
@@ -74,8 +75,9 @@ class _BulkRequestState extends ConsumerState<BulkRequest> {
         backgroundColor: AppColors.scoundry_clr,
         message: AppLocalizations.of(context)!.materialRequestSuccess,
       );
-      context.push(RouteName.inventory_list);
-    } catch (e) {
+ref.read(bottomNavProvider.notifier).state = 1;
+
+context.go(RouteName.bottom_nav);  } catch (e) {
       SnackbarHelper.show(
         context,
         backgroundColor: Colors.red,
