@@ -42,68 +42,78 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
   @override
   Widget build(BuildContext context) {
     final sparePartsAsync = ref.watch(oursparepartsprovider);
-    Future<void> _proceedToPayment() async {
-      // store checkbox value
-      final bool spareUsedValue = sparePartsUsed;
+   Future<void> _proceedToPayment() async {
+  final bool spareUsedValue = sparePartsUsed;
 
-      // logs (optional)
-      for (var part in selectedParts) {
-        int count = partCounts[part.productId.id] ?? 1;
-        debugPrint(
-          "Product: ${part.productId.productName}, "
-          "ID: ${part.productId.id}, "
-          "Count: $count, "
-          "sparePartsUsed: $spareUsedValue",
-        );
-      }
+  /// 🔴 VALIDATION CHECK (IMPORTANT)
+  if (spareUsedValue && selectedParts.isEmpty) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Alert"),
+        content: const Text("Please select at least one spare part."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          )
+        ],
+      ),
+    );
+    return; // STOP FLOW
+  }
 
-      // build selected spare parts list
-      final List<SelectedSparePart> sparePartList = selectedParts.map((part) {
-        return SelectedSparePart(
-          productId: part.productId.id,
-          count: partCounts[part.productId.id] ?? 1,
-        );
-      }).toList();
+  for (var part in selectedParts) {
+    int count = partCounts[part.productId.id] ?? 1;
+    debugPrint(
+      "Product: ${part.productId.productName}, "
+      "ID: ${part.productId.id}, "
+      "Count: $count, "
+      "sparePartsUsed: $spareUsedValue",
+    );
+  }
 
-      // create request model
-      final UpdatePayment updatePayment = UpdatePayment(
-        userServiceId: widget.userServiceId,
-        sparePartsUsed: spareUsedValue,
-        selectedSpareParts: sparePartList,
-      );
+  final List<SelectedSparePart> sparePartList = selectedParts.map((part) {
+    return SelectedSparePart(
+      productId: part.productId.id,
+      count: partCounts[part.productId.id] ?? 1,
+    );
+  }).toList();
 
-      try {
-        // call API
-        await ref
-            .read(updatePaymentServiceProvider)
-            .passupdatepayment(updatePayment);
+  final UpdatePayment updatePayment = UpdatePayment(
+    userServiceId: widget.userServiceId,
+    sparePartsUsed: spareUsedValue,
+    selectedSpareParts: sparePartList,
+  );
 
-        // 🔥 REFRESH SERVICE LIST API
-        ref.invalidate(serviceListProvider);
- ref.read(homeTabProvider.notifier).state = 5;
+  try {
+    await ref.read(updatePaymentServiceProvider)
+        .passupdatepayment(updatePayment);
 
-        context.go(RouteName.bottom_nav);
-        // reset after success
-        setState(() {
-          partCounts.clear();
-          selectedParts.clear();
-          sparePartsUsed = false;
-        });
-      } catch (e) {
-        debugPrint("Update payment failed: $e");
+    ref.invalidate(serviceListProvider);
+    ref.read(homeTabProvider.notifier).state = 5;
 
-        // OPTIONAL: show error to user
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.red,
-            content: Text(
-              e.toString().replaceFirst('Exception: ', ''),
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
-        );
-      }
-    }
+    context.go(RouteName.bottom_nav);
+
+    setState(() {
+      partCounts.clear();
+      selectedParts.clear();
+      sparePartsUsed = false;
+    });
+  } catch (e) {
+    debugPrint("Update payment failed: $e");
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red,
+        content: Text(
+          e.toString().replaceFirst('Exception: ', ''),
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+}
 
     return PopScope(
       canPop: false,
@@ -127,13 +137,14 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                               value: sparePartsUsed,
                               activeColor: AppColors.app_background_clr,
                               onChanged: (value) {
-                                setState(() {
-                                  sparePartsUsed = value!;
-                                  if (!sparePartsUsed) {
-                                    selectedParts.clear();
-                                  }
-                                });
-                              },
+  setState(() {
+    sparePartsUsed = value!;
+
+    if (!sparePartsUsed) {
+      selectedParts.clear();
+    }
+  });
+},
                             ),
 
                             // Wrap the text with a Consumer / sparePartsAsync
@@ -354,9 +365,12 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                   Width: double.infinity,
                   height: 50,
                   radius: 12,
+                  onPressed: (!sparePartsUsed || selectedParts.isNotEmpty)
+      ? _proceedToPayment
+      : null,
                   color: AppColors.scoundry_clr,
                   text: AppLocalizations.of(context)!.proceedToPayment,
-                  onPressed: _proceedToPayment,
+                  // onPressed: _proceedToPayment,
                 ),
               ],
             ),
