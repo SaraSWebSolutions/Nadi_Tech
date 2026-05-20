@@ -98,44 +98,83 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
     }
   }
 
-  // Start Work
+  // // Start Work
+  // Future<void> startwork() async {
+  //   try {
+  //     await Appperfernces.saveuserServiceId(widget.data.id);
+
+  //     final response = await _startwork.fetchstartwork(widget.data.id);
+  //     debugPrint("START WORK RESPONSE => $response");
+  //     // // ❗ STOP if API failed
+  //     if (response == null ||
+  //         response["message"] == "Get user approval before starting work") {
+  //       SnackbarHelper.show(
+  //         context,
+  //         backgroundColor: Colors.red,
+  //         message: response["message"],
+  //       );
+
+  //       return; // ⛔ STOP HERE
+  //     }
+
+  //     // ✅ SUCCESS FLOW ONLY
+  //     SnackbarHelper.show(
+  //       context,
+  //       backgroundColor: AppColors.app_background_clr,
+  //       message: AppLocalizations.of(context)?.startWork,
+  //     );
+
+  //     ref.invalidate(serviceListProvider);
+  //     ref.read(homeTabProvider.notifier).state = 4;
+
+  //     context.go(RouteName.bottom_nav);
+  //   } catch (e) {
+  //     SnackbarHelper.show(
+  //       context,
+  //       backgroundColor: Colors.red,
+  //       message: e.toString(),
+  //     );
+  //   }
+  // }
+
   Future<void> startwork() async {
-    try {
-      await Appperfernces.saveuserServiceId(widget.data.id);
+  try {
+    await Appperfernces.saveuserServiceId(widget.data.id);
 
-      final response = await _startwork.fetchstartwork(widget.data.id);
-      debugPrint("START WORK RESPONSE => $response");
-      // // ❗ STOP if API failed
-      if (response == null ||
-          response["message"] == "Get user approval before starting work") {
-        SnackbarHelper.show(
-          context,
-          backgroundColor: Colors.red,
-          message: response["message"],
-        );
+    final response = await _startwork.fetchstartwork(widget.data.id);
 
-        return; // ⛔ STOP HERE
-      }
+    debugPrint("START WORK RESPONSE => $response");
 
-      // ✅ SUCCESS FLOW ONLY
-      SnackbarHelper.show(
-        context,
-        backgroundColor: AppColors.app_background_clr,
-        message: AppLocalizations.of(context)?.startWork,
-      );
-
-      ref.invalidate(serviceListProvider);
-      ref.read(homeTabProvider.notifier).state = 4;
-
-      context.go(RouteName.bottom_nav);
-    } catch (e) {
+    // ❌ Handle API failure messages
+    if (response == null || response["success"] == false) {
       SnackbarHelper.show(
         context,
         backgroundColor: Colors.red,
-        message: e.toString(),
+        message: response?["message"] ?? "Something went wrong",
       );
+
+      return;
     }
+
+    // ✅ SUCCESS FLOW
+    SnackbarHelper.show(
+      context,
+      backgroundColor: AppColors.app_background_clr,
+      message: AppLocalizations.of(context)?.startWork,
+    );
+
+    ref.invalidate(serviceListProvider);
+    ref.read(homeTabProvider.notifier).state = 4;
+
+    context.go(RouteName.bottom_nav);
+  } catch (e) {
+    SnackbarHelper.show(
+      context,
+      backgroundColor: Colors.red,
+      message: e.toString(),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
