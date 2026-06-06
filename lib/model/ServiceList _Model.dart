@@ -317,7 +317,7 @@ class IssuesId {
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? issueAr;
-final String? issueEn;
+  final String? issueEn;
 
   IssuesId({
     required this.id,
@@ -325,8 +325,8 @@ final String? issueEn;
     required this.issue,
     required this.createdAt,
     required this.updatedAt,
-       required this.issueEn,
-          required this.issueAr,
+    required this.issueEn,
+    required this.issueAr,
   });
 
   factory IssuesId.fromJson(Map<String, dynamic> json) {
@@ -334,9 +334,9 @@ final String? issueEn;
       id: json["_id"] ?? "",
       serviceId: json["serviceId"] ?? "",
       issue: json["issue"] ?? "",
-      
-issueAr: json["issue_ar"],
-issueEn: json["issue_en"],
+
+      issueAr: json["issue_ar"],
+      issueEn: json["issue_en"],
       createdAt: DateTime.tryParse(json["createdAt"] ?? "") ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json["updatedAt"] ?? "") ?? DateTime.now(),
     );
@@ -349,6 +349,7 @@ issueEn: json["issue_en"],
 class ServiceId {
   final String id;
   final String name;
+  final String? nameEn;
   final String serviceImage;
   final String serviceLogo;
   final DateTime createdAt;
@@ -357,6 +358,7 @@ class ServiceId {
   ServiceId({
     required this.id,
     required this.name,
+    this.nameEn,
     required this.serviceImage,
     required this.serviceLogo,
     required this.createdAt,
@@ -367,6 +369,7 @@ class ServiceId {
     return ServiceId(
       id: json["_id"] ?? "",
       name: json["name"] ?? "",
+      nameEn: json["name_en"], // 👈 ADD THIS
       serviceImage: json["serviceImage"] ?? "",
       serviceLogo: json["serviceLogo"] ?? "",
       createdAt: DateTime.tryParse(json["createdAt"] ?? "") ?? DateTime.now(),

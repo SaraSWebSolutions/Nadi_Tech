@@ -18,6 +18,7 @@ import 'package:tech_app/widgets/inputs/primary_button.dart';
 import 'package:tech_app/widgets/media_upload.dart';
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 class UpdateRequestView extends ConsumerStatefulWidget {
   final String serviceRequestId;
   final String userServiceId;
@@ -31,7 +32,8 @@ class UpdateRequestView extends ConsumerStatefulWidget {
   ConsumerState<UpdateRequestView> createState() => _UpdateRequestViewState();
 }
 
-class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>   with WidgetsBindingObserver {
+class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
+    with WidgetsBindingObserver {
   Set<int> selectedIndexes = {
     0,
     1,
@@ -39,7 +41,7 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>   with Wi
 
   bool isLoading = false;
   bool isOnHold = false;
-final TimerService _timerService = TimerService();
+  final TimerService _timerService = TimerService();
   final ImagePicker _picker = ImagePicker();
   List<XFile> selectedImages = [];
   final UpdateService _updateService = UpdateService();
@@ -68,20 +70,18 @@ final TimerService _timerService = TimerService();
         return '';
     }
   }
+
   bool get isCompletedSelected => selectedIndexes.contains(2);
   @override
   void initState() {
     super.initState();
     selectedIndexes = {0, 1}; // Always selected
-WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    _loadTimer();
-  });
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadTimer();
+    });
   }
-
-
 
   @override
   void dispose() {
@@ -172,21 +172,23 @@ WidgetsBinding.instance.addObserver(this);
     return "$m:$s";
   }
 
- @override
-void didChangeAppLifecycleState(AppLifecycleState state) {
-  if (state == AppLifecycleState.resumed) {
-    _loadTimer(); // sync with backend
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadTimer(); // sync with backend
+    }
   }
-}
 
- Future<void> _loadTimer() async {
-    await Appperfernces.saveuserServiceId( widget.userServiceId);
+  Future<void> _loadTimer() async {
+    await Appperfernces.saveuserServiceId(widget.userServiceId);
     try {
       final response = await _timerService.fetchTimerData(
         userServiceId: widget.userServiceId,
       );
 
-      ref.read(timerProvider.notifier).initialize(
+      ref
+          .read(timerProvider.notifier)
+          .initialize(
             totalSeconds: response["totalSeconds"] ?? 0,
             isRunning: response["isRunning"] ?? false,
           );
@@ -194,18 +196,15 @@ void didChangeAppLifecycleState(AppLifecycleState state) {
       debugPrint("Timer load error: $e");
     }
   }
+
   Future<void> _toggleTimer() async {
     final timerState = ref.read(timerProvider);
 
     try {
       if (timerState.isRunning) {
-        await _timerService.pauseTimer(
-          userServiceId: widget.userServiceId,
-        );
+        await _timerService.pauseTimer(userServiceId: widget.userServiceId);
       } else {
-        await _timerService.resumeTimer(
-          userServiceId: widget.userServiceId,
-        );
+        await _timerService.resumeTimer(userServiceId: widget.userServiceId);
       }
 
       await _loadTimer(); // sync again
@@ -213,48 +212,53 @@ void didChangeAppLifecycleState(AppLifecycleState state) {
       debugPrint("Toggle error: $e");
     }
   }
-Future<void> pickImage(ImageSource source) async {
-  const int maxImages = 10;
 
-  if (selectedImages.length >= maxImages) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("You can upload only 10 images"),
-        backgroundColor: Colors.red,
-      ),
+  Future<void> pickImage(ImageSource source) async {
+    const int maxImages = 10;
+
+    if (selectedImages.length >= maxImages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("You can upload only 10 images"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final XFile? image = await _picker.pickImage(
+      source: source,
+      imageQuality: 80,
     );
-    return;
+
+    if (image == null) return;
+
+    if (selectedImages.length < maxImages) {
+      setState(() {
+        selectedImages.add(image);
+      });
+    }
   }
 
-  final XFile? image = await _picker.pickImage(
-    source: source,
-    imageQuality: 80,
-  );
-
-  if (image == null) return;
-
-  if (selectedImages.length < maxImages) {
-    setState(() {
-      selectedImages.add(image);
-    });
-  }
-}
   Future<void> SaveUpdates() async {
     try {
- final files = selectedImages
-        .take(10)
-        .map((xfile) => File(xfile.path))
-        .toList();      setState(() => isLoading = true);
+      final files = selectedImages
+          .take(10)
+          .map((xfile) => File(xfile.path))
+          .toList();
+      setState(() => isLoading = true);
       final result = await _updateService.fetchupdatedservice(
         images: files,
         userServiceId: widget.userServiceId,
         serviceStatus: statustext.text.trim(),
+        notes: statustext.text.trim(),
+
         voice: _voicePath != null ? File(_voicePath!) : null,
       );
-   if (isCompletedSelected) {
+      if (isCompletedSelected) {
         ref.read(timerProvider.notifier).reset();
       }
-   await Appperfernces.clearUserServiceId();
+      await Appperfernces.clearUserServiceId();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.updateSavedSuccessfully),
@@ -270,10 +274,9 @@ Future<void> pickImage(ImageSource source) async {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-   final timerState = ref.watch(timerProvider);
+    final timerState = ref.watch(timerProvider);
     return PopScope(
       canPop: true,
       onPopInvoked: (didPop) {
@@ -298,12 +301,16 @@ Future<void> pickImage(ImageSource source) async {
                 child: Center(
                   child: Text(
                     widget.serviceRequestId.toUpperCase(),
-                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 17,color: Colors.black),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 17,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 10),
-               Text(
+              Text(
                 AppLocalizations.of(context)!.timer,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
@@ -336,39 +343,40 @@ Future<void> pickImage(ImageSource source) async {
                           size: 24,
                         ),
                         const SizedBox(width: 8),
-Text(
-  timerState.formattedTime,
-  style: const TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.bold,
-    color: Colors.black,
-  ),
-),
+                        Text(
+                          timerState.formattedTime,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
                       ],
                     ),
-                  ElevatedButton(
-  style: ElevatedButton.styleFrom(
-    backgroundColor:
-        timerState.isRunning ? Colors.red : Colors.green,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
-    ),
-  ),
-  onPressed: _toggleTimer,
-  child: Text(
-    timerState.isRunning
-        ? AppLocalizations.of(context)!.onHold
-        : AppLocalizations.of(context)!.start,
-    style: const TextStyle(color: Colors.white),
-  ),
-),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: timerState.isRunning
+                            ? Colors.red
+                            : Colors.green,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _toggleTimer,
+                      child: Text(
+                        timerState.isRunning
+                            ? AppLocalizations.of(context)!.onHold
+                            : AppLocalizations.of(context)!.start,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 10),
-               Text(
-                 AppLocalizations.of(context)!.updatedStatus,
+              Text(
+                AppLocalizations.of(context)!.updatedStatus,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 10),
@@ -426,8 +434,8 @@ Text(
               ),
 
               const SizedBox(height: 15),
-               Text(
-                    AppLocalizations.of(context)!.addNotes,
+              Text(
+                AppLocalizations.of(context)!.addNotes,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 15),
@@ -438,15 +446,15 @@ Text(
               ),
               const SizedBox(height: 15),
 
-               Text(
+              Text(
                 AppLocalizations.of(context)!.mediaUploadOptional,
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 5),
               Text(
-                AppLocalizations.of(context)!.imagesSelectedCount(
-                  selectedImages.length,
-                ),
+                AppLocalizations.of(
+                  context,
+                )!.imagesSelectedCount(selectedImages.length),
                 style: TextStyle(
                   fontSize: 12,
                   color: selectedImages.length == 10 ? Colors.red : Colors.grey,
@@ -457,19 +465,19 @@ Text(
               // UPLOAD BUTTON
               MediaUploadWidget(
                 images: selectedImages,
-               onAddTap: () {
-  if (selectedImages.length >= 10) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Maximum 10 images allowed"),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
+                onAddTap: () {
+                  if (selectedImages.length >= 10) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Maximum 10 images allowed"),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
 
-  showImagePickerSheet(context);
-},
+                  showImagePickerSheet(context);
+                },
                 onRemoveTap: (index) {
                   setState(() {
                     selectedImages.removeAt(index);
@@ -506,7 +514,7 @@ Text(
                       color: AppColors.scoundry_clr,
                       isLoading: isLoading,
                       onPressed: SaveUpdates,
-                      text:   AppLocalizations.of(context)!.saveUpdates,
+                      text: AppLocalizations.of(context)!.saveUpdates,
                     )
                   : PrimaryButton(
                       radius: 15,
@@ -553,12 +561,12 @@ Text(
               children: [
                 Text(
                   _isRecording
-                      ? AppLocalizations.of(context)!.recordingInProgress(
-                          _formatDuration(_recordDuration),
-                        )
+                      ? AppLocalizations.of(
+                          context,
+                        )!.recordingInProgress(_formatDuration(_recordDuration))
                       : _voicePath != null
-                          ? AppLocalizations.of(context)!.voiceNoteReady
-                          : AppLocalizations.of(context)!.tapMicToRecord,
+                      ? AppLocalizations.of(context)!.voiceNoteReady
+                      : AppLocalizations.of(context)!.tapMicToRecord,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -604,7 +612,7 @@ Text(
             children: [
               ListTile(
                 leading: const Icon(Icons.camera_alt),
-                title:  Text( AppLocalizations.of(context)!.camera),
+                title: Text(AppLocalizations.of(context)!.camera),
                 onTap: () {
                   Navigator.pop(context);
                   pickImage(ImageSource.camera);
@@ -612,7 +620,7 @@ Text(
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library),
-                title:  Text(AppLocalizations.of(context)!.gallery),
+                title: Text(AppLocalizations.of(context)!.gallery),
                 onTap: () {
                   Navigator.pop(context);
                   pickImage(ImageSource.gallery);

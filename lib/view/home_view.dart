@@ -233,16 +233,15 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
                       return RefreshIndicator(
                         color: AppColors.app_background_clr,
-                     onRefresh: () async {
+                        onRefresh: () async {
+                          // Refresh service list
+                          ref.invalidate(serviceListProvider);
 
-  // Refresh service list
-  ref.invalidate(serviceListProvider);
-
-  // Refresh notifications
-await ref
-    .read(notificationServiceProvider.notifier)
-    .refresh();
-},
+                          // Refresh notifications
+                          await ref
+                              .read(notificationServiceProvider.notifier)
+                              .refresh();
+                        },
                         child: AnimationLimiter(
                           child: ListView.builder(
                             physics: const AlwaysScrollableScrollPhysics(),
@@ -251,11 +250,17 @@ await ref
                               final item = data.data[index];
                               debugPrint("ID: ${item.id}");
 
-debugPrint(item.toString());
+                              debugPrint(item.toString());
                               final status = item.assignmentStatus
                                   .toLowerCase();
                               final color = getStatusColor(status);
+                              final serviceName = item.serviceId.nameEn;
+                              final service = item.serviceId.name;
 
+                              final issueName = item.issuesId.issueEn;
+
+                              debugPrint("SERVICE: $serviceName,$service");
+                              debugPrint("ISSUE: $issueName");
                               return AnimationConfiguration.staggeredList(
                                 position: index,
                                 duration: const Duration(milliseconds: 400),
@@ -291,8 +296,10 @@ debugPrint(item.toString());
                                           IncomeCard(
                                             name:
                                                 item.userId.basicInfo.fullName,
-                                            service: item.serviceId.name,
-issue: item.issuesId.issueEn,
+                                            service:
+                                                item.serviceId.nameEn ??
+                                                item.serviceId.name,
+                                            issue: item.issuesId.issueEn,
                                             schedule: formatDate(
                                               item.scheduleService,
                                             ),
