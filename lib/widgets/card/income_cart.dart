@@ -131,6 +131,23 @@ Used Parts    : ${a.usedParts.map((p) => '${p.productName} x${p.count} = ${p.tot
     return '${hours}h ${minutes}m';
   }
 
+  Color statusColor() {
+    switch (widget.assignmentStatus.toLowerCase()) {
+      case "pending":
+        return AppColors.scoundry_clr;
+      case "rejected":
+        return Colors.red;
+      case "accepted":
+        return Colors.blue; // Assigned
+      case "in-progress":
+        return Colors.green;
+      case "completed":
+        return Colors.purple;
+      default:
+        return AppColors.app_background_clr;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final assignment = widget.assignments.isNotEmpty
@@ -138,7 +155,9 @@ Used Parts    : ${a.usedParts.map((p) => '${p.productName} x${p.count} = ${p.tot
         : null;
 
     final timerState = ref.watch(timerProvider);
-
+    final displayStatus = widget.assignmentStatus.toLowerCase() == "accepted"
+        ? "Assigned"
+        : widget.assignmentStatus;
     logAssignments();
     debugPrint("""
 ======== INCOME CARD ========
@@ -289,6 +308,7 @@ Payment    : ${widget.payment}
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
+                        //color: statusColor(),
                         color: widget.assignmentStatus == "pending"
                             ? AppColors.scoundry_clr
                             : widget.assignmentStatus == "rejected"
@@ -297,7 +317,7 @@ Payment    : ${widget.payment}
                         borderRadius: BorderRadius.circular(30),
                       ),
                       child: Text(
-                        widget.assignmentStatus.toUpperCase(),
+                        displayStatus.toUpperCase(),
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 12,

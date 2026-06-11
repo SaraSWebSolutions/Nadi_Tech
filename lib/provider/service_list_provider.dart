@@ -3,8 +3,6 @@ import 'package:tech_app/services/servicelist_service.dart';
 import 'package:tech_app/model/ServiceList _Model.dart';
 import 'package:tech_app/provider/home_tab_provider.dart';
 
-
-
 /// SERVICE PROVIDER
 final serviceListServiceProvider = Provider<ServicelistService>((ref) {
   return ServicelistService();
@@ -13,11 +11,10 @@ final serviceListServiceProvider = Provider<ServicelistService>((ref) {
 /// MAIN PROVIDER
 final serviceListProvider =
     AsyncNotifierProvider.autoDispose<ServiceListNotifier, ServiceListModel?>(
-  ServiceListNotifier.new,
-);
+      ServiceListNotifier.new,
+    );
 
 class ServiceListNotifier extends AsyncNotifier<ServiceListModel?> {
-
   @override
   Future<ServiceListModel?> build() async {
     // ✅ WATCH TAB HERE (this triggers auto refresh)
@@ -25,19 +22,16 @@ class ServiceListNotifier extends AsyncNotifier<ServiceListModel?> {
 
     final filters = [
       'all',
-      'pending',
       'accepted',
-      'rejected',
+      'pending-approval',
       'in-progress',
-      'completed'
+      'completed',
     ];
 
     final service = ref.read(serviceListServiceProvider);
 
     // ✅ DIRECT API CALL (no extra method needed)
-    final data = await service.fetchServiceList(
-      status: filters[index],
-    );
+    final data = await service.fetchServiceList(status: filters[index]);
 
     return data;
   }

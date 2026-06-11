@@ -39,7 +39,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
   // 🔹 AUDIO PLAYER
   AudioPlayer? _audioPlayer;
   bool _isPlaying = false;
-
+  bool _isUser = false;
   @override
   void dispose() {
     _audioPlayer?.dispose();
@@ -145,28 +145,49 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
 
       debugPrint("START WORK RESPONSE => $response");
 
-      // ❌ Handle API failure messages
-      if (response == null || response["success"] == false) {
+      if (response == null) return;
+
+      // Waiting for user approval
+      if (response["success"] == false &&
+          response["message"].toString().toLowerCase().contains("approval")) {
         SnackbarHelper.show(
           context,
           backgroundColor: Colors.red,
-          message: response?["message"] ?? "Something went wrong",
+          message: response["message"],
         );
+
+        setState(() => _isUser = true);
+        ref.invalidate(serviceListProvider);
+
+        // Pending Approval tab index
+        ref.read(homeTabProvider.notifier).state = 2;
+
+        context.go(RouteName.bottom_nav);
 
         return;
       }
 
-      // ✅ SUCCESS FLOW
-      SnackbarHelper.show(
-        context,
-        backgroundColor: AppColors.app_background_clr,
-        message: AppLocalizations.of(context)?.startWork,
-      );
+      if (response["success"] == true) {
+        SnackbarHelper.show(
+          context,
+          backgroundColor: AppColors.app_background_clr,
+          message: AppLocalizations.of(context)!.startWork,
+        );
 
-      ref.invalidate(serviceListProvider);
-      ref.read(homeTabProvider.notifier).state = 4;
+        ref.invalidate(serviceListProvider);
+        setState(() => _isUser = false);
 
-      context.go(RouteName.bottom_nav);
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        /// 🔥 START TIMER HERE (IMPORTANT)
+        ref.read(timerProvider.notifier).start(DateTime.now());
+
+        ref.read(homeTabProvider.notifier).state = 3;
+
+        if (mounted) {
+          context.go(RouteName.bottom_nav);
+        }
+      }
     } catch (e) {
       SnackbarHelper.show(
         context,
@@ -178,6 +199,22 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
 
   @override
   Widget build(BuildContext context) {
+    final serviceListAsync = ref.watch(serviceListProvider);
+
+    final liveItem = serviceListAsync.maybeWhen(
+      data: (data) {
+        final list = data?.data ?? [];
+
+        return list.firstWhere(
+          (e) => e.id == widget.data.id,
+          orElse: () => widget.data,
+        );
+      },
+      orElse: () => widget.data,
+    );
+    final bool userApproval =
+        liveItem.technicianUserService?.assignments.first.userApproval ?? false;
+    debugPrint("USER APPROVAL => $userApproval");
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -210,9 +247,9 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                     const SizedBox(height: 10),
 
                     // CUSTOMER & SERVICE DETAILS
-                    if (widget.data.assignmentStatus != "in-progress" &&
-                        widget.data.assignmentStatus != "completed" &&
-                        widget.data.assignmentStatus != "on-hold") ...[
+                    if (liveItem.assignmentStatus != "in-progress" &&
+                        liveItem.assignmentStatus != "completed" &&
+                        liveItem.assignmentStatus != "on-hold") ...[
                       _buildCustomerDetails(),
                       const SizedBox(height: 20),
                       _buildServiceDetails(),
@@ -221,7 +258,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                     const SizedBox(height: 10),
 
                     // ACTION BUTTONS
-                    if (widget.data.assignmentStatus == "pending") ...[
+                    if (liveItem.assignmentStatus == "pending") ...[
                       Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: PrimaryButton(
@@ -250,7 +287,9 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                       ),
                     ],
 
-                    if (widget.data.assignmentStatus == "accepted") ...[
+                    // if (widget.data.assignmentStatus == "accepted") ...[
+                    if (widget.data.assignmentStatus == "accepted" ||
+                        widget.data.assignmentStatus == "pending-approval") ...[
                       Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: PrimaryButton(
@@ -259,8 +298,11 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                           Width: double.infinity,
                           color: AppColors.scoundry_clr,
                           onPressed: startwork,
-                          text: AppLocalizations.of(context)!.getUserApproval,
-                          // text: widget.data.userApproval
+                          text: userApproval || _isUser
+                              ? AppLocalizations.of(context)!.startWork
+                              : AppLocalizations.of(
+                                  context,
+                                )!.getUserApproval, // text: widget.data.userApproval
                           //     ? AppLocalizations.of(context)!.startWork
                           //     : AppLocalizations.of(context)!.getUserApproval,
                         ),

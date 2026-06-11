@@ -183,6 +183,8 @@ class Assignment {
   final DateTime? workStartedAt;
   final DateTime? statusChangedAt;
   final DateTime? updatedAt;
+  final bool userApproval; // 👈 ADD THIS
+
   Assignment({
     required this.technicianId,
     required this.status,
@@ -194,6 +196,7 @@ class Assignment {
     this.workStartedAt,
     this.updatedAt,
     this.statusChangedAt,
+    required this.userApproval, // 👈 ADD THIS
   });
 
   factory Assignment.fromJson(Map<String, dynamic> json) {
@@ -203,6 +206,7 @@ class Assignment {
       notes: json["notes"],
       media: json["media"] != null ? List<String>.from(json["media"]) : [],
       statusChangedAt: DateTime.tryParse(json["statusChangedAt"] ?? ""),
+      userApproval: json["userApproval"] ?? false, // 👈 ADD THIS
 
       workDuration: json["workDuration"] ?? 0,
       usedParts: json["usedParts"] is List
@@ -222,6 +226,7 @@ class Assignment {
     "notes": notes,
     "media": media,
     "workDuration": workDuration,
+    "userApproval": userApproval, // 👈 ADD THIS
     "usedParts": usedParts.map((x) => x.toJson()).toList(),
     "paymentRaised": paymentRaised,
     "workStartedAt": workStartedAt?.toIso8601String(),

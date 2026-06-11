@@ -44,7 +44,6 @@ class _HeaderState extends ConsumerState<Header>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
-
   @override
   void initState() {
     super.initState();
@@ -161,7 +160,7 @@ class _HeaderState extends ConsumerState<Header>
 
   Widget _buildBackButton(BuildContext context) {
     return _iconButton(
-      icon: Icons.arrow_back_ios_new_rounded,
+      icon: Icons.arrow_back_rounded,
       onTap:
           widget.onBackPressed ??
           () {
@@ -241,54 +240,51 @@ class _HeaderState extends ConsumerState<Header>
                         _iconButton(
                           icon: Icons.notifications_none,
                           onTap: () {
-  context.push(RouteName.nodification);
-},
+                            context.push(RouteName.nodification);
+                          },
                         ),
 
-                       notificationAsync.when(
+                        notificationAsync.when(
+                          data: (list) {
+                            final unread = list
+                                .where((e) => e.read == false)
+                                .length;
 
-  data: (list) {
-final unread = list
-    .where((e) => e.read == false)
-    .length;
+                            if (unread == 0) {
+                              return const SizedBox();
+                            }
 
-    if (unread == 0) {
-      return const SizedBox();
-    }
+                            return Positioned(
+                              right: -2,
+                              top: -2,
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    unread > 99 ? '99+' : unread.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
 
-    return Positioned(
-      right: -2,
-      top: -2,
-      child: Container(
-        padding: const EdgeInsets.all(5),
-        decoration: const BoxDecoration(
-          color: Colors.red,
-          shape: BoxShape.circle,
-        ),
-        constraints: const BoxConstraints(
-          minWidth: 18,
-          minHeight: 18,
-        ),
-        child: Center(
-          child: Text(
-            unread > 99
-                ? '99+'
-                : unread.toString(),
-            style: const TextStyle(
-              fontSize: 9,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    );
-  },
+                          loading: () => const SizedBox(),
 
-  loading: () => const SizedBox(),
-
-  error: (_, __) => const SizedBox(),
-),
+                          error: (_, __) => const SizedBox(),
+                        ),
                       ],
                     ),
                 ],

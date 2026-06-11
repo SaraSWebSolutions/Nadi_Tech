@@ -55,6 +55,7 @@
 // lib/providers/timer_provider.dart
 
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../model/timer_state.dart';
 
@@ -72,19 +73,28 @@ class TimerNotifier extends Notifier<TimerState> {
 
   /// 🔥 Start timer with API startTime
   void start(DateTime startTime) {
+    debugPrint("TIMER START CALLED => $startTime");
+
+    if (state.isRunning && state.startTime != null) {
+      debugPrint("BLOCKED: already running");
+      return;
+    }
+
     _timer?.cancel();
 
-    state = TimerState(startTime: startTime, isRunning: true);
+    state = state.copyWith(startTime: startTime, isRunning: true);
 
     _startTicker();
   }
 
   void _startTicker() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (state.startTime == null) return;
+    _timer?.cancel();
 
-      // 🔥 trigger rebuild only
-      state = TimerState(startTime: state.startTime, isRunning: true);
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (state.startTime == null || !state.isRunning) return;
+
+      // 🔥 ONLY notify listeners, don't recreate full state
+      state = state.copyWith();
     });
   }
 
@@ -118,7 +128,14 @@ class TimerState {
   final DateTime? startTime;
   final bool isRunning;
 
-  const TimerState({this.startTime, required this.isRunning});
+  const TimerState({required this.startTime, required this.isRunning});
+
+  TimerState copyWith({DateTime? startTime, bool? isRunning}) {
+    return TimerState(
+      startTime: startTime ?? this.startTime,
+      isRunning: isRunning ?? this.isRunning,
+    );
+  }
 
   Duration get duration {
     if (startTime == null) return Duration.zero;

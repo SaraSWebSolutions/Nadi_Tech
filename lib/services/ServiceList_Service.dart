@@ -11,6 +11,10 @@ class ServicelistService {
     try {
       final response = await _dio.post("techie/list?status=$status");
       print("API Response Status => ${response.data}");
+      debugPrint(
+        const JsonEncoder.withIndent('  ').convert(response.data),
+        wrapWidth: 1024,
+      );
       // debugPrint(
       //   jsonEncode(response.data),
       //   wrapWidth: 1024,

@@ -127,15 +127,28 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
     final List<StatusFilter> filters = [
       StatusFilter(lang.all, 'all'),
-      // StatusFilter(lang.pending, 'pending'),
       StatusFilter(lang.accepted, 'accepted'),
-      // StatusFilter(lang.rejected, 'rejected'),
+      StatusFilter("Pending Approval", 'pending-approval'),
       StatusFilter(lang.inProgress, 'in-progress'),
       StatusFilter(lang.completed, 'completed'),
     ];
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      // appBar: PreferredSize(
+      //   preferredSize: const Size.fromHeight(60),
+      //   child: SafeArea(
+      //     bottom: false,
+      //     child: Padding(
+      //       padding: const EdgeInsets.symmetric(horizontal: 12),
+      //       child: Header(
+      //         title: AppLocalizations.of(context)!.incomeRequest,
+      //         showNotificationIcon: true,
+      //         profile: _profile,
+      //       ),
+      //     ),
+      //   ),
+      // ),
       body: SafeArea(
         child: connectivity.when(
           data: (isOnline) {
@@ -152,7 +165,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   ),
                 ),
 
-                const Divider(),
+                // const Divider(),
                 const SizedBox(height: 10),
 
                 /// ================= FILTER =================
@@ -311,7 +324,23 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                                     ?.assignments ??
                                                 [],
                                             payment: item.payment,
-                                            onClick: () {
+                                            onClick: () async {
+                                              // 1. Refresh / update latest data first
+                                              ref.invalidate(
+                                                serviceListProvider,
+                                              );
+                                              await ref.read(
+                                                serviceListProvider.future,
+                                              );
+
+                                              await ref
+                                                  .read(
+                                                    notificationServiceProvider
+                                                        .notifier,
+                                                  )
+                                                  .refresh();
+
+                                              // 2. Then navigate
                                               context.push(
                                                 RouteName.service_card,
                                                 extra: item,

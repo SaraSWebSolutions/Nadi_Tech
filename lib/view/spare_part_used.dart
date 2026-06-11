@@ -87,14 +87,21 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
       );
 
       try {
+        // await ref
+        //     .read(updatePaymentServiceProvider)
+        //     .passupdatepayment(updatePayment);
+
         await ref
             .read(updatePaymentServiceProvider)
             .passupdatepayment(updatePayment);
 
         ref.invalidate(serviceListProvider);
-        ref.read(homeTabProvider.notifier).state = 5;
 
         context.go(RouteName.bottom_nav);
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(homeTabProvider.notifier).state = 4;
+        });
 
         setState(() {
           partCounts.clear();
@@ -192,29 +199,33 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                           ),
                           data: (response) {
                             final parts = response.data;
-
                             if (parts.isEmpty) {
-                              return Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Image.asset(
-                                      "assets/images/Outofstock.png",
-                                      height: 120,
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.noSparePartUsed,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color.fromRGBO(13, 95, 72, 1),
+                              return SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.7,
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Image.asset(
+                                        "assets/images/Outofstock.png",
+                                        height: 120,
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.noSparePartUsed,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color.fromRGBO(13, 95, 72, 1),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               );
                             }
