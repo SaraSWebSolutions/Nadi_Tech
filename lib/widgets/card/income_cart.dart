@@ -56,16 +56,44 @@ class _IncomeCardState extends ConsumerState<IncomeCard> {
         userServiceId: userServiceId,
       );
 
-      ref
-          .read(timerProvider.notifier)
-          .initialize(
-            totalSeconds: response["totalSeconds"] ?? 0,
-            isRunning: response["isRunning"] ?? false,
-          );
+      final totalSeconds = response["totalSeconds"] ?? 0;
+      final isRunning = response["isRunning"] ?? false;
+
+      // 🔥 convert to startTime
+      final startTime = DateTime.now().subtract(
+        Duration(seconds: totalSeconds),
+      );
+
+      if (isRunning) {
+        ref.read(timerProvider.notifier).start(startTime);
+      }
     } catch (e) {
       debugPrint("Timer load error: $e");
     }
   }
+  // Future<void> _loadTimerOnHome() async {
+  //   final userServiceId = await Appperfernces.getuserServiceId();
+
+  //   if (userServiceId == null || userServiceId.isEmpty) {
+  //     debugPrint("UserServiceId is null");
+  //     return;
+  //   }
+
+  //   try {
+  //     final response = await _timerService.fetchTimerData(
+  //       userServiceId: userServiceId,
+  //     );
+
+  //     ref
+  //         .read(timerProvider.notifier)
+  //         .initialize(
+  //           totalSeconds: response["totalSeconds"] ?? 0,
+  //           isRunning: response["isRunning"] ?? false,
+  //         );
+  //   } catch (e) {
+  //     debugPrint("Timer load error: $e");
+  //   }
+  // }
 
   void logAssignments() {
     if (widget.assignments.isEmpty) {
@@ -112,7 +140,7 @@ Used Parts    : ${a.usedParts.map((p) => '${p.productName} x${p.count} = ${p.tot
     final timerState = ref.watch(timerProvider);
 
     logAssignments();
-debugPrint("""
+    debugPrint("""
 ======== INCOME CARD ========
 Name       : ${widget.name}
 Service    : ${widget.service}
@@ -217,15 +245,15 @@ Payment    : ${widget.payment}
                 _infoRow(
                   image: Image.asset("assets/images/expect.png"),
                   text: widget.service,
-                  iconBg:  const Color.fromARGB(255, 198, 205, 239),
+                  iconBg: const Color.fromARGB(255, 198, 205, 239),
                 ),
                 const SizedBox(height: 5),
                 if (widget.payment != null) ...[
                   _infoRow(
                     image: Image.asset("assets/images/curuncy.png"),
-                    text: AppLocalizations.of(context)!.bhdAmount(
-                      widget.payment.toString(),
-                    ),
+                    text: AppLocalizations.of(
+                      context,
+                    )!.bhdAmount(widget.payment.toString()),
                   ),
                 ],
                 const SizedBox(height: 5),

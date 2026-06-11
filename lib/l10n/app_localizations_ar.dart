@@ -9,7 +9,7 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get incomeRequest => 'طلب الدخل';
+  String get incomeRequest => 'طلب خدمة';
 
   @override
   String get noRequestFound => 'لم يتم العثور على أي طلب';
@@ -110,7 +110,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get all => 'الكل';
 
   @override
-  String get accepted => 'مقبول';
+  String get accepted => 'مُكَلَّف';
 
   @override
   String get inProgress => 'قيد التنفيذ';
@@ -511,4 +511,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get writeMessage => 'اكتب رسالة...';
+
+  @override
+  String get getUserApproval => 'الحصول على موافقة المستخدم';
+
+  @override
+  String get workCompleted => 'تم إكمال العمل';
 }

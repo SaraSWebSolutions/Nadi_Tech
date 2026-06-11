@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @incomeRequest.
   ///
   /// In en, this message translates to:
-  /// **'Income Request'**
+  /// **'Service Request'**
   String get incomeRequest;
 
   /// No description provided for @noRequestFound.
@@ -299,7 +299,7 @@ abstract class AppLocalizations {
   /// No description provided for @accepted.
   ///
   /// In en, this message translates to:
-  /// **'Accepted'**
+  /// **'Assigned'**
   String get accepted;
 
   /// No description provided for @inProgress.
@@ -1069,6 +1069,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Write a message...'**
   String get writeMessage;
+
+  /// No description provided for @getUserApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Get User Approval'**
+  String get getUserApproval;
+
+  /// No description provided for @workCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Work completed'**
+  String get workCompleted;
 }
 
 class _AppLocalizationsDelegate

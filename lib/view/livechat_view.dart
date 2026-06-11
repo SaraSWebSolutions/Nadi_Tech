@@ -42,7 +42,7 @@ class _ChatsViewState extends ConsumerState<ChatsView> {
     final connectivity = ref.watch(connectivityProvider);
 
     // Primary color for the Tech app chat badges
-    const badgeColor = Color.fromRGBO(13, 95, 72, 1);
+    const badgeColor = AppColors.app_background_clr;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,

@@ -63,76 +63,74 @@ class TimerNotifier extends Notifier<TimerState> {
 
   @override
   TimerState build() {
-    // Cancel timer automatically when provider is disposed
     ref.onDispose(() {
       _timer?.cancel();
     });
 
-    return const TimerState(totalSeconds: 0, isRunning: false);
+    return const TimerState(startTime: null, isRunning: false);
   }
 
-  /// Initialize timer with API response
-  void initialize({
-    required int totalSeconds,
-    required bool isRunning,
-  }) {
+  /// 🔥 Start timer with API startTime
+  void start(DateTime startTime) {
     _timer?.cancel();
 
-    state = TimerState(totalSeconds: totalSeconds, isRunning: isRunning);
+    state = TimerState(startTime: startTime, isRunning: true);
 
-    if (isRunning) {
-      _startLocalTimer();
-    }
+    _startTicker();
   }
 
-  void _startLocalTimer() {
+  void _startTicker() {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      state = TimerState(
-        totalSeconds: state.totalSeconds + 1,
-        isRunning: true,
-      );
+      if (state.startTime == null) return;
+
+      // 🔥 trigger rebuild only
+      state = TimerState(startTime: state.startTime, isRunning: true);
     });
   }
 
-  /// Pause timer locally
+  /// ⏸ Pause (keeps startTime, just stops UI updates)
   void pause() {
     _timer?.cancel();
-    state = TimerState(totalSeconds: state.totalSeconds, isRunning: false);
+
+    state = TimerState(startTime: state.startTime, isRunning: false);
   }
 
-  /// Resume timer locally
+  /// ▶ Resume
   void resume() {
-    if (!state.isRunning) {
-      state = TimerState(totalSeconds: state.totalSeconds, isRunning: true);
-      _startLocalTimer();
-    }
+    if (state.startTime == null) return;
+    if (state.isRunning) return;
+
+    state = TimerState(startTime: state.startTime, isRunning: true);
+
+    _startTicker();
   }
 
-  /// Reset timer
+  /// 🔄 Reset
   void reset() {
     _timer?.cancel();
-    state = const TimerState(totalSeconds: 0, isRunning: false);
+
+    state = const TimerState(startTime: null, isRunning: false);
   }
 }
 
 /// Timer state class
 class TimerState {
-  final int totalSeconds;
+  final DateTime? startTime;
   final bool isRunning;
 
-  const TimerState({
-    required this.totalSeconds,
-    required this.isRunning,
-  });
+  const TimerState({this.startTime, required this.isRunning});
 
-  Duration get duration => Duration(seconds: totalSeconds);
+  Duration get duration {
+    if (startTime == null) return Duration.zero;
+    return DateTime.now().difference(startTime!);
+  }
 
-  /// Formatted time like HH:mm:ss
   String get formattedTime {
-    final hours = duration.inHours.toString().padLeft(2, '0');
-    final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
-    final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
-    return "$hours:$minutes:$seconds";
+    final d = duration;
+
+    return "${d.inHours.toString().padLeft(2, '0')}:"
+        "${(d.inMinutes % 60).toString().padLeft(2, '0')}:"
+        "${(d.inSeconds % 60).toString().padLeft(2, '0')}";
   }
 }
 

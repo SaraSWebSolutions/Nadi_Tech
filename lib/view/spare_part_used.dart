@@ -42,78 +42,79 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
   @override
   Widget build(BuildContext context) {
     final sparePartsAsync = ref.watch(oursparepartsprovider);
-   Future<void> _proceedToPayment() async {
-  final bool spareUsedValue = sparePartsUsed;
+    Future<void> _proceedToPayment() async {
+      final bool spareUsedValue = sparePartsUsed;
 
-  /// 🔴 VALIDATION CHECK (IMPORTANT)
-  if (spareUsedValue && selectedParts.isEmpty) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Alert"),
-        content: const Text("Please select at least one spare part."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
-          )
-        ],
-      ),
-    );
-    return; // STOP FLOW
-  }
+      /// 🔴 VALIDATION CHECK (IMPORTANT)
+      if (spareUsedValue && selectedParts.isEmpty) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text("Alert"),
+            content: const Text("Please select at least one spare part."),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+        );
+        return; // STOP FLOW
+      }
 
-  for (var part in selectedParts) {
-    int count = partCounts[part.productId.id] ?? 1;
-    debugPrint(
-      "Product: ${part.productId.productName}, "
-      "ID: ${part.productId.id}, "
-      "Count: $count, "
-      "sparePartsUsed: $spareUsedValue",
-    );
-  }
+      for (var part in selectedParts) {
+        int count = partCounts[part.productId.id] ?? 1;
+        debugPrint(
+          "Product: ${part.productId.productName}, "
+          "ID: ${part.productId.id}, "
+          "Count: $count, "
+          "sparePartsUsed: $spareUsedValue",
+        );
+      }
 
-  final List<SelectedSparePart> sparePartList = selectedParts.map((part) {
-    return SelectedSparePart(
-      productId: part.productId.id,
-      count: partCounts[part.productId.id] ?? 1,
-    );
-  }).toList();
+      final List<SelectedSparePart> sparePartList = selectedParts.map((part) {
+        return SelectedSparePart(
+          productId: part.productId.id,
+          count: partCounts[part.productId.id] ?? 1,
+        );
+      }).toList();
 
-  final UpdatePayment updatePayment = UpdatePayment(
-    userServiceId: widget.userServiceId,
-    sparePartsUsed: spareUsedValue,
-    selectedSpareParts: sparePartList,
-  );
+      final UpdatePayment updatePayment = UpdatePayment(
+        userServiceId: widget.userServiceId,
+        sparePartsUsed: spareUsedValue,
+        selectedSpareParts: sparePartList,
+      );
 
-  try {
-    await ref.read(updatePaymentServiceProvider)
-        .passupdatepayment(updatePayment);
+      try {
+        await ref
+            .read(updatePaymentServiceProvider)
+            .passupdatepayment(updatePayment);
 
-    ref.invalidate(serviceListProvider);
-    ref.read(homeTabProvider.notifier).state = 5;
+        ref.invalidate(serviceListProvider);
+        ref.read(homeTabProvider.notifier).state = 5;
 
-    context.go(RouteName.bottom_nav);
+        context.go(RouteName.bottom_nav);
 
-    setState(() {
-      partCounts.clear();
-      selectedParts.clear();
-      sparePartsUsed = false;
-    });
-  } catch (e) {
-    debugPrint("Update payment failed: $e");
+        setState(() {
+          partCounts.clear();
+          selectedParts.clear();
+          sparePartsUsed = false;
+        });
+      } catch (e) {
+        debugPrint("Update payment failed: $e");
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.red,
-        content: Text(
-          e.toString().replaceFirst('Exception: ', ''),
-          style: const TextStyle(color: Colors.white),
-        ),
-      ),
-    );
-  }
-}
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red,
+            content: Text(
+              e.toString().replaceFirst('Exception: ', ''),
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        );
+      }
+    }
 
     return PopScope(
       canPop: false,
@@ -131,52 +132,52 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         /// MAIN CHECKBOX
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: sparePartsUsed,
-                              activeColor: AppColors.app_background_clr,
-                              onChanged: (value) {
-  setState(() {
-    sparePartsUsed = value!;
+                        // Row(
+                        //   children: [
+                        //     Checkbox(
+                        //       value: sparePartsUsed,
+                        //       activeColor: AppColors.app_background_clr,
+                        //       onChanged: (value) {
+                        //         setState(() {
+                        //           sparePartsUsed = value!;
 
-    if (!sparePartsUsed) {
-      selectedParts.clear();
-    }
-  });
-},
-                            ),
+                        //           if (!sparePartsUsed) {
+                        //             selectedParts.clear();
+                        //           }
+                        //         });
+                        //       },
+                        //     ),
 
-                            // Wrap the text with a Consumer / sparePartsAsync
-                            sparePartsAsync.when(
-                              loading: () =>  Text(
-                               AppLocalizations.of(context)!.sparePartsUsed,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              error: (_, __) => Text(
-                                AppLocalizations.of(context)!.sparePartsUsed,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              data: (response) => Text(
-                                AppLocalizations.of(context)!.sparePartsUsedCount(
-                                  response.data.length,
-                                ),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        //     // Wrap the text with a Consumer / sparePartsAsync
+                        //     sparePartsAsync.when(
+                        //       loading: () => Text(
+                        //         AppLocalizations.of(context)!.sparePartsUsed,
+                        //         style: TextStyle(
+                        //           fontSize: 16,
+                        //           fontWeight: FontWeight.w600,
+                        //         ),
+                        //       ),
+                        //       error: (_, __) => Text(
+                        //         AppLocalizations.of(context)!.sparePartsUsed,
+                        //         style: const TextStyle(
+                        //           fontSize: 16,
+                        //           fontWeight: FontWeight.w600,
+                        //         ),
+                        //       ),
+                        //       data: (response) => Text(
+                        //         AppLocalizations.of(
+                        //           context,
+                        //         )!.sparePartsUsedCount(response.data.length),
+                        //         style: const TextStyle(
+                        //           fontSize: 16,
+                        //           fontWeight: FontWeight.w600,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
 
-                        const SizedBox(height: 16),
+                        // const SizedBox(height: 16),
 
                         /// AVAILABLE PARTS (API)
                         sparePartsAsync.when(
@@ -184,175 +185,348 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                               const Center(child: CircularProgressIndicator()),
                           error: (e, _) => Center(
                             child: Text(
-                              AppLocalizations.of(context)!.errorWithDetail(
-                                e.toString(),
-                              ),
+                              AppLocalizations.of(
+                                context,
+                              )!.errorWithDetail(e.toString()),
                             ),
                           ),
                           data: (response) {
-                            if (response.data.isEmpty) {
-                              return Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Image.asset(
-                                    "assets/images/Outofstock.png",
-                                    height: 100,
-                                    fit: BoxFit.contain,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    AppLocalizations.of(context)!.noSparePartUsed,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color.fromRGBO(13, 95, 72, 1),
+                            final parts = response.data;
+
+                            if (parts.isEmpty) {
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Image.asset(
+                                      "assets/images/Outofstock.png",
+                                      height: 120,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.noSparePartUsed,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color.fromRGBO(13, 95, 72, 1),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               );
                             }
-                            return _availablePartsCard(response.data);
+
+                            return Column(
+                              children: [
+                                /// SHOW CHECKBOX ONLY WHEN DATA EXISTS
+                                Row(
+                                  children: [
+                                    Checkbox(
+                                      value: sparePartsUsed,
+                                      activeColor: AppColors.app_background_clr,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          sparePartsUsed = value!;
+                                          if (!sparePartsUsed)
+                                            selectedParts.clear();
+                                        });
+                                      },
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.sparePartsUsedCount(parts.length),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 16),
+
+                                _availablePartsCard(parts),
+                              ],
+                            );
                           },
                         ),
 
                         const SizedBox(height: 20),
 
-                         Text(
-                          AppLocalizations.of(context)!.selectedParts,
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 20),
+                        if (sparePartsUsed && selectedParts.isNotEmpty) ...[
+                          const SizedBox(height: 20),
+                          Text(
+                            AppLocalizations.of(context)!.selectedParts,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 10),
 
-                        /// SELECTED PARTS LIST (same style logic)
-                        ...selectedParts.map((item) {
-                          int currentCount = partCounts[item.productId.id] ?? 1;
-                          return Container(
-                            height: 70,
-                            margin: const EdgeInsets.only(bottom: 10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15),
-                              color: Colors.white,
-                            ),
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 16),
-                                Container(
-                                  height: 50,
-                                  width: 50,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Colors.grey.withOpacity(0.5),
-                                      width: 1.5,
-                                    ),
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                  child: const Icon(Icons.build_outlined),
-                                ),
-                                const SizedBox(width: 12),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.productId.productName,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black
+                          ...selectedParts.map((item) {
+                            int currentCount =
+                                partCounts[item.productId.id] ?? 1;
+
+                            // return yourExistingSelectedItemWidget(item, currentCount);
+                            return Container(
+                              height: 70,
+                              margin: const EdgeInsets.only(bottom: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                color: Colors.white,
+                              ),
+                              child: Row(
+                                children: [
+                                  const SizedBox(width: 16),
+                                  Container(
+                                    height: 50,
+                                    width: 50,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.grey.withOpacity(0.5),
+                                        width: 1.5,
                                       ),
+                                      borderRadius: BorderRadius.circular(15),
                                     ),
-                                    const SizedBox(height: 10),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-
-                                      children: [
-                                        Text(
-                                          AppLocalizations.of(context)!
-                                              .bhdAmount(
-                                            item.productId.price.toString(),
-                                          ),
-                                          style: const TextStyle(
-                                            color: AppColors.scoundry_clr,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                    child: const Icon(Icons.build_outlined),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.productId.productName,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
                                         ),
-                                        const SizedBox(width: 30),
-                                        Container(
-                                          height: 27,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.primary_clr,
-                                            borderRadius: BorderRadius.circular(
-                                              30,
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+
+                                        children: [
+                                          Text(
+                                            AppLocalizations.of(
+                                              context,
+                                            )!.bhdAmount(
+                                              item.productId.price.toString(),
+                                            ),
+                                            style: const TextStyle(
+                                              color: AppColors.scoundry_clr,
+                                              fontWeight: FontWeight.w600,
                                             ),
                                           ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceEvenly,
-                                            children: [
-                                              // Minus button
-                                              IconButton(
-                                                padding: EdgeInsets.zero,
-                                                constraints:
-                                                    const BoxConstraints(),
-                                                onPressed: () {
-                                                  setState(() {
-                                                    if (currentCount > 1) {
+                                          const SizedBox(width: 30),
+                                          Container(
+                                            height: 27,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primary_clr,
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                // Minus button
+                                                IconButton(
+                                                  padding: EdgeInsets.zero,
+                                                  constraints:
+                                                      const BoxConstraints(),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      if (currentCount > 1) {
+                                                        partCounts[item
+                                                                .productId
+                                                                .id] =
+                                                            currentCount - 1;
+                                                      }
+                                                    });
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.remove,
+                                                    color: Colors.white,
+                                                    size: 17,
+                                                  ),
+                                                ),
+
+                                                // Count display
+                                                Text(
+                                                  "$currentCount",
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+
+                                                // Plus button
+                                                IconButton(
+                                                  padding: EdgeInsets.zero,
+                                                  constraints:
+                                                      const BoxConstraints(),
+                                                  onPressed: () {
+                                                    setState(() {
                                                       partCounts[item
                                                               .productId
                                                               .id] =
-                                                          currentCount - 1;
-                                                    }
-                                                  });
-                                                },
-                                                icon: const Icon(
-                                                  Icons.remove,
-                                                  color: Colors.white,
-                                                  size: 17,
+                                                          currentCount + 1;
+                                                    });
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.add,
+                                                    color: Colors.white,
+                                                    size: 17,
+                                                  ),
                                                 ),
-                                              ),
-
-                                              // Count display
-                                              Text(
-                                                "$currentCount",
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-
-                                              // Plus button
-                                              IconButton(
-                                                padding: EdgeInsets.zero,
-                                                constraints:
-                                                    const BoxConstraints(),
-                                                onPressed: () {
-                                                  setState(() {
-                                                    partCounts[item
-                                                            .productId
-                                                            .id] =
-                                                        currentCount + 1;
-                                                  });
-                                                },
-                                                icon: const Icon(
-                                                  Icons.add,
-                                                  color: Colors.white,
-                                                  size: 17,
-                                                ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ],
 
-                        const SizedBox(height: 20),
+                        /// SELECTED PARTS LIST (same style logic)
+                        // ...selectedParts.map((item) {
+                        //   int currentCount = partCounts[item.productId.id] ?? 1;
+                        //   return Container(
+                        //     height: 70,
+                        //     margin: const EdgeInsets.only(bottom: 10),
+                        //     decoration: BoxDecoration(
+                        //       borderRadius: BorderRadius.circular(15),
+                        //       color: Colors.white,
+                        //     ),
+                        //     child: Row(
+                        //       children: [
+                        //         const SizedBox(width: 16),
+                        //         Container(
+                        //           height: 50,
+                        //           width: 50,
+                        //           decoration: BoxDecoration(
+                        //             border: Border.all(
+                        //               color: Colors.grey.withOpacity(0.5),
+                        //               width: 1.5,
+                        //             ),
+                        //             borderRadius: BorderRadius.circular(15),
+                        //           ),
+                        //           child: const Icon(Icons.build_outlined),
+                        //         ),
+                        //         const SizedBox(width: 12),
+                        //         Column(
+                        //           mainAxisAlignment: MainAxisAlignment.center,
+                        //           crossAxisAlignment: CrossAxisAlignment.start,
+                        //           children: [
+                        //             Text(
+                        //               item.productId.productName,
+                        //               style: const TextStyle(
+                        //                 fontWeight: FontWeight.w500,
+                        //                 color: Colors.black,
+                        //               ),
+                        //             ),
+                        //             const SizedBox(height: 10),
+                        //             Row(
+                        //               mainAxisAlignment:
+                        //                   MainAxisAlignment.spaceBetween,
+
+                        //               children: [
+                        //                 Text(
+                        //                   AppLocalizations.of(
+                        //                     context,
+                        //                   )!.bhdAmount(
+                        //                     item.productId.price.toString(),
+                        //                   ),
+                        //                   style: const TextStyle(
+                        //                     color: AppColors.scoundry_clr,
+                        //                     fontWeight: FontWeight.w600,
+                        //                   ),
+                        //                 ),
+                        //                 const SizedBox(width: 30),
+                        //                 Container(
+                        //                   height: 27,
+                        //                   decoration: BoxDecoration(
+                        //                     color: AppColors.primary_clr,
+                        //                     borderRadius: BorderRadius.circular(
+                        //                       30,
+                        //                     ),
+                        //                   ),
+                        //                   child: Row(
+                        //                     mainAxisAlignment:
+                        //                         MainAxisAlignment.spaceEvenly,
+                        //                     children: [
+                        //                       // Minus button
+                        //                       IconButton(
+                        //                         padding: EdgeInsets.zero,
+                        //                         constraints:
+                        //                             const BoxConstraints(),
+                        //                         onPressed: () {
+                        //                           setState(() {
+                        //                             if (currentCount > 1) {
+                        //                               partCounts[item
+                        //                                       .productId
+                        //                                       .id] =
+                        //                                   currentCount - 1;
+                        //                             }
+                        //                           });
+                        //                         },
+                        //                         icon: const Icon(
+                        //                           Icons.remove,
+                        //                           color: Colors.white,
+                        //                           size: 17,
+                        //                         ),
+                        //                       ),
+
+                        //                       // Count display
+                        //                       Text(
+                        //                         "$currentCount",
+                        //                         style: const TextStyle(
+                        //                           color: Colors.white,
+                        //                           fontWeight: FontWeight.bold,
+                        //                         ),
+                        //                       ),
+
+                        //                       // Plus button
+                        //                       IconButton(
+                        //                         padding: EdgeInsets.zero,
+                        //                         constraints:
+                        //                             const BoxConstraints(),
+                        //                         onPressed: () {
+                        //                           setState(() {
+                        //                             partCounts[item
+                        //                                     .productId
+                        //                                     .id] =
+                        //                                 currentCount + 1;
+                        //                           });
+                        //                         },
+                        //                         icon: const Icon(
+                        //                           Icons.add,
+                        //                           color: Colors.white,
+                        //                           size: 17,
+                        //                         ),
+                        //                       ),
+                        //                     ],
+                        //                   ),
+                        //                 ),
+                        //               ],
+                        //             ),
+                        //           ],
+                        //         ),
+                        //       ],
+                        //     ),
+                        //   );
+                        // }),
+
+                        // const SizedBox(height: 20),
 
                         /// PAYMENT SUMMARY
                         // _paymentSummaryCard(),
@@ -366,12 +540,34 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                   height: 50,
                   radius: 12,
                   onPressed: (!sparePartsUsed || selectedParts.isNotEmpty)
-      ? _proceedToPayment
-      : null,
+                      ? _proceedToPayment
+                      : null,
                   color: AppColors.scoundry_clr,
-                  text: AppLocalizations.of(context)!.proceedToPayment,
-                  // onPressed: _proceedToPayment,
+
+                  text: sparePartsAsync.when(
+                    loading: () => AppLocalizations.of(context)!.workCompleted,
+                    error: (_, __) =>
+                        AppLocalizations.of(context)!.workCompleted,
+                    data: (response) {
+                      final hasParts = response.data.isNotEmpty;
+
+                      return hasParts
+                          ? AppLocalizations.of(context)!.workCompleted
+                          : AppLocalizations.of(context)!.workCompleted;
+                    },
+                  ),
                 ),
+                // PrimaryButton(
+                //   Width: double.infinity,
+                //   height: 50,
+                //   radius: 12,
+                //   onPressed: (!sparePartsUsed || selectedParts.isNotEmpty)
+                //       ? _proceedToPayment
+                //       : null,
+                //   color: AppColors.scoundry_clr,
+                //   text: AppLocalizations.of(context)!.proceedToPayment,
+                //   // onPressed: _proceedToPayment,
+                // ),
               ],
             ),
           ),
@@ -390,7 +586,10 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
       ),
       child: Column(
         children: [
-          _cardHeader(AppLocalizations.of(context)!.availableParts, AppColors.primary_clr),
+          _cardHeader(
+            AppLocalizations.of(context)!.availableParts,
+            AppColors.primary_clr,
+          ),
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -416,11 +615,18 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                               });
                             },
                     ),
-                    Expanded(child: Text(item.productId.productName,style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),)),
-                    Text(
-                      AppLocalizations.of(context)!.bhdAmount(
-                        item.productId.price.toString(),
+                    Expanded(
+                      child: Text(
+                        item.productId.productName,
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
+                        ),
                       ),
+                    ),
+                    Text(
+                      AppLocalizations.of(
+                        context,
+                      )!.bhdAmount(item.productId.price.toString()),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ],

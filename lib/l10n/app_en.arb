@@ -1,7 +1,7 @@
 {
       "@@locale": "en",
 
-  "incomeRequest": "Income Request",
+  "incomeRequest": "Service Request",
   "noRequestFound": "No request found",
 
     "home": "Home",
@@ -46,7 +46,7 @@
      "priceLabel": "| Price:", 
 
        "all": "All",
-  "accepted": "Accepted",
+  "accepted": "Assigned",
   "inProgress": "In-progress",
   "pending": "Pending",
   "completed": "Completed",
@@ -239,6 +239,8 @@
   "locationLabel": "Location",
   "noInventoryFound": "No inventory found",
   "editProfile": "Edit Profile",
-    "writeMessage": "Write a message..."
+    "writeMessage": "Write a message...",
+    "getUserApproval": "Get User Approval",
+    "workCompleted": "Work completed"
 
 }

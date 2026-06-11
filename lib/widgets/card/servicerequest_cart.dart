@@ -35,7 +35,7 @@ class ServicerequestCart extends ConsumerStatefulWidget {
 class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
   final AcceptrequestService _acceptrequestService = AcceptrequestService();
   final StartworkService _startwork = StartworkService();
-
+  // final bool userApproval = widget.data.userApproval;
   // 🔹 AUDIO PLAYER
   AudioPlayer? _audioPlayer;
   bool _isPlaying = false;
@@ -138,43 +138,43 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
   // }
 
   Future<void> startwork() async {
-  try {
-    await Appperfernces.saveuserServiceId(widget.data.id);
+    try {
+      await Appperfernces.saveuserServiceId(widget.data.id);
 
-    final response = await _startwork.fetchstartwork(widget.data.id);
+      final response = await _startwork.fetchstartwork(widget.data.id);
 
-    debugPrint("START WORK RESPONSE => $response");
+      debugPrint("START WORK RESPONSE => $response");
 
-    // ❌ Handle API failure messages
-    if (response == null || response["success"] == false) {
+      // ❌ Handle API failure messages
+      if (response == null || response["success"] == false) {
+        SnackbarHelper.show(
+          context,
+          backgroundColor: Colors.red,
+          message: response?["message"] ?? "Something went wrong",
+        );
+
+        return;
+      }
+
+      // ✅ SUCCESS FLOW
+      SnackbarHelper.show(
+        context,
+        backgroundColor: AppColors.app_background_clr,
+        message: AppLocalizations.of(context)?.startWork,
+      );
+
+      ref.invalidate(serviceListProvider);
+      ref.read(homeTabProvider.notifier).state = 4;
+
+      context.go(RouteName.bottom_nav);
+    } catch (e) {
       SnackbarHelper.show(
         context,
         backgroundColor: Colors.red,
-        message: response?["message"] ?? "Something went wrong",
+        message: e.toString(),
       );
-
-      return;
     }
-
-    // ✅ SUCCESS FLOW
-    SnackbarHelper.show(
-      context,
-      backgroundColor: AppColors.app_background_clr,
-      message: AppLocalizations.of(context)?.startWork,
-    );
-
-    ref.invalidate(serviceListProvider);
-    ref.read(homeTabProvider.notifier).state = 4;
-
-    context.go(RouteName.bottom_nav);
-  } catch (e) {
-    SnackbarHelper.show(
-      context,
-      backgroundColor: Colors.red,
-      message: e.toString(),
-    );
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -259,7 +259,10 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                           Width: double.infinity,
                           color: AppColors.scoundry_clr,
                           onPressed: startwork,
-                          text: AppLocalizations.of(context)!.startWork,
+                          text: AppLocalizations.of(context)!.getUserApproval,
+                          // text: widget.data.userApproval
+                          //     ? AppLocalizations.of(context)!.startWork
+                          //     : AppLocalizations.of(context)!.getUserApproval,
                         ),
                       ),
                     ],

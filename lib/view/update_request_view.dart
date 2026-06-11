@@ -179,19 +179,42 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
     }
   }
 
+  // Future<void> _loadTimer() async {
+  //   await Appperfernces.saveuserServiceId(widget.userServiceId);
+  //   try {
+  //     final response = await _timerService.fetchTimerData(
+  //       userServiceId: widget.userServiceId,
+  //     );
+
+  //     ref
+  //         .read(timerProvider.notifier)
+  //         .initialize(
+  //           totalSeconds: response["totalSeconds"] ?? 0,
+  //           isRunning: response["isRunning"] ?? false,
+  //         );
+  //   } catch (e) {
+  //     debugPrint("Timer load error: $e");
+  //   }
+  // }
   Future<void> _loadTimer() async {
     await Appperfernces.saveuserServiceId(widget.userServiceId);
+
     try {
       final response = await _timerService.fetchTimerData(
         userServiceId: widget.userServiceId,
       );
 
-      ref
-          .read(timerProvider.notifier)
-          .initialize(
-            totalSeconds: response["totalSeconds"] ?? 0,
-            isRunning: response["isRunning"] ?? false,
-          );
+      final totalSeconds = response["totalSeconds"] ?? 0;
+      final isRunning = response["isRunning"] ?? false;
+
+      // 🔥 Convert backend seconds → startTime
+      final startTime = DateTime.now().subtract(
+        Duration(seconds: totalSeconds),
+      );
+
+      if (isRunning) {
+        ref.read(timerProvider.notifier).start(startTime);
+      }
     } catch (e) {
       debugPrint("Timer load error: $e");
     }

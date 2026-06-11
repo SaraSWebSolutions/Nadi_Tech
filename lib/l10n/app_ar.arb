@@ -1,7 +1,7 @@
 {
       "@@locale": "ar",
 
-  "incomeRequest": "طلب الدخل",
+  "incomeRequest": "طلب خدمة",
   "noRequestFound": "لم يتم العثور على أي طلب",
 
   "home": "الرئيسية",
@@ -44,7 +44,7 @@
    "requestMaterial": "طلب المواد", 
 
      "all": "الكل",
-  "accepted": "مقبول",
+  "accepted": "مُكَلَّف",
   "inProgress": "قيد التنفيذ",
   "pending": "قيد الانتظار",
   "completed": "مكتمل",
@@ -236,6 +236,8 @@
   "locationLabel": "الموقع",
   "noInventoryFound": "لا يوجد مخزون",
   "editProfile": "تعديل الملف الشخصي",
-    "writeMessage": "اكتب رسالة..."
+    "writeMessage": "اكتب رسالة...",
+    "getUserApproval": "الحصول على موافقة المستخدم",
+    "workCompleted": "تم إكمال العمل"
 
 }

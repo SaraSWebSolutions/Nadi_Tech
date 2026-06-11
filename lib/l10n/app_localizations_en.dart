@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get incomeRequest => 'Income Request';
+  String get incomeRequest => 'Service Request';
 
   @override
   String get noRequestFound => 'No request found';
@@ -111,7 +111,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get all => 'All';
 
   @override
-  String get accepted => 'Accepted';
+  String get accepted => 'Assigned';
 
   @override
   String get inProgress => 'In-progress';
@@ -513,4 +513,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get writeMessage => 'Write a message...';
+
+  @override
+  String get getUserApproval => 'Get User Approval';
+
+  @override
+  String get workCompleted => 'Work completed';
 }

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 import 'package:tech_app/core/network/dio_client.dart';
 
@@ -128,15 +129,37 @@ class UpdateService {
           ),
         );
       }
+      debugPrint("========== REQUEST SENT ==========");
+      for (var field in formData.fields) {
+        debugPrint("FIELD => ${field.key} : ${field.value}");
+      }
 
+      for (var file in formData.files) {
+        debugPrint("FILE => ${file.key} : ${file.value.filename}");
+      }
       final response = await _dio.post(
         "techie/update-service",
         data: formData,
-        options: Options(contentType: Headers.multipartFormDataContentType),
+        //options: Options(contentType: Headers.multipartFormDataContentType),
       );
-
+      debugPrint("========== SUCCESS RESPONSE ==========");
+      debugPrint("STATUS CODE => ${response.statusCode}");
+      debugPrint("DATA => ${response.data}");
       return response.data;
     } on DioException catch (e) {
+      // =====================
+      // ERROR LOG
+      // =====================
+      debugPrint("========== DIO ERROR ==========");
+      debugPrint("STATUS CODE => ${e.response?.statusCode}");
+      debugPrint("MESSAGE => ${e.message}");
+
+      if (e.response != null) {
+        debugPrint("ERROR DATA => ${e.response?.data}");
+      } else {
+        debugPrint("NO RESPONSE RECEIVED FROM SERVER");
+      }
+
       final errorData = e.response?.data;
 
       final message = errorData is Map<String, dynamic>
