@@ -282,80 +282,58 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+
+      /// ✅ HEADER
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Header(
+          title: AppLocalizations.of(context)!.profileManagement,
+          showBackButton: false,
+          showNotificationIcon: false,
+          showRefreshIcon: false,
+          showProfileIcon: false,
+        ),
+      ),
+
+      /// ✅ BODY (NO Expanded HERE)
       body: SafeArea(
-        child: Column(
-          children: [
-            /// ✅ COMMON HEADER
-            Header(
-              title: AppLocalizations.of(context)!.profileManagement,
-              showBackButton: false,
-              showNotificationIcon: false,
-              showRefreshIcon: false,
-              showProfileIcon: false,
+        child: Scrollbar(
+          thumbVisibility: true,
+          radius: const Radius.circular(10),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                _profileHeader(),
+                const SizedBox(height: 20),
+                _personalDetailsContainer(),
+                const SizedBox(height: 20),
+                _applicationSettingsContainer(),
+                const SizedBox(height: 30),
 
-              // onBackPressed: () {
-              //   if (context.canPop()) {
-              //     context.pop();
-              //   } else {
-              //     context.go(RouteName.bottom_nav);
-              //   }
-              // },
-            ),
-            const Divider(height: 1),
-
-            Expanded(
-              child: Scrollbar(
-                thumbVisibility: true,
-                radius: const Radius.circular(10),
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    children: [
-                      _profileHeader(),
-
-                      const SizedBox(height: 20),
-
-                      _personalDetailsContainer(),
-
-                      const SizedBox(height: 20),
-
-                      _applicationSettingsContainer(),
-
-                      const SizedBox(height: 30),
-
-                      /// LOGOUT BUTTON
-                      _dangerActionTile(
-                        icon: Icons.logout_rounded,
-                        title: AppLocalizations.of(context)!.logOut,
-                        subtitle: AppLocalizations.of(
-                          context,
-                        )!.logoutConfirmMessage,
-                        color: AppColors.app_background_clr,
-                        onTap: () => _showLogoutConfirmDialog(context),
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      /// DELETE ACCOUNT BUTTON
-                      _dangerActionTile(
-                        icon: Icons.delete_forever_rounded,
-                        title: AppLocalizations.of(context)!.accountDelete,
-                        subtitle: AppLocalizations.of(
-                          context,
-                        )!.selectReasonDelete,
-                        color: Colors.redAccent,
-                        onTap: () => _showDeleteAccountDialog(context),
-                      ),
-
-                      /// EXTRA BOTTOM SPACE
-                      const SizedBox(height: 30),
-                    ],
-                  ),
+                _dangerActionTile(
+                  icon: Icons.logout_rounded,
+                  title: AppLocalizations.of(context)!.logOut,
+                  subtitle: AppLocalizations.of(context)!.logoutConfirmMessage,
+                  color: AppColors.app_background_clr,
+                  onTap: () => _showLogoutConfirmDialog(context),
                 ),
-              ),
+
+                const SizedBox(height: 18),
+
+                _dangerActionTile(
+                  icon: Icons.delete_forever_rounded,
+                  title: AppLocalizations.of(context)!.accountDelete,
+                  subtitle: AppLocalizations.of(context)!.selectReasonDelete,
+                  color: Colors.redAccent,
+                  onTap: () => _showDeleteAccountDialog(context),
+                ),
+
+                const SizedBox(height: 30),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

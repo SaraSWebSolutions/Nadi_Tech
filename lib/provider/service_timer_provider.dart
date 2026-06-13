@@ -121,6 +121,14 @@ class TimerNotifier extends Notifier<TimerState> {
 
     state = const TimerState(startTime: null, isRunning: false);
   }
+
+  void pauseLocal() {
+    state = state.copyWith(isRunning: false);
+  }
+
+  void startLocal() {
+    state = state.copyWith(isRunning: true);
+  }
 }
 
 /// Timer state class

@@ -5,6 +5,8 @@ import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/core/utils/snackbar_helper.dart';
 import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/model/Inventory_Material_Model.dart';
+import 'package:tech_app/provider/InventoryList_provider.dart';
+import 'package:tech_app/provider/bottom_nav_provider.dart';
 import 'package:tech_app/provider/language_provider.dart';
 import 'package:tech_app/routes/route_name.dart';
 import 'package:tech_app/services/MaterialRequest_service.dart';
@@ -74,13 +76,14 @@ class _MaterialRequestState extends ConsumerState<MaterialRequest> {
       setState(() {
         isLoading = false;
       });
-
+      ref.invalidate(inventoryListProvider);
+      ref.refresh(inventoryListProvider);
       SnackbarHelper.show(
         context,
         backgroundColor: AppColors.app_background_clr,
         message: AppLocalizations.of(context)!.materialRequestSuccess,
       );
-
+      ref.read(bottomNavProvider.notifier).state = 3;
       context.pop();
     } catch (e) {
       setState(() {
@@ -99,10 +102,12 @@ class _MaterialRequestState extends ConsumerState<MaterialRequest> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
+
+      /// APP BAR
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
         child: Column(
           children: [
-            // 🔹 CUSTOM HEADER
             Header(
               title: AppLocalizations.of(context)!.materialRequest,
               showBackButton: true,
@@ -117,116 +122,113 @@ class _MaterialRequestState extends ConsumerState<MaterialRequest> {
                 }
               },
             ),
-
-            const Divider(height: 1),
-
-            // 🔹 CONTENT
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Form(
-                    key: _fromkey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context)!.materialName,
-                          style: const TextStyle(fontSize: 15),
-                        ),
-                        const SizedBox(height: 15),
-
-                        AppDropdown(
-                          label: AppLocalizations.of(context)!.selectProduct,
-                          items: products.map((e) => e.productName).toList(),
-                          value: selectedProduct?.productName,
-                          validator: (value) => value == null
-                              ? AppLocalizations.of(
-                                  context,
-                                )!.pleaseSelectProduct
-                              : null,
-                          onChanged: (value) {
-                            final product = products.firstWhere(
-                              (e) => e.productName == value,
-                            );
-                            setState(() {
-                              selectedProduct = product;
-                            });
-                          },
-                        ),
-
-                        const SizedBox(height: 25),
-
-                        Text(AppLocalizations.of(context)!.quantityNeeded),
-                        const SizedBox(height: 15),
-
-                        AppTextField(
-                          label: AppLocalizations.of(context)!.exampleQuantity,
-                          controller: _quantity,
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return AppLocalizations.of(
-                                context,
-                              )!.enterQuantity;
-                            }
-                            return null;
-                          },
-                        ),
-
-                        const SizedBox(height: 25),
-
-                        Text(AppLocalizations.of(context)!.optionalNotes),
-                        const SizedBox(height: 15),
-
-                        AppTextField(
-                          label: AppLocalizations.of(
-                            context,
-                          )!.optionalNotesHint,
-                          controller: _optionalissuse,
-                          maxLines: 4,
-                        ),
-
-                        const SizedBox(height: 35),
-
-                        PrimaryButton(
-                          radius: 12,
-                          color: AppColors.primary_clr,
-                          Width: double.infinity,
-                          height: 50,
-                          onPressed: () {
-                            context.push(RouteName.bulk_request);
-                          },
-                          text: AppLocalizations.of(context)!.addBulkRequest,
-                          icon: const Icon(
-                            Icons.add,
-                            size: 25,
-                            color: Colors.white,
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        PrimaryButton(
-                          radius: 12,
-                          color: AppColors.app_background_clr,
-                          Width: double.infinity,
-                          height: 50,
-                          isLoading: isLoading,
-                          onPressed: () {
-                            if (_fromkey.currentState!.validate()) {
-                              submitrequest();
-                            }
-                          },
-                          text: AppLocalizations.of(context)!.submitRequest,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
           ],
+        ),
+      ),
+
+      resizeToAvoidBottomInset: true,
+
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.fromLTRB(10, 10, 10, 24), // ✅ IMPORTANT FIX
+          child: Form(
+            key: _fromkey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.materialName,
+                  style: const TextStyle(fontSize: 15),
+                ),
+                const SizedBox(height: 15),
+
+                AppDropdown(
+                  label: AppLocalizations.of(context)!.selectProduct,
+                  items: products.map((e) => e.productName).toList(),
+                  value: selectedProduct?.productName,
+                  validator: (value) => value == null
+                      ? AppLocalizations.of(context)!.pleaseSelectProduct
+                      : null,
+                  onChanged: (value) {
+                    final product = products.firstWhere(
+                      (e) => e.productName == value,
+                    );
+                    setState(() {
+                      selectedProduct = product;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 25),
+
+                Text(AppLocalizations.of(context)!.quantityNeeded),
+                const SizedBox(height: 15),
+
+                AppTextField(
+                  label: AppLocalizations.of(context)!.exampleQuantity,
+                  controller: _quantity,
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return AppLocalizations.of(context)!.enterQuantity;
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 25),
+
+                Text(AppLocalizations.of(context)!.optionalNotes),
+                const SizedBox(height: 15),
+
+                AppTextField(
+                  label: AppLocalizations.of(context)!.optionalNotesHint,
+                  controller: _optionalissuse,
+                  maxLines: 4,
+                ),
+
+                const SizedBox(height: 30),
+
+                /// ADD BULK BUTTON
+                PrimaryButton(
+                  radius: 12,
+                  color: AppColors.primary_clr,
+                  Width: double.infinity,
+                  height: 50,
+                  onPressed: () {
+                    context.push(RouteName.bulk_request);
+                  },
+                  text: AppLocalizations.of(context)!.addBulkRequest,
+                  icon: const Icon(Icons.add, size: 25, color: Colors.white),
+                ),
+
+                const SizedBox(height: 15),
+
+                /// SUBMIT BUTTON
+                PrimaryButton(
+                  radius: 12,
+                  color: AppColors.app_background_clr,
+                  Width: double.infinity,
+                  height: 50,
+                  isLoading: isLoading,
+                  onPressed: () {
+                    if (_fromkey.currentState!.validate()) {
+                      submitrequest();
+                      ref.invalidate(inventoryListProvider);
+                      ref.refresh(inventoryListProvider);
+                    }
+                  },
+                  text: AppLocalizations.of(context)!.submitRequest,
+                ),
+
+                /// ✅ FIX: prevents 1px bottom overflow (keyboard + safe area)
+                SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+              ],
+            ),
+          ),
         ),
       ),
     );

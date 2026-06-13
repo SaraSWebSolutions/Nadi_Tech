@@ -75,9 +75,10 @@ class _BulkRequestState extends ConsumerState<BulkRequest> {
         backgroundColor: AppColors.scoundry_clr,
         message: AppLocalizations.of(context)!.materialRequestSuccess,
       );
-ref.read(bottomNavProvider.notifier).state = 1;
+      ref.read(bottomNavProvider.notifier).state = 3;
 
-context.go(RouteName.bottom_nav);  } catch (e) {
+      context.go(RouteName.bottom_nav);
+    } catch (e) {
       SnackbarHelper.show(
         context,
         backgroundColor: Colors.red,
@@ -91,10 +92,52 @@ context.go(RouteName.bottom_nav);  } catch (e) {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Header(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+
+      /// ✅ FIXED HEADER (NO OVERFLOW)
+      // appBar: PreferredSize(
+      //   preferredSize: const Size.fromHeight(60),
+      //   child: SafeArea(
+      //     bottom: false,
+      //     child: Column(
+      //       mainAxisSize: MainAxisSize.min,
+      //       children: [
+      //         Header(
+      //           title: AppLocalizations.of(context)!.bulkRequest,
+      //           showBackButton: true,
+      //           showNotificationIcon: false,
+      //           showRefreshIcon: false,
+      //           showProfileIcon: false,
+      //           onBackPressed: () {
+      //             if (context.canPop()) {
+      //               context.pop();
+      //             } else {
+      //               context.go(RouteName.bottom_nav);
+      //             }
+      //           },
+      //         ),
+      //         SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+      //       ],
+      //     ),
+      //   ),
+      // ),
+      body: Column(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              color: AppColors.app_background_clr,
+              // borderRadius: BorderRadius.only(
+              //   bottomLeft: Radius.circular(20),
+              //   bottomRight: Radius.circular(20),
+              // ),
+            ),
+            // padding: EdgeInsets.only(
+            //   top: MediaQuery.of(context).padding.top + 8,
+            //   left: 15,
+            //   right: 15,
+            //   bottom: 12,
+            // ),
+            child: Header(
               title: AppLocalizations.of(context)!.bulkRequest,
               showBackButton: true,
               showNotificationIcon: false,
@@ -108,59 +151,56 @@ context.go(RouteName.bottom_nav);  } catch (e) {
                 }
               },
             ),
+          ),
 
-            const Divider(height: 1),
+          Expanded(
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  ...materialSelections.asMap().entries.map(
+                    (entry) => materialCard(entry.key),
+                  ),
 
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  children: [
-                    ...materialSelections.asMap().entries.map(
-                      (entry) => materialCard(entry.key),
-                    ),
+                  const SizedBox(height: 10),
 
-                    const SizedBox(height: 10),
+                  PrimaryButton(
+                    radius: 12,
+                    color: AppColors.primary_clr,
+                    height: 55,
+                    Width: double.infinity,
+                    onPressed: () {
+                      setState(() {
+                        materialSelections.add(
+                          MaterialSelection(
+                            quantityController: TextEditingController(),
+                          ),
+                        );
+                      });
+                    },
+                    text: AppLocalizations.of(context)!.addNewMaterial,
+                    icon: const Icon(Icons.add, size: 25, color: Colors.white),
+                  ),
 
-                    PrimaryButton(
-                      radius: 12,
-                      color: AppColors.primary_clr,
-                      height: 55,
-                      Width: double.infinity,
-                      onPressed: () {
-                        setState(() {
-                          materialSelections.add(
-                            MaterialSelection(
-                              quantityController: TextEditingController(),
-                            ),
-                          );
-                        });
-                      },
-                      text: AppLocalizations.of(context)!.addNewMaterial,
-                      icon: const Icon(
-                        Icons.add,
-                        size: 25,
-                        color: Colors.white,
-                      ),
-                    ),
+                  const SizedBox(height: 10),
 
-                    const SizedBox(height: 10),
+                  PrimaryButton(
+                    radius: 12,
+                    color: AppColors.app_background_clr,
+                    height: 55,
+                    isLoading: isLoading,
+                    Width: double.infinity,
+                    onPressed: submitrequest,
+                    text: AppLocalizations.of(context)!.submitRequest,
+                  ),
 
-                    PrimaryButton(
-                      radius: 12,
-                      color: AppColors.scoundry_clr,
-                      height: 55,
-                      isLoading: isLoading,
-                      Width: double.infinity,
-                      onPressed: submitrequest,
-                      text: AppLocalizations.of(context)!.submitRequest,
-                    ),
-                  ],
-                ),
+                  /// ✅ FIX: prevents last pixel overflow
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -216,154 +216,148 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
         liveItem.technicianUserService?.assignments.first.userApproval ?? false;
     debugPrint("USER APPROVAL => $userApproval");
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // 🔹 FIXED HEADER (always stable at top)
-            Header(
-              title: AppLocalizations.of(context)!.serviceDetails,
-              showBackButton: true,
-              showNotificationIcon: false,
-              showRefreshIcon: false,
-              showProfileIcon: false,
-              onBackPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go(RouteName.bottom_nav);
-                }
-              },
-            ),
+      body: Column(
+        children: [
+          // 🔹 FIXED HEADER (always stable at top)
+          Header(
+            title: AppLocalizations.of(context)!.serviceDetails,
+            showBackButton: true,
+            showNotificationIcon: false,
+            showRefreshIcon: false,
+            showProfileIcon: false,
+            onBackPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(RouteName.bottom_nav);
+              }
+            },
+          ),
+          // 🔹 CONTENT SCROLL AREA ONLY
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 10),
 
-            const Divider(height: 1),
-
-            // 🔹 CONTENT SCROLL AREA ONLY
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 10),
-
-                    // CUSTOMER & SERVICE DETAILS
-                    if (liveItem.assignmentStatus != "in-progress" &&
-                        liveItem.assignmentStatus != "completed" &&
-                        liveItem.assignmentStatus != "on-hold") ...[
-                      _buildCustomerDetails(),
-                      const SizedBox(height: 20),
-                      _buildServiceDetails(),
-                    ],
-
-                    const SizedBox(height: 10),
-
-                    // ACTION BUTTONS
-                    if (liveItem.assignmentStatus == "pending") ...[
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: PrimaryButton(
-                          radius: 13,
-                          height: 50,
-                          Width: double.infinity,
-                          color: AppColors.scoundry_clr,
-                          onPressed: () {
-                            acceptrequest(status: "accept");
-                          },
-                          text: AppLocalizations.of(context)!.accept,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: PrimaryButton(
-                          radius: 13,
-                          height: 50,
-                          Width: double.infinity,
-                          color: Colors.red,
-                          onPressed: () {
-                            _showRejectReasonSheet(context);
-                          },
-                          text: AppLocalizations.of(context)!.reject,
-                        ),
-                      ),
-                    ],
-
-                    // if (widget.data.assignmentStatus == "accepted") ...[
-                    if (widget.data.assignmentStatus == "accepted" ||
-                        widget.data.assignmentStatus == "pending-approval") ...[
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: PrimaryButton(
-                          radius: 13,
-                          height: 50,
-                          Width: double.infinity,
-                          color: AppColors.scoundry_clr,
-                          onPressed: startwork,
-                          text: userApproval || _isUser
-                              ? AppLocalizations.of(context)!.startWork
-                              : AppLocalizations.of(
-                                  context,
-                                )!.getUserApproval, // text: widget.data.userApproval
-                          //     ? AppLocalizations.of(context)!.startWork
-                          //     : AppLocalizations.of(context)!.getUserApproval,
-                        ),
-                      ),
-                    ],
-
-                    // COMPLETED SERVICE
-                    if (widget.data.assignmentStatus == "completed") ...[
-                      RequestCart(
-                        userServiceId: widget.data.id,
-                        clientname: widget.data.userId.basicInfo.fullName,
-                        serviceRequestID: widget.data.serviceRequestId,
-                        servicetype: widget.data.serviceId.name,
-                        assignmentStatus: widget.data.assignmentStatus,
-                        scheduleService: widget.data.scheduleService,
-                        status: widget.data.serviceStatus,
-                        createdAt: widget.data.createdAt,
-                        feedback: widget.data.feedback ?? '',
-                        payment: widget.data.payment,
-                        media: widget.data.media,
-                        assignments:
-                            widget.data.technicianUserService?.assignments ??
-                            [],
-                      ),
-                    ],
-
-                    // IN-PROGRESS
-                    if (widget.data.assignmentStatus == "in-progress") ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 15,
-                          vertical: 10,
-                        ),
-                        child: UpdateRequestView(
-                          serviceRequestId: widget.data.assignmentStatus,
-                          userServiceId: widget.data.id,
-                        ),
-                      ),
-                    ],
-
-                    // ON-HOLD
-                    if (widget.data.assignmentStatus == "on-hold") ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 15,
-                          vertical: 10,
-                        ),
-                        child: UpdateRequestView(
-                          serviceRequestId: widget.data.assignmentStatus,
-                          userServiceId: widget.data.id,
-                        ),
-                      ),
-                    ],
-
+                  // CUSTOMER & SERVICE DETAILS
+                  if (liveItem.assignmentStatus != "in-progress" &&
+                      liveItem.assignmentStatus != "completed" &&
+                      liveItem.assignmentStatus != "on-hold") ...[
+                    _buildCustomerDetails(),
                     const SizedBox(height: 20),
+                    _buildServiceDetails(),
                   ],
-                ),
+
+                  const SizedBox(height: 10),
+
+                  // ACTION BUTTONS
+                  if (liveItem.assignmentStatus == "pending") ...[
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: PrimaryButton(
+                        radius: 13,
+                        height: 50,
+                        Width: double.infinity,
+                        color: AppColors.scoundry_clr,
+                        onPressed: () {
+                          acceptrequest(status: "accept");
+                        },
+                        text: AppLocalizations.of(context)!.accept,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: PrimaryButton(
+                        radius: 13,
+                        height: 50,
+                        Width: double.infinity,
+                        color: Colors.red,
+                        onPressed: () {
+                          _showRejectReasonSheet(context);
+                        },
+                        text: AppLocalizations.of(context)!.reject,
+                      ),
+                    ),
+                  ],
+
+                  // if (widget.data.assignmentStatus == "accepted") ...[
+                  if (widget.data.assignmentStatus == "accepted" ||
+                      widget.data.assignmentStatus == "pending-approval") ...[
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: PrimaryButton(
+                        radius: 13,
+                        height: 50,
+                        Width: double.infinity,
+                        color: AppColors.scoundry_clr,
+                        onPressed: startwork,
+                        text: userApproval || _isUser
+                            ? AppLocalizations.of(context)!.startWork
+                            : AppLocalizations.of(
+                                context,
+                              )!.getUserApproval, // text: widget.data.userApproval
+                        //     ? AppLocalizations.of(context)!.startWork
+                        //     : AppLocalizations.of(context)!.getUserApproval,
+                      ),
+                    ),
+                  ],
+
+                  // COMPLETED SERVICE
+                  if (widget.data.assignmentStatus == "completed") ...[
+                    RequestCart(
+                      userServiceId: widget.data.id,
+                      clientname: widget.data.userId.basicInfo.fullName,
+                      serviceRequestID: widget.data.serviceRequestId,
+                      servicetype: widget.data.serviceId.name,
+                      assignmentStatus: widget.data.assignmentStatus,
+                      scheduleService: widget.data.scheduleService,
+                      status: widget.data.serviceStatus,
+                      createdAt: widget.data.createdAt,
+                      feedback: widget.data.feedback ?? '',
+                      payment: widget.data.payment,
+                      media: widget.data.media,
+                      assignments:
+                          widget.data.technicianUserService?.assignments ?? [],
+                    ),
+                  ],
+
+                  // IN-PROGRESS
+                  if (widget.data.assignmentStatus == "in-progress") ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 15,
+                        vertical: 10,
+                      ),
+                      child: UpdateRequestView(
+                        serviceRequestId: widget.data.assignmentStatus,
+                        userServiceId: widget.data.id,
+                      ),
+                    ),
+                  ],
+
+                  // ON-HOLD
+                  if (widget.data.assignmentStatus == "on-hold") ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 15,
+                        vertical: 10,
+                      ),
+                      child: UpdateRequestView(
+                        serviceRequestId: widget.data.assignmentStatus,
+                        userServiceId: widget.data.id,
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
