@@ -274,10 +274,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 return RefreshIndicator(
                   color: AppColors.app_background_clr,
                   onRefresh: () async {
-                    // Refresh service list
-                    ref.invalidate(serviceListProvider);
+                    await refreshServiceList(ref);
 
-                    // Refresh notifications
                     await ref
                         .read(notificationServiceProvider.notifier)
                         .refresh();
@@ -304,9 +302,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
                           itemBuilder: (context, index) {
                             final item = filteredData[index];
 
-                            final status = normalizeStatus(
-                              item.assignmentStatus,
-                            );
+                            final status = item.assignmentStatus.toLowerCase();
+                            //   item.assignmentStatus,
+                            // );
                             final color = getStatusColor(status);
 
                             final serviceName = item.serviceId.nameEn;
@@ -344,10 +342,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                           [],
                                       payment: item.payment,
                                       onClick: () async {
-                                        ref.invalidate(serviceListProvider);
-                                        await ref.read(
-                                          serviceListProvider.future,
-                                        );
+                                        await refreshServiceList(ref);
                                         await ref
                                             .read(
                                               notificationServiceProvider
@@ -355,6 +350,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                             )
                                             .refresh();
 
+                                        if (!context.mounted) return;
                                         context.push(
                                           RouteName.service_card,
                                           extra: item,

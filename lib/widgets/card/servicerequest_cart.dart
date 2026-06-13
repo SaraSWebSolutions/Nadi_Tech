@@ -35,11 +35,10 @@ class ServicerequestCart extends ConsumerStatefulWidget {
 class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
   final AcceptrequestService _acceptrequestService = AcceptrequestService();
   final StartworkService _startwork = StartworkService();
-  // final bool userApproval = widget.data.userApproval;
   // 🔹 AUDIO PLAYER
   AudioPlayer? _audioPlayer;
   bool _isPlaying = false;
-  bool _isUser = false;
+  bool _isLoading = false;
   @override
   void dispose() {
     _audioPlayer?.dispose();
@@ -64,6 +63,10 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
   }
 
   Future<void> acceptrequest({required String status, String? reason}) async {
+    if (_isLoading) return;
+
+    setState(() => _isLoading = true);
+
     try {
       final assignmentId = widget.data.id;
       final result = await _acceptrequestService.acceptrequest(
@@ -72,6 +75,8 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
         reason,
       );
       debugPrint("RESULT: $result");
+      if (!mounted) return;
+
       SnackbarHelper.show(
         context,
         backgroundColor: AppColors.app_background_clr,
@@ -79,22 +84,25 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
             ? AppLocalizations.of(context)!.serviceAccepted
             : AppLocalizations.of(context)!.serviceRejected,
       );
-      //   REFRESH SERVICE LIST API
-      ref.invalidate(serviceListProvider);
-      // 🔥 SET TAB BASED ON ACTION
-      if (status == "accept") {
-        ref.read(homeTabProvider.notifier).state = 2; // Accepted tab
-      } else {
-        ref.read(homeTabProvider.notifier).state = 3; // Rejected tab
-      }
 
-      context.go(RouteName.bottom_nav);
+      ref.read(homeTabProvider.notifier).state = status == "accept"
+          ? 2 // Accepted tab
+          : 3; // User Approval tab (rejected)
+
+      await refreshServiceDetail(ref, widget.data.id);
+      await refreshServiceList(ref);
+
+      if (mounted) context.go(RouteName.bottom_nav);
     } catch (e) {
-      SnackbarHelper.show(
-        context,
-        backgroundColor: Colors.red,
-        message: e.toString(),
-      );
+      if (mounted) {
+        SnackbarHelper.show(
+          context,
+          backgroundColor: Colors.red,
+          message: e.toString(),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -138,6 +146,10 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
   // }
 
   Future<void> startwork() async {
+    if (_isLoading) return;
+
+    setState(() => _isLoading = true);
+
     try {
       await Appperfernces.saveuserServiceId(widget.data.id);
 
@@ -145,76 +157,79 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
 
       debugPrint("START WORK RESPONSE => $response");
 
-      if (response == null) return;
+      if (!mounted) return;
 
-      // Waiting for user approval
-      if (response["success"] == false &&
-          response["message"].toString().toLowerCase().contains("approval")) {
+      final message = response["message"]?.toString() ?? "";
+      final success = response["success"] == true;
+
+      // Get User Approval: backend moves accepted → pending-approval
+      if (!success && message.toLowerCase().contains("approval")) {
         SnackbarHelper.show(
           context,
-          backgroundColor: Colors.red,
-          message: response["message"],
+          backgroundColor: AppColors.app_background_clr,
+          message: message,
         );
 
-        setState(() => _isUser = true);
-        ref.invalidate(serviceListProvider);
+        ref.read(homeTabProvider.notifier).state = 2; // User Approval tab
+        await refreshServiceDetail(ref, widget.data.id);
+        await refreshServiceList(ref);
 
-        // Pending Approval tab index
-        ref.read(homeTabProvider.notifier).state = 2;
-
-        context.go(RouteName.bottom_nav);
-
+        if (mounted) context.go(RouteName.bottom_nav);
         return;
       }
 
-      if (response["success"] == true) {
+      if (success) {
         SnackbarHelper.show(
           context,
           backgroundColor: AppColors.app_background_clr,
           message: AppLocalizations.of(context)!.startWork,
         );
 
-        ref.invalidate(serviceListProvider);
-        setState(() => _isUser = false);
-
-        await Future.delayed(const Duration(milliseconds: 500));
-
-        /// 🔥 START TIMER HERE (IMPORTANT)
         ref.read(timerProvider.notifier).start(DateTime.now());
+        ref.read(homeTabProvider.notifier).state = 3; // In Progress tab
 
-        ref.read(homeTabProvider.notifier).state = 3;
+        await refreshServiceDetail(ref, widget.data.id);
+        await refreshServiceList(ref);
 
-        if (mounted) {
-          context.go(RouteName.bottom_nav);
-        }
+        if (mounted) context.go(RouteName.bottom_nav);
       }
     } catch (e) {
-      SnackbarHelper.show(
-        context,
-        backgroundColor: Colors.red,
-        message: e.toString(),
-      );
+      if (mounted) {
+        SnackbarHelper.show(
+          context,
+          backgroundColor: Colors.red,
+          message: e.toString(),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final serviceListAsync = ref.watch(serviceListProvider);
+    final detailAsync = ref.watch(serviceDetailProvider(widget.data.id));
 
-    final liveItem = serviceListAsync.maybeWhen(
-      data: (data) {
-        final list = data?.data ?? [];
-
-        return list.firstWhere(
-          (e) => e.id == widget.data.id,
-          orElse: () => widget.data,
-        );
-      },
+    final liveItem = detailAsync.maybeWhen(
+      data: (item) => item ?? widget.data,
       orElse: () => widget.data,
     );
+
+    final assignmentStatus = liveItem.assignmentStatus.toLowerCase();
+    final assignments = liveItem.technicianUserService?.assignments ?? [];
     final bool userApproval =
-        liveItem.technicianUserService?.assignments.first.userApproval ?? false;
-    debugPrint("USER APPROVAL => $userApproval");
+        assignments.isNotEmpty && assignments.first.userApproval;
+
+    final bool canRequestApproval =
+        assignmentStatus == "accepted" && !userApproval;
+    final bool canStartWork =
+        userApproval &&
+        (assignmentStatus == "accepted" ||
+            assignmentStatus == "pending-approval");
+    final bool isWaitingApproval =
+        assignmentStatus == "pending-approval" && !userApproval;
+
+    debugPrint("USER APPROVAL => $userApproval, STATUS => $assignmentStatus");
     return Scaffold(
       body: Column(
         children: [
@@ -246,9 +261,9 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                   if (liveItem.assignmentStatus != "in-progress" &&
                       liveItem.assignmentStatus != "completed" &&
                       liveItem.assignmentStatus != "on-hold") ...[
-                    _buildCustomerDetails(),
+                    _buildCustomerDetails(liveItem),
                     const SizedBox(height: 20),
-                    _buildServiceDetails(),
+                    _buildServiceDetails(liveItem),
                   ],
 
                   const SizedBox(height: 10),
@@ -262,9 +277,12 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                         height: 50,
                         Width: double.infinity,
                         color: AppColors.scoundry_clr,
-                        onPressed: () {
-                          acceptrequest(status: "accept");
-                        },
+                        isLoading: _isLoading,
+                        onPressed: _isLoading
+                            ? null
+                            : () {
+                                acceptrequest(status: "accept");
+                              },
                         text: AppLocalizations.of(context)!.accept,
                       ),
                     ),
@@ -275,17 +293,18 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                         height: 50,
                         Width: double.infinity,
                         color: Colors.red,
-                        onPressed: () {
-                          _showRejectReasonSheet(context);
-                        },
+                        isLoading: _isLoading,
+                        onPressed: _isLoading
+                            ? null
+                            : () {
+                                _showRejectReasonSheet(context);
+                              },
                         text: AppLocalizations.of(context)!.reject,
                       ),
                     ),
                   ],
 
-                  // if (widget.data.assignmentStatus == "accepted") ...[
-                  if (widget.data.assignmentStatus == "accepted" ||
-                      widget.data.assignmentStatus == "pending-approval") ...[
+                  if (canRequestApproval || canStartWork) ...[
                     Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: PrimaryButton(
@@ -293,61 +312,72 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                         height: 50,
                         Width: double.infinity,
                         color: AppColors.scoundry_clr,
-                        onPressed: startwork,
-                        text: userApproval || _isUser
+                        isLoading: _isLoading,
+                        onPressed: _isLoading ? null : startwork,
+                        text: canStartWork
                             ? AppLocalizations.of(context)!.startWork
-                            : AppLocalizations.of(
-                                context,
-                              )!.getUserApproval, // text: widget.data.userApproval
-                        //     ? AppLocalizations.of(context)!.startWork
-                        //     : AppLocalizations.of(context)!.getUserApproval,
+                            : AppLocalizations.of(context)!.getUserApproval,
+                      ),
+                    ),
+                  ],
+
+                  if (isWaitingApproval) ...[
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: PrimaryButton(
+                        radius: 13,
+                        height: 50,
+                        Width: double.infinity,
+                        color: Colors.grey,
+                        onPressed: null,
+                        text: "Waiting for Customer Approval",
                       ),
                     ),
                   ],
 
                   // COMPLETED SERVICE
-                  if (widget.data.assignmentStatus == "completed") ...[
+                  if (liveItem.assignmentStatus == "completed") ...[
                     RequestCart(
-                      userServiceId: widget.data.id,
-                      clientname: widget.data.userId.basicInfo.fullName,
-                      serviceRequestID: widget.data.serviceRequestId,
-                      servicetype: widget.data.serviceId.name,
-                      assignmentStatus: widget.data.assignmentStatus,
-                      scheduleService: widget.data.scheduleService,
-                      status: widget.data.serviceStatus,
-                      createdAt: widget.data.createdAt,
-                      feedback: widget.data.feedback ?? '',
-                      payment: widget.data.payment,
-                      media: widget.data.media,
+                      userServiceId: liveItem.id,
+                      clientname: liveItem.userId.basicInfo.fullName,
+                      serviceRequestID: liveItem.serviceRequestId,
+                      servicetype: liveItem.serviceId.name,
+                      assignmentStatus: liveItem.assignmentStatus,
+                      scheduleService: liveItem.scheduleService,
+                      status: liveItem.serviceStatus,
+                      createdAt: liveItem.createdAt,
+                      feedback: liveItem.feedback ?? '',
+                      payment: liveItem.payment,
+                      media: liveItem.media,
                       assignments:
-                          widget.data.technicianUserService?.assignments ?? [],
+                          liveItem.technicianUserService?.assignments ?? [],
                     ),
                   ],
 
                   // IN-PROGRESS
-                  if (widget.data.assignmentStatus == "in-progress") ...[
+                  if (liveItem.assignmentStatus == "in-progress") ...[
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 15,
                         vertical: 10,
                       ),
                       child: UpdateRequestView(
-                        serviceRequestId: widget.data.assignmentStatus,
-                        userServiceId: widget.data.id,
+                        serviceRequestId: liveItem.assignmentStatus,
+                        userServiceId: liveItem.id,
                       ),
                     ),
                   ],
 
                   // ON-HOLD
-                  if (widget.data.assignmentStatus == "on-hold") ...[
+                  if (liveItem.assignmentStatus == "on-hold") ...[
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 15,
                         vertical: 10,
                       ),
                       child: UpdateRequestView(
-                        serviceRequestId: widget.data.assignmentStatus,
-                        userServiceId: widget.data.id,
+                        serviceRequestId: liveItem.assignmentStatus,
+                        userServiceId: liveItem.id,
                       ),
                     ),
                   ],
@@ -366,7 +396,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
     return DateFormat('dd/MM/yyyy').format(date);
   }
 
-  Widget _buildCustomerDetails() {
+  Widget _buildCustomerDetails(Datum item) {
     return Container(
       margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -424,20 +454,20 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
               children: [
                 _infoRow(
                   AppLocalizations.of(context)!.name,
-                  widget.data.userId.basicInfo.fullName,
+                  item.userId.basicInfo.fullName,
                 ),
                 const Divider(),
                 _infoRow(
                   AppLocalizations.of(context)!.email,
-                  widget.data.userId.basicInfo.email,
+                  item.userId.basicInfo.email,
                 ),
                 const Divider(),
                 _infoRow(
                   AppLocalizations.of(context)!.address,
                   AppLocalizations.of(context)!.addressFormatted(
-                    widget.data.address.building,
-                    widget.data.address.floor,
-                    widget.data.address.aptNo,
+                    item.address.building,
+                    item.address.floor,
+                    item.address.aptNo,
                   ),
                 ),
                 // const Divider(),
@@ -471,7 +501,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
     );
   }
 
-  Widget _buildServiceDetails() {
+  Widget _buildServiceDetails(Datum item) {
     return Container(
       margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -529,35 +559,33 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
               children: [
                 _infoRow(
                   AppLocalizations.of(context)!.serviceType,
-                  widget.data.serviceId.name,
+                  item.serviceId.name,
                 ),
                 const Divider(),
                 _infoRow(
                   AppLocalizations.of(context)!.description,
-                  widget.data.feedback ?? "",
+                  item.feedback ?? "",
                 ),
                 const Divider(),
                 _infoRow(
                   AppLocalizations.of(context)!.status,
-                  widget.data.assignmentStatus,
+                  item.assignmentStatus,
                   isStatus: true,
                 ),
-                if (widget.data.media != null &&
-                    widget.data.media.isNotEmpty) ...[
+                if (item.media.isNotEmpty) ...[
                   const Divider(),
                   _infoRow(
                     AppLocalizations.of(context)!.viewMedia,
                     AppLocalizations.of(context)!.tapToView,
-                    media: widget.data.media,
+                    media: item.media,
                   ),
                 ],
-                if (widget.data.voice != null &&
-                    widget.data.voice!.isNotEmpty) ...[
+                if (item.voice != null && item.voice!.isNotEmpty) ...[
                   const Divider(),
                   InkWell(
                     onTap: () async {
                       final url =
-                          "${ImageBaseUrl.baseUrl}/${widget.data.voice!.trim()}";
+                          "${ImageBaseUrl.baseUrl}/${item.voice!.trim()}";
 
                       if (_audioPlayer == null) _audioPlayer = AudioPlayer();
 

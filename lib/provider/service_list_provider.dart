@@ -14,57 +14,58 @@ final serviceListProvider =
       ServiceListNotifier.new,
     );
 
+/// Fetches a single service by id from the full list (used on Details screen).
+final serviceDetailProvider = FutureProvider.autoDispose
+    .family<Datum?, String>((ref, id) async {
+      final service = ref.read(serviceListServiceProvider);
+      final data = await service.fetchServiceList(status: 'all');
+
+      for (final item in data.data) {
+        if (item.id == id) return item;
+      }
+      return null;
+    });
+
+/// Invalidates and waits for the home list to finish refetching.
+Future<void> refreshServiceList(WidgetRef ref) async {
+  ref.invalidate(serviceListProvider);
+  await ref.read(serviceListProvider.future);
+}
+
+Future<void> refreshServiceDetail(WidgetRef ref, String id) async {
+  ref.invalidate(serviceDetailProvider(id));
+  await ref.read(serviceDetailProvider(id).future);
+}
+
 class ServiceListNotifier extends AsyncNotifier<ServiceListModel?> {
+  static const _tabFilters = [
+    'all',
+    'accepted',
+    'pending-approval',
+    'in-progress',
+    'completed',
+  ];
+
   @override
   Future<ServiceListModel?> build() async {
-    // ✅ WATCH TAB HERE (this triggers auto refresh)
     final index = ref.watch(homeTabProvider);
-
-    final filters = [
-      'all',
-      'accepted',
-      'pending-approval',
-      'in-progress',
-      'completed',
-    ];
-
     final service = ref.read(serviceListServiceProvider);
 
-    // ✅ DIRECT API CALL (no extra method needed)
-    final data = await service.fetchServiceList(status: filters[index]);
+    // User Approval tab includes both pending-approval and rejected.
+    if (index == 2) {
+      final pending = await service.fetchServiceList(status: 'pending-approval');
+      final rejected = await service.fetchServiceList(status: 'rejected');
 
-    return data;
+      final seen = <String>{};
+      final merged = <Datum>[];
+
+      for (final item in [...pending.data, ...rejected.data]) {
+        if (seen.add(item.id)) merged.add(item);
+      }
+
+      return ServiceListModel(count: merged.length, data: merged);
+    }
+
+    return service.fetchServiceList(status: _tabFilters[index]);
   }
 }
-// class ServiceListNotifier extends AsyncNotifier<ServiceListModel?> {
-//   @override
-//   Future<ServiceListModel?> build() async {
-//     return fetchServiceByStatus('all'); 
-//   }
-
-// Future<ServiceListModel?> fetchServiceByStatus(String status) async {
-//   final service = ref.read(serviceListServiceProvider);
-//   try {
-//     state = const AsyncValue.loading();
-//     final data = await service.fetchServiceList(status: status.toLowerCase());
-//     state = AsyncValue.data(data);
-//     return data;
-//   } catch (e, st) {
-//     state = AsyncValue.error(e, st);
-//     return null;
-//   }
-// }
-
-  
-
-// }
-
-
-
-
-
-
-
- 
-
- // ServiceListNotifier --> Purpose: control API call + state + refresh
