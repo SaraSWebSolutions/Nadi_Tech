@@ -120,6 +120,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
       case 'in-progress':
       case 'inprogress':
+      case 'on-hold':
         return 'in-progress';
 
       case 'completed':
@@ -303,6 +304,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
                             final item = filteredData[index];
 
                             final status = item.assignmentStatus.toLowerCase();
+                            print(
+                              'assignmentStatus: ${item.assignmentStatus.toLowerCase()}',
+                            );
                             //   item.assignmentStatus,
                             // );
                             final color = getStatusColor(status);

@@ -161,7 +161,18 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
 
       final message = response["message"]?.toString() ?? "";
       final success = response["success"] == true;
+      if (!success) {
+        SnackbarHelper.show(
+          context,
+          backgroundColor: Colors.red,
+          message:
+              message, // 👈 THIS SHOWS "Another work is already in progress"
+        );
 
+        // 🔥 refresh UI even on failure
+        await refreshServiceDetail(ref, widget.data.id);
+        return;
+      }
       // Get User Approval: backend moves accepted → pending-approval
       if (!success && message.toLowerCase().contains("approval")) {
         SnackbarHelper.show(
@@ -210,11 +221,16 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
   Widget build(BuildContext context) {
     final detailAsync = ref.watch(serviceDetailProvider(widget.data.id));
 
-    final liveItem = detailAsync.maybeWhen(
-      data: (item) => item ?? widget.data,
-      orElse: () => widget.data,
-    );
-
+    // final liveItem = detailAsync.maybeWhen(
+    //   data: (item) => item ?? widget.data,
+    //   orElse: () => widget.data,
+    // );
+    // final liveItem = detailAsync.when(
+    //   data: (item) => item ?? widget.data,
+    //   loading: () => widget.data,
+    //   error: (_, __) => widget.data,
+    // );
+    final liveItem = detailAsync.value ?? widget.data;
     final assignmentStatus = liveItem.assignmentStatus.toLowerCase();
     final assignments = liveItem.technicianUserService?.assignments ?? [];
     final bool userApproval =
@@ -228,7 +244,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
             assignmentStatus == "pending-approval");
     final bool isWaitingApproval =
         assignmentStatus == "pending-approval" && !userApproval;
-
+    final bool isRejected = assignmentStatus == "rejected";
     debugPrint("USER APPROVAL => $userApproval, STATUS => $assignmentStatus");
     return Scaffold(
       body: Column(
@@ -244,7 +260,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
               if (context.canPop()) {
                 context.pop();
               } else {
-                context.go(RouteName.bottom_nav);
+                ref.read(homeTabProvider.notifier).state = 3;
               }
             },
           ),
@@ -304,7 +320,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                     ),
                   ],
 
-                  if (canRequestApproval || canStartWork) ...[
+                  if (canRequestApproval || canStartWork || isRejected) ...[
                     Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: PrimaryButton(
@@ -314,7 +330,9 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                         color: AppColors.scoundry_clr,
                         isLoading: _isLoading,
                         onPressed: _isLoading ? null : startwork,
-                        text: canStartWork
+                        text: isRejected
+                            ? AppLocalizations.of(context)!.getUserApproval
+                            : canStartWork
                             ? AppLocalizations.of(context)!.startWork
                             : AppLocalizations.of(context)!.getUserApproval,
                       ),
@@ -502,6 +520,9 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
   }
 
   Widget _buildServiceDetails(Datum item) {
+    final displayStatus = item.assignmentStatus.toLowerCase() == "accepted"
+        ? "assigned"
+        : item.assignmentStatus;
     return Container(
       margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -569,7 +590,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                 const Divider(),
                 _infoRow(
                   AppLocalizations.of(context)!.status,
-                  item.assignmentStatus,
+                  displayStatus,
                   isStatus: true,
                 ),
                 if (item.media.isNotEmpty) ...[

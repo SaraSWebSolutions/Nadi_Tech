@@ -8,6 +8,8 @@ import 'package:record/record.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
+import 'package:tech_app/provider/home_tab_provider.dart';
+import 'package:tech_app/provider/service_list_provider.dart';
 
 import 'package:tech_app/provider/service_timer_provider.dart';
 import 'package:tech_app/routes/route_name.dart';
@@ -56,6 +58,7 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
   Duration _recordDuration = Duration.zero;
   Timer? _recordTimer;
   static const int _statusOptionCount = 3;
+  late String _status;
 
   String _statusLabel(BuildContext context, int index) {
     final loc = AppLocalizations.of(context)!;
@@ -77,7 +80,7 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
     super.initState();
     selectedIndexes = {0, 1}; // Always selected
     WidgetsBinding.instance.addObserver(this);
-
+    _status = widget.serviceRequestId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadTimer();
     });
@@ -225,25 +228,35 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
     final timerState = ref.read(timerProvider);
 
     try {
-      // 🔥 OPTIMISTIC UPDATE FIRST
+      // OPTIMISTIC UPDATE
       if (timerState.isRunning) {
-        timerNotifier.pauseLocal(); // ADD THIS
+        timerNotifier.pauseLocal();
       } else {
-        timerNotifier.startLocal(); // ADD THIS
+        timerNotifier.startLocal();
       }
+      final newStatus = timerState.isRunning ? "ON-HOLD" : "IN-PROGRESS";
 
-      // THEN CALL API
+      setState(() {
+        _status = newStatus;
+      });
+
+      // API CALL
       if (timerState.isRunning) {
         await _timerService.pauseTimer(userServiceId: widget.userServiceId);
       } else {
         await _timerService.resumeTimer(userServiceId: widget.userServiceId);
       }
 
-      // final sync
+      // 🔥 IMPORTANT: refresh Home list immediately
+      ref.invalidate(serviceListProvider);
+
+      // optional: also force rebuild listeners
+      ref.refresh(serviceListProvider);
+
       await _loadTimer();
     } catch (e) {
       debugPrint("Toggle error: $e");
-      await _loadTimer(); // rollback sync
+      await _loadTimer();
     }
   }
 
@@ -311,6 +324,7 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
   @override
   Widget build(BuildContext context) {
     final timerState = ref.watch(timerProvider);
+
     return PopScope(
       canPop: true,
       onPopInvoked: (didPop) {
@@ -334,7 +348,7 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
                 ),
                 child: Center(
                   child: Text(
-                    widget.serviceRequestId.toUpperCase(),
+                    _status.toUpperCase(),
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                       fontSize: 17,
