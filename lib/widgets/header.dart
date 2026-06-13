@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
@@ -10,6 +11,7 @@ import 'package:tech_app/preferences/AppPerfernces.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:tech_app/core/network/dio_client.dart';
 import 'package:tech_app/model/TechnicianProfile_Model.dart';
+import 'package:tech_app/widgets/AppCircleAvatar.dart';
 
 class Header extends ConsumerStatefulWidget {
   final String title;
@@ -89,7 +91,7 @@ class _HeaderState extends ConsumerState<Header>
     try {
       _controller.repeat();
 
-      await ref.refresh(inventorylistprovider.future);
+      await ref.refresh(inventoryListProvider.future);
     } finally {
       _controller.reset();
     }
@@ -102,7 +104,7 @@ class _HeaderState extends ConsumerState<Header>
           () {
             ref.read(bottomNavProvider.notifier).state = 4;
           },
-      borderRadius: BorderRadius.circular(30),
+      borderRadius: BorderRadius.circular(50),
       child: Container(
         height: 44,
         width: 44,
@@ -120,40 +122,29 @@ class _HeaderState extends ConsumerState<Header>
             ),
           ],
         ),
-        child: ClipOval(
-          child: (widget.profile?.data.image?.isNotEmpty ?? false)
-              ? CachedNetworkImage(
-                  imageUrl:
-                      '${ImageBaseUrl.baseUrl}/${widget.profile!.data.image}',
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) {
-                    return Container(
-                      color: Colors.grey.shade300,
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    );
-                  },
-                  errorWidget: (context, url, error) {
-                    return Container(
-                      color: Colors.grey.shade300,
-                      child: Icon(
-                        Icons.person,
-                        color: Colors.grey.shade700,
-                        size: 24,
-                      ),
-                    );
-                  },
-                )
-              : Container(
+        clipBehavior: Clip.antiAlias, // ✅ IMPORTANT FIX
+        child: widget.profile?.data.image?.isNotEmpty ?? false
+            ? CachedNetworkImage(
+                imageUrl:
+                    '${ImageBaseUrl.baseUrl}/${widget.profile!.data.image}',
+                fit: BoxFit.cover,
+                width: 44,
+                height: 44,
+                placeholder: (context, url) => Container(
                   color: Colors.grey.shade300,
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.grey.shade700,
-                    size: 24,
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ),
-        ),
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.grey.shade300,
+                  child: Icon(Icons.person, color: Colors.grey, size: 24),
+                ),
+              )
+            : Container(
+                color: Colors.grey.shade300,
+                child: const Icon(Icons.person, color: Colors.grey, size: 24),
+              ),
       ),
     );
   }
@@ -166,7 +157,7 @@ class _HeaderState extends ConsumerState<Header>
           () {
             Navigator.pop(context);
           },
-      bg: AppColors.app_background_clr,
+      bg: Color.fromARGB(255, 180, 189, 230),
     );
   }
 
@@ -174,125 +165,134 @@ class _HeaderState extends ConsumerState<Header>
   Widget build(BuildContext context) {
     final notificationAsync = ref.watch(notificationServiceProvider);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-      child: SizedBox(
-        height: 50,
-        child: Row(
-          children: [
-            /// ================= LEFT =================
-            SizedBox(
-              width: 44,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: widget.showBackButton
-                    ? _buildBackButton(context)
-                    : widget.showProfileIcon
-                    ? _buildProfileImage()
-                    : const SizedBox.shrink(),
-              ),
-            ),
+    return AppBar(
+      backgroundColor: AppColors.app_background_clr,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      centerTitle: true,
+      automaticallyImplyLeading: false,
+      // clipBehavior: Clip.none,
+      toolbarHeight: 60,
 
-            /// ================= TITLE =================
-            Expanded(
-              child: Center(
-                child: Text(
-                  widget.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
+      // 🔥 THIS REMOVES WHITE GAP ABOVE STATUS BAR
+      forceMaterialTransparency: false,
+      surfaceTintColor: Colors.transparent,
 
-            /// ================= RIGHT =================
-            SizedBox(
-              width: 90,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  if (widget.showRefreshIcon)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: AnimatedBuilder(
-                        animation: _controller,
-                        builder: (_, child) {
-                          return Transform.rotate(
-                            angle: _controller.value * 6.28,
-                            child: child,
-                          );
-                        },
-                        child: _iconButton(
-                          icon: Icons.refresh,
-                          onTap: _onRefresh,
+      systemOverlayStyle: const SystemUiOverlayStyle(
+        statusBarColor: AppColors.app_background_clr,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
+
+      leadingWidth: 60,
+      leading: widget.showBackButton
+          ? Center(
+              child: SizedBox(
+                width: 38,
+                height: 38,
+                child: _buildBackButton(context),
+              ),
+            )
+          : widget.showProfileIcon
+          ? Center(
+              child: AppCircleAvatar(
+                size: 44,
+                imageUrl:
+                    widget.profile?.data.image != null &&
+                        widget.profile!.data.image!.isNotEmpty
+                    ? '${ImageBaseUrl.baseUrl}/${widget.profile!.data.image}'
+                    : null,
+                borderColor: AppColors.app_background_clr.withOpacity(0.15),
+                onTap:
+                    widget.onProfileTap ??
+                    () {
+                      ref.read(bottomNavProvider.notifier).state = 4;
+                    },
+              ),
+            )
+          : null,
+
+      // leading: widget.showBackButton
+      //     ? Padding(
+      //         padding: const EdgeInsets.only(left: 10),
+      //         child: Align(
+      //           alignment: Alignment.centerLeft,
+      //           child: SizedBox(
+      //             width: 38,
+      //             height: 38,
+      //             child: _buildBackButton(context),
+      //           ),
+      //         ),
+      //       )
+      //     : widget.showProfileIcon
+      //     ? Padding(
+      //         padding: const EdgeInsets.only(left: 10),
+      //         child: _buildProfileImage(),
+      //       )
+      //     : null,
+      title: Text(
+        widget.title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+
+      actions: [
+        if (widget.showRefreshIcon)
+          IconButton(
+            onPressed: _onRefresh,
+            icon: AnimatedBuilder(
+              animation: _controller,
+              builder: (_, child) => Transform.rotate(
+                angle: _controller.value * 6.28,
+                child: child,
+              ),
+              child: const Icon(Icons.refresh, color: Colors.white),
+            ),
+          ),
+
+        if (widget.showNotificationIcon)
+          Stack(
+            children: [
+              IconButton(
+                onPressed: () => context.push(RouteName.nodification),
+                icon: const Icon(Icons.notifications_none, color: Colors.white),
+              ),
+
+              notificationAsync.when(
+                data: (list) {
+                  final unread = list.where((e) => e.read == false).length;
+                  if (unread == 0) return const SizedBox();
+
+                  return Positioned(
+                    right: 6,
+                    top: 6,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        unread > 99 ? '99+' : unread.toString(),
+                        style: const TextStyle(
+                          fontSize: 9,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-
-                  if (widget.showNotificationIcon)
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        _iconButton(
-                          icon: Icons.notifications_none,
-                          onTap: () {
-                            context.push(RouteName.nodification);
-                          },
-                        ),
-
-                        notificationAsync.when(
-                          data: (list) {
-                            final unread = list
-                                .where((e) => e.read == false)
-                                .length;
-
-                            if (unread == 0) {
-                              return const SizedBox();
-                            }
-
-                            return Positioned(
-                              right: -2,
-                              top: -2,
-                              child: Container(
-                                padding: const EdgeInsets.all(5),
-                                decoration: const BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
-                                ),
-                                constraints: const BoxConstraints(
-                                  minWidth: 18,
-                                  minHeight: 18,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    unread > 99 ? '99+' : unread.toString(),
-                                    style: const TextStyle(
-                                      fontSize: 9,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-
-                          loading: () => const SizedBox(),
-
-                          error: (_, __) => const SizedBox(),
-                        ),
-                      ],
-                    ),
-                ],
+                  );
+                },
+                loading: () => const SizedBox(),
+                error: (_, __) => const SizedBox(),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+      ],
     );
   }
 }

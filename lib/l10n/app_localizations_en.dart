@@ -519,4 +519,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get workCompleted => 'Work completed';
+
+  @override
+  String get userApproval => 'User Approval';
 }

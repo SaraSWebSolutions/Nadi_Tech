@@ -28,13 +28,13 @@ class _MaterialInventoryViewState extends ConsumerState<MaterialInventoryView> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.refresh(inventorylistprovider));
+    Future.microtask(() => ref.refresh(inventoryListProvider));
   }
 
   DateTime? _lastBackPressTime;
   @override
   Widget build(BuildContext context) {
-    final inventoryAsync = ref.watch(inventorylistprovider);
+    final inventoryAsync = ref.watch(inventoryListProvider);
     final connectivity = ref.watch(connectivityProvider);
 
     return PopScope(
@@ -60,138 +60,146 @@ class _MaterialInventoryViewState extends ConsumerState<MaterialInventoryView> {
         await SystemNavigator.pop();
       },
       child: Scaffold(
-        body: SafeArea(
-          child: connectivity.when(
-            data: (isOnline) {
-              if (!isOnline) {
-                return NoInternetScreen();
-              }
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Header(
-                      title: AppLocalizations.of(context)!.materialInventory,
-                      showRefreshIcon: true,
-                      showBackButton: true,
-                      showNotificationIcon: false,
-                      showProfileIcon: false,
-                      onBackPressed: () {
-                        ref.read(bottomNavProvider.notifier).state = 0;
-                      },
-                    ),
+        body: connectivity.when(
+          data: (isOnline) {
+            if (!isOnline) {
+              return NoInternetScreen();
+            }
+            return Column(
+              children: [
+                Container(
+                  decoration: const BoxDecoration(
+                    color: AppColors.app_background_clr,
+                    // borderRadius: BorderRadius.only(
+                    //   bottomLeft: Radius.circular(20),
+                    //   bottomRight: Radius.circular(20),
+                    // ),
                   ),
-                  const Divider(),
-                  const SizedBox(height: 10),
+                  // padding: EdgeInsets.only(
+                  //   top: MediaQuery.of(context).padding.top + 8,
+                  //   left: 12,
+                  //   right: 12,
+                  //   bottom: 12,
+                  // ),
+                  child: Header(
+                    title: AppLocalizations.of(context)!.materialInventory,
+                    showRefreshIcon: true,
+                    showBackButton: true,
+                    showNotificationIcon: false,
+                    showProfileIcon: false,
+                    onBackPressed: () {
+                      ref.read(bottomNavProvider.notifier).state = 0;
+                    },
+                  ),
+                ),
 
-                  Expanded(
-                    child: inventoryAsync.when(
-                      loading: () => ListView.builder(
-                        itemCount: 6,
-                        itemBuilder: (context, index) => const ShimmerLoader(
-                          height: 87,
-                          width: double.infinity,
-                        ),
+                // const SizedBox(height: 15),
+                Expanded(
+                  child: inventoryAsync.when(
+                    loading: () => ListView.builder(
+                      itemCount: 6,
+                      itemBuilder: (context, index) => const ShimmerLoader(
+                        height: 87,
+                        width: double.infinity,
                       ),
-                      error: (err, _) => Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              "assets/images/inven.png",
-                              height: 100,
-                              fit: BoxFit.contain,
+                    ),
+                    error: (err, _) => Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            "assets/images/inven.png",
+                            height: 100,
+                            fit: BoxFit.contain,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            AppLocalizations.of(context)!.noMaterialFound,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Color.fromRGBO(13, 95, 72, 1),
                             ),
-                            const SizedBox(height: 12),
-                            Text(
-                              AppLocalizations.of(context)!.noMaterialFound,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Color.fromRGBO(13, 95, 72, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                    data: (inventoryMaterial) {
+                      if (inventoryMaterial.data.isEmpty) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                "assets/images/inven.png",
+                                height: 100,
+                                fit: BoxFit.contain,
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      data: (inventoryMaterial) {
-                        if (inventoryMaterial.data.isEmpty) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  "assets/images/inven.png",
-                                  height: 100,
-                                  fit: BoxFit.contain,
+                              const SizedBox(height: 12),
+                              Text(
+                                AppLocalizations.of(context)!.noInventoryFound,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color.fromRGBO(13, 95, 72, 1),
                                 ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  AppLocalizations.of(
-                                    context,
-                                  )!.noInventoryFound,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color.fromRGBO(13, 95, 72, 1),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-
-                        return AnimationLimiter(
-                          child: ListView.builder(
-                            itemCount: inventoryMaterial.data.length,
-                            itemBuilder: (context, index) {
-                              final item = inventoryMaterial.data[index];
-                              final productName = item.productId.productName;
-                              final price = item.productId.price;
-                              final count = item.count;
-
-                              return AnimationConfiguration.staggeredList(
-                                position: index,
-                                duration: const Duration(milliseconds: 1000),
-                                child: SlideAnimation(
-                                  verticalOffset: 40,
-                                  curve: Curves.easeOutCubic,
-                                  child: MaterialCart(
-                                    productName: productName,
-                                    count: count,
-                                    price: price,
-                                  ),
-                                ),
-                              );
-                            },
+                              ),
+                            ],
                           ),
                         );
-                      },
-                    ),
-                  ),
+                      }
 
-                  const SizedBox(height: 15),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: PrimaryButton(
-                      radius: 10,
-                      color: AppColors.scoundry_clr,
-                      isLoading: inventoryAsync.isLoading,
-                      onPressed: () {
-                        context.push(RouteName.material_request);
-                      },
-                      Width: double.infinity,
-                      height: 50,
-                      text: AppLocalizations.of(context)!.requestMaterial,
-                    ),
-                  ),
-                ],
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
+                      return AnimationLimiter(
+                        child: ListView.builder(
+                          itemCount: inventoryMaterial.data.length,
+                          padding: EdgeInsets.zero,
+                          itemBuilder: (context, index) {
+                            final item = inventoryMaterial.data[index];
+                            final productName = item.productId.productName;
+                            final price = item.productId.price;
+                            final count = item.count;
 
-            error: (e, s) => NoInternetScreen(),
-          ),
+                            return AnimationConfiguration.staggeredList(
+                              position: index,
+                              duration: const Duration(milliseconds: 1000),
+                              child: SlideAnimation(
+                                verticalOffset: 40,
+                                curve: Curves.easeOutCubic,
+                                child: MaterialCart(
+                                  productName: productName,
+                                  count: count,
+                                  price: price,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: PrimaryButton(
+                    radius: 10,
+                    color: AppColors.scoundry_clr,
+                    isLoading: inventoryAsync.isLoading,
+                    onPressed: () {
+                      context.push(RouteName.material_request);
+                    },
+                    Width: double.infinity,
+                    height: 50,
+                    text: AppLocalizations.of(context)!.requestMaterial,
+                  ),
+                ),
+              ],
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+
+          error: (e, s) => NoInternetScreen(),
         ),
       ),
     );

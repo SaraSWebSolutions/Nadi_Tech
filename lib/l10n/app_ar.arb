@@ -238,6 +238,7 @@
   "editProfile": "تعديل الملف الشخصي",
     "writeMessage": "اكتب رسالة...",
     "getUserApproval": "الحصول على موافقة المستخدم",
-    "workCompleted": "تم إكمال العمل"
+    "workCompleted": "تم إكمال العمل",
+    "userApproval": "موافقة المستخدم"
 
 }

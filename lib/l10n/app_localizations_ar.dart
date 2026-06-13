@@ -517,4 +517,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get workCompleted => 'تم إكمال العمل';
+
+  @override
+  String get userApproval => 'موافقة المستخدم';
 }

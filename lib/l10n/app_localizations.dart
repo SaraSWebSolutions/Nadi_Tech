@@ -1081,6 +1081,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Work completed'**
   String get workCompleted;
+
+  /// No description provided for @userApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'User Approval'**
+  String get userApproval;
 }
 
 class _AppLocalizationsDelegate

@@ -39,6 +39,7 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
   }
 
   Map<String, int> partCounts = {};
+
   @override
   Widget build(BuildContext context) {
     final sparePartsAsync = ref.watch(oursparepartsprovider);
@@ -270,12 +271,12 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
 
                         if (sparePartsUsed && selectedParts.isNotEmpty) ...[
                           const SizedBox(height: 20),
-                          Text(
-                            AppLocalizations.of(context)!.selectedParts,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 10),
 
+                          // Text(
+                          //   AppLocalizations.of(context)!.selectedParts,
+                          //   style: const TextStyle(fontWeight: FontWeight.bold),
+                          // ),
+                          // const SizedBox(height: 10),
                           ...selectedParts.map((item) {
                             int currentCount =
                                 partCounts[item.productId.id] ?? 1;
@@ -309,12 +310,27 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        item.productId.productName,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.black,
-                                        ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              item.productId.name(context),
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+
+                                          Text(
+                                            "Qty: ${partCounts[item.productId.id] ?? item.count}",
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                       const SizedBox(height: 10),
                                       Row(
@@ -607,10 +623,12 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
             itemCount: spareParts.length,
             itemBuilder: (context, index) {
               final item = spareParts[index];
-              final isChecked = selectedParts.contains(item);
-
+              // final isChecked = selectedParts.contains(item);
+              final isChecked = selectedParts.any(
+                (e) => e.productId.id == item.productId.id,
+              );
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: Row(
                   children: [
                     Checkbox(
@@ -626,14 +644,27 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                               });
                             },
                     ),
+
                     Expanded(
-                      child: Text(
-                        item.productId.productName,
-                        style: TextStyle(
-                          color: Theme.of(context).textTheme.bodyMedium?.color,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.productId.name(context),
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Qty: ${partCounts[item.productId.id] ?? item.count}",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+
                     Text(
                       AppLocalizations.of(
                         context,

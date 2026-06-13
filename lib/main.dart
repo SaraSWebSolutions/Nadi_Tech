@@ -125,10 +125,12 @@ void main() async {
     }
 
     // General / OTP notifications
-    NotificationService.show(
-      title: message.notification?.title ?? 'OTP',
-      body: message.notification?.body ?? 'Your OTP is ${message.data['otp']}',
-    );
+    final title = message.notification?.title;
+    final body = message.notification?.body;
+
+    // if (title != null || body != null) {
+    NotificationService.show(title: title ?? 'Notification', body: body ?? '');
+    //}
   });
 
   // Wire GoRouter to NotificationService for tap-to-navigate

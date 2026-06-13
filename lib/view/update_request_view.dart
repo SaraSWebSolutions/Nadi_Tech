@@ -221,18 +221,29 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
   }
 
   Future<void> _toggleTimer() async {
+    final timerNotifier = ref.read(timerProvider.notifier);
     final timerState = ref.read(timerProvider);
 
     try {
+      // 🔥 OPTIMISTIC UPDATE FIRST
+      if (timerState.isRunning) {
+        timerNotifier.pauseLocal(); // ADD THIS
+      } else {
+        timerNotifier.startLocal(); // ADD THIS
+      }
+
+      // THEN CALL API
       if (timerState.isRunning) {
         await _timerService.pauseTimer(userServiceId: widget.userServiceId);
       } else {
         await _timerService.resumeTimer(userServiceId: widget.userServiceId);
       }
 
-      await _loadTimer(); // sync again
+      // final sync
+      await _loadTimer();
     } catch (e) {
       debugPrint("Toggle error: $e");
+      await _loadTimer(); // rollback sync
     }
   }
 

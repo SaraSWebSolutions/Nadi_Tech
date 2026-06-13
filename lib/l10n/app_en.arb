@@ -241,6 +241,7 @@
   "editProfile": "Edit Profile",
     "writeMessage": "Write a message...",
     "getUserApproval": "Get User Approval",
-    "workCompleted": "Work completed"
+    "workCompleted": "Work completed",
+    "userApproval": "User Approval"
 
 }

@@ -146,233 +146,210 @@ class _EditProfileState extends State<EditProfile> {
 
   @override
   Widget build(BuildContext context) {
-    final image = widget.profile.data.image;
+    final data = widget.profile.data;
+    final image = data.image;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+
+      /// ✅ HEADER
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Header(
+          title: AppLocalizations.of(context)!.editProfile,
+          showBackButton: true,
+          showNotificationIcon: false,
+          showRefreshIcon: false,
+          showProfileIcon: false,
+          onBackPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(RouteName.bottom_nav);
+            }
+          },
+        ),
+      ),
+
+      /// ✅ BODY (SAFE SCROLL STRUCTURE)
       body: SafeArea(
-        child: Column(
-          children: [
-            Header(
-              title: AppLocalizations.of(context)!.editProfile,
-              showBackButton: true,
-              showNotificationIcon: false,
-              showRefreshIcon: false,
-              showProfileIcon: false,
-              onBackPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go(RouteName.bottom_nav);
-                }
-              },
-            ),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
 
-            const SizedBox(height: 10),
-
-            /// PROFILE IMAGE
-            Stack(
-              children: [
-                Container(
-                  height: 125,
-                  width: 125,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.primary_clr.withOpacity(0.2),
-                      width: 3,
-                    ),
-                  ),
-                  child: CircleAvatar(
-                    radius: 60,
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceVariant,
-
-                    backgroundImage: _selectImage != null
-                        ? FileImage(_selectImage!)
-                        : (image != null && image.isNotEmpty)
-                        ? CachedNetworkImageProvider(
-                            '${ImageBaseUrl.baseUrl}/$image',
-                          )
-                        : null,
-
-                    child:
-                        (_selectImage == null &&
-                            (image == null || image.isEmpty))
-                        ? Icon(
-                            Icons.person,
-                            size: 70,
-                            color: Colors.grey.shade600,
-                          )
-                        : null,
-                  ),
-                ),
-
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: InkWell(
-                    onTap: _pickImage,
-                    borderRadius: BorderRadius.circular(50),
-                    child: Container(
-                      height: 42,
-                      width: 42,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.primary_clr,
-                        border: Border.all(
-                          color: Theme.of(context).cardColor,
-                          width: 2,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.edit_outlined,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 14),
-
-            /// USER NAME
-            Text(
-              "${widget.profile.data.firstName} ${widget.profile.data.lastName}",
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-
-            const SizedBox(height: 6),
-
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.all(16),
-                child: Form(
-                  key: _formKey,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
+              /// PROFILE IMAGE
+              Stack(
+                children: [
+                  Container(
+                    height: 125,
+                    width: 125,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(24),
+                      shape: BoxShape.circle,
                       border: Border.all(
-                        color: Theme.of(context).dividerColor.withOpacity(0.08),
+                        color: AppColors.primary_clr.withOpacity(0.2),
+                        width: 3,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
                     ),
+                    child: CircleAvatar(
+                      radius: 60,
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceVariant,
 
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        /// HEADER
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.person_outline,
-                              color: AppColors.primary_clr,
-                              size: 22,
-                            ),
+                      backgroundImage: _selectImage != null
+                          ? FileImage(_selectImage!)
+                          : (image != null && image.isNotEmpty)
+                          ? CachedNetworkImageProvider(
+                              '${ImageBaseUrl.baseUrl}/$image',
+                            )
+                          : null,
 
-                            const SizedBox(width: 8),
+                      child:
+                          (_selectImage == null &&
+                              (image == null || image.isEmpty))
+                          ? Icon(
+                              Icons.person,
+                              size: 70,
+                              color: Colors.grey.shade600,
+                            )
+                          : null,
+                    ),
+                  ),
 
-                            Text(
-                              AppLocalizations.of(context)!.personalInformation,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w700),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        /// FIRST NAME
-                        _label(AppLocalizations.of(context)!.firstName),
-
-                        const SizedBox(height: 10),
-
-                        AppTextField(
-                          label: AppLocalizations.of(context)!.firstName,
-                          controller: _firstname,
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        /// LAST NAME
-                        _label(AppLocalizations.of(context)!.lastName),
-
-                        const SizedBox(height: 10),
-
-                        AppTextField(
-                          label: AppLocalizations.of(context)!.lastName,
-                          controller: _lastname,
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        /// EMAIL
-                        _label(AppLocalizations.of(context)!.email),
-
-                        const SizedBox(height: 10),
-
-                        AppTextField(
-                          label: AppLocalizations.of(context)!.email,
-                          controller: _email,
-                          keyboardType: TextInputType.emailAddress,
-                          validator: validateEmail,
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        /// MOBILE
-                        _label(AppLocalizations.of(context)!.mobileNumber),
-
-                        const SizedBox(height: 10),
-
-                        AppTextField(
-                          label: AppLocalizations.of(context)!.mobileNumber,
-                          controller: _mobile,
-                          keyboardType: TextInputType.number,
-
-                          validator: validateMobile,
-
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-
-                            LengthLimitingTextInputFormatter(8),
-                          ],
-                        ),
-
-                        const SizedBox(height: 30),
-
-                        /// SAVE BUTTON
-                        PrimaryButton(
-                          radius: 14,
-                          height: 54,
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: InkWell(
+                      onTap: _pickImage,
+                      child: Container(
+                        height: 42,
+                        width: 42,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
                           color: AppColors.primary_clr,
-                          onPressed: _isLoading ? null : _updateprofile,
-                          text: _isLoading
-                              ? "Please wait..."
-                              : AppLocalizations.of(context)!.saveChanges,
+                          border: Border.all(
+                            color: Theme.of(context).cardColor,
+                            width: 2,
+                          ),
                         ),
-                      ],
+                        child: const Icon(
+                          Icons.edit_outlined,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
                     ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 14),
+
+              /// NAME
+              Text(
+                "${data.firstName ?? ''} ${data.lastName ?? ''}",
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              ),
+
+              const SizedBox(height: 20),
+
+              /// FORM CARD
+              Form(
+                key: _formKey,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Theme.of(context).dividerColor.withOpacity(0.08),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.person_outline,
+                            color: AppColors.primary_clr,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            AppLocalizations.of(context)!.personalInformation,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      AppTextField(
+                        label: AppLocalizations.of(context)!.firstName,
+                        controller: _firstname,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      AppTextField(
+                        label: AppLocalizations.of(context)!.lastName,
+                        controller: _lastname,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      AppTextField(
+                        label: AppLocalizations.of(context)!.email,
+                        controller: _email,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: validateEmail,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      AppTextField(
+                        label: AppLocalizations.of(context)!.mobileNumber,
+                        controller: _mobile,
+                        keyboardType: TextInputType.number,
+                        validator: validateMobile,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(8),
+                        ],
+                      ),
+
+                      const SizedBox(height: 28),
+
+                      PrimaryButton(
+                        radius: 14,
+                        height: 54,
+                        color: AppColors.primary_clr,
+                        onPressed: _isLoading ? null : _updateprofile,
+                        text: _isLoading
+                            ? "Please wait..."
+                            : AppLocalizations.of(context)!.saveChanges,
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
