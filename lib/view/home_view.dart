@@ -154,7 +154,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final List<StatusFilter> filters = [
       StatusFilter(lang.all, 'all'),
       StatusFilter(lang.accepted, 'accepted'),
-      StatusFilter("User Approval", 'user-approval'),
+      StatusFilter(lang.userApproval, 'user-approval'),
       StatusFilter(lang.inProgress, 'in-progress'),
       StatusFilter(lang.completed, 'completed'),
     ];

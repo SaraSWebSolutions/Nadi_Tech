@@ -11,6 +11,7 @@ import 'package:tech_app/preferences/AppPerfernces.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:tech_app/core/network/dio_client.dart';
 import 'package:tech_app/model/TechnicianProfile_Model.dart';
+import 'package:tech_app/widgets/AppCircleAvatar.dart';
 
 class Header extends ConsumerStatefulWidget {
   final String title;
@@ -103,7 +104,7 @@ class _HeaderState extends ConsumerState<Header>
           () {
             ref.read(bottomNavProvider.notifier).state = 4;
           },
-      borderRadius: BorderRadius.circular(30),
+      borderRadius: BorderRadius.circular(50),
       child: Container(
         height: 44,
         width: 44,
@@ -121,40 +122,29 @@ class _HeaderState extends ConsumerState<Header>
             ),
           ],
         ),
-        child: ClipOval(
-          child: (widget.profile?.data.image?.isNotEmpty ?? false)
-              ? CachedNetworkImage(
-                  imageUrl:
-                      '${ImageBaseUrl.baseUrl}/${widget.profile!.data.image}',
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) {
-                    return Container(
-                      color: Colors.grey.shade300,
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    );
-                  },
-                  errorWidget: (context, url, error) {
-                    return Container(
-                      color: Colors.grey.shade300,
-                      child: Icon(
-                        Icons.person,
-                        color: Colors.grey.shade700,
-                        size: 24,
-                      ),
-                    );
-                  },
-                )
-              : Container(
+        clipBehavior: Clip.antiAlias, // ✅ IMPORTANT FIX
+        child: widget.profile?.data.image?.isNotEmpty ?? false
+            ? CachedNetworkImage(
+                imageUrl:
+                    '${ImageBaseUrl.baseUrl}/${widget.profile!.data.image}',
+                fit: BoxFit.cover,
+                width: 44,
+                height: 44,
+                placeholder: (context, url) => Container(
                   color: Colors.grey.shade300,
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.grey.shade700,
-                    size: 24,
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ),
-        ),
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.grey.shade300,
+                  child: Icon(Icons.person, color: Colors.grey, size: 24),
+                ),
+              )
+            : Container(
+                color: Colors.grey.shade300,
+                child: const Icon(Icons.person, color: Colors.grey, size: 24),
+              ),
       ),
     );
   }
@@ -181,7 +171,7 @@ class _HeaderState extends ConsumerState<Header>
       scrolledUnderElevation: 0,
       centerTitle: true,
       automaticallyImplyLeading: false,
-
+      // clipBehavior: Clip.none,
       toolbarHeight: 60,
 
       // 🔥 THIS REMOVES WHITE GAP ABOVE STATUS BAR
@@ -195,26 +185,51 @@ class _HeaderState extends ConsumerState<Header>
       ),
 
       leadingWidth: 60,
-
       leading: widget.showBackButton
-          ? Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: SizedBox(
-                  width: 38,
-                  height: 38,
-                  child: _buildBackButton(context),
-                ),
+          ? Center(
+              child: SizedBox(
+                width: 38,
+                height: 38,
+                child: _buildBackButton(context),
               ),
             )
           : widget.showProfileIcon
-          ? Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: _buildProfileImage(),
+          ? Center(
+              child: AppCircleAvatar(
+                size: 44,
+                imageUrl:
+                    widget.profile?.data.image != null &&
+                        widget.profile!.data.image!.isNotEmpty
+                    ? '${ImageBaseUrl.baseUrl}/${widget.profile!.data.image}'
+                    : null,
+                borderColor: AppColors.app_background_clr.withOpacity(0.15),
+                onTap:
+                    widget.onProfileTap ??
+                    () {
+                      ref.read(bottomNavProvider.notifier).state = 4;
+                    },
+              ),
             )
           : null,
 
+      // leading: widget.showBackButton
+      //     ? Padding(
+      //         padding: const EdgeInsets.only(left: 10),
+      //         child: Align(
+      //           alignment: Alignment.centerLeft,
+      //           child: SizedBox(
+      //             width: 38,
+      //             height: 38,
+      //             child: _buildBackButton(context),
+      //           ),
+      //         ),
+      //       )
+      //     : widget.showProfileIcon
+      //     ? Padding(
+      //         padding: const EdgeInsets.only(left: 10),
+      //         child: _buildProfileImage(),
+      //       )
+      //     : null,
       title: Text(
         widget.title,
         maxLines: 1,
