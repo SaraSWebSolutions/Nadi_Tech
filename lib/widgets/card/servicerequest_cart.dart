@@ -196,7 +196,10 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
           message: AppLocalizations.of(context)!.startWork,
         );
 
-        ref.read(timerProvider.notifier).start(DateTime.now());
+        // ref.read(timerProvider.notifier).start(DateTime.now());
+        ref
+            .read(timerProvider.notifier)
+            .initialize(totalSeconds: 0, isRunning: true);
         ref.read(homeTabProvider.notifier).state = 3; // In Progress tab
 
         await refreshServiceDetail(ref, widget.data.id);
@@ -245,6 +248,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
     final bool isWaitingApproval =
         assignmentStatus == "pending-approval" && !userApproval;
     final bool isRejected = assignmentStatus == "rejected";
+    final isAccepted = assignmentStatus == "user-accepted";
     debugPrint("USER APPROVAL => $userApproval, STATUS => $assignmentStatus");
     return Scaffold(
       body: Column(
@@ -320,7 +324,10 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                     ),
                   ],
 
-                  if (canRequestApproval || canStartWork || isRejected) ...[
+                  if (canRequestApproval ||
+                      canStartWork ||
+                      isRejected ||
+                      isAccepted) ...[
                     Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: PrimaryButton(
@@ -330,15 +337,36 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                         color: AppColors.scoundry_clr,
                         isLoading: _isLoading,
                         onPressed: _isLoading ? null : startwork,
-                        text: isRejected
-                            ? AppLocalizations.of(context)!.getUserApproval
-                            : canStartWork
+                        text: isAccepted
                             ? AppLocalizations.of(context)!.startWork
                             : AppLocalizations.of(context)!.getUserApproval,
+                        // text: isRejected
+                        //     ? AppLocalizations.of(context)!.getUserApproval
+                        //     : canStartWork||isAccepted
+                        //     ? AppLocalizations.of(context)!.startWork
+                        //     : AppLocalizations.of(context)!.getUserApproval,
                       ),
                     ),
                   ],
+                  // if (isAccepted || isRejected || isPendingApproval) ...[
+                  //   Padding(
+                  //     padding: const EdgeInsets.all(10.0),
+                  //     child: PrimaryButton(
+                  //       radius: 13,
+                  //       height: 50,
+                  //       Width: double.infinity,
+                  //       color: AppColors.scoundry_clr,
+                  //       isLoading: _isLoading,
+                  //       onPressed: _isLoading ? null : startwork,
 
+                  //       text: isRejected
+                  //           ? AppLocalizations.of(context)!.getUserApproval
+                  //           : isAccepted
+                  //               ? AppLocalizations.of(context)!.startWork
+                  //               : AppLocalizations.of(context)!.getUserApproval,
+                  //     ),
+                  //   ),
+                  // ],
                   if (isWaitingApproval) ...[
                     Padding(
                       padding: const EdgeInsets.all(10.0),

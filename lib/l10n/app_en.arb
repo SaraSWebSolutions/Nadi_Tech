@@ -242,6 +242,7 @@
     "writeMessage": "Write a message...",
     "getUserApproval": "Get User Approval",
     "workCompleted": "Work completed",
-    "userApproval": "User Approval"
+    "userApproval": "User Approval",
+    "clearAllNotificationsConfirm": "Are you sure you want to clear all notifications?"
 
 }

@@ -520,4 +520,8 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get userApproval => 'موافقة المستخدم';
+
+  @override
+  String get clearAllNotificationsConfirm =>
+      'هل أنت متأكد أنك تريد حذف جميع الإشعارات؟';
 }

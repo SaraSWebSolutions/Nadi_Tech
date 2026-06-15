@@ -215,6 +215,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final logoSize = (size.width * 0.6).clamp(180.0, 320.0);
 
     return Scaffold(
       backgroundColor: AppColors.app_background_clr,
@@ -233,10 +234,10 @@ class _SplashScreenState extends State<SplashScreen>
             /// 🔄 ROTATING LOGO
             RotationTransition(
               turns: _rotationAnimation,
-              child: Image.asset(
-                "assets/logo/logo.png",
-                height: size.width * 0.6, // 60% of screen width
-                width: size.width * 0.6,
+              child: SizedBox(
+                height: logoSize,
+                width: logoSize,
+                child: Image.asset("assets/logo/logo.png", fit: BoxFit.contain),
               ),
             ),
 

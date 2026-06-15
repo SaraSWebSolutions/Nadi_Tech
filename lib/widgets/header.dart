@@ -243,26 +243,81 @@ class _HeaderState extends ConsumerState<Header>
 
       actions: [
         if (widget.showRefreshIcon)
-          IconButton(
-            onPressed: _onRefresh,
-            icon: AnimatedBuilder(
-              animation: _controller,
-              builder: (_, child) => Transform.rotate(
-                angle: _controller.value * 6.28,
-                child: child,
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Center(
+              child: SizedBox(
+                width: 38,
+                height: 38,
+                child: InkWell(
+                  onTap: _onRefresh,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 180, 189, 230),
+                      shape: BoxShape.circle,
+                    ),
+                    child: AnimatedBuilder(
+                      animation: _controller,
+                      builder: (_, child) => Transform.rotate(
+                        angle: _controller.value * 6.28,
+                        child: child,
+                      ),
+                      child: const Icon(
+                        Icons.refresh,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              child: const Icon(Icons.refresh, color: Colors.white),
             ),
           ),
 
+        // IconButton(
+        //   onPressed: _onRefresh,
+        //   icon: AnimatedBuilder(
+        //     animation: _controller,
+        //     builder: (_, child) => Transform.rotate(
+        //       angle: _controller.value * 6.28,
+        //       child: child,
+        //     ),
+        //     child: const Icon(Icons.refresh, color: Colors.white),
+        //   ),
+        // ),
         if (widget.showNotificationIcon)
           Stack(
             children: [
-              IconButton(
-                onPressed: () => context.push(RouteName.nodification),
-                icon: const Icon(Icons.notifications_none, color: Colors.white),
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Center(
+                  child: SizedBox(
+                    width: 38,
+                    height: 38,
+                    child: InkWell(
+                      onTap: () => context.push(RouteName.nodification),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Color.fromARGB(255, 180, 189, 230),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.notifications_none,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
 
+              // IconButton(
+              //   onPressed: () => context.push(RouteName.nodification),
+              //   icon: const Icon(Icons.notifications_none, color: Colors.white),
+              // ),
               notificationAsync.when(
                 data: (list) {
                   final unread = list.where((e) => e.read == false).length;

@@ -210,14 +210,17 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
       final totalSeconds = response["totalSeconds"] ?? 0;
       final isRunning = response["isRunning"] ?? false;
 
-      // 🔥 Convert backend seconds → startTime
-      final startTime = DateTime.now().subtract(
-        Duration(seconds: totalSeconds),
-      );
+      // // 🔥 Convert backend seconds → startTime
+      // final startTime = DateTime.now().subtract(
+      //   Duration(seconds: totalSeconds),
+      // );
 
-      if (isRunning) {
-        ref.read(timerProvider.notifier).start(startTime);
-      }
+      // if (isRunning) {
+      //   ref.read(timerProvider.notifier).start(startTime);
+      // }
+      ref
+          .read(timerProvider.notifier)
+          .initialize(totalSeconds: totalSeconds, isRunning: isRunning);
     } catch (e) {
       debugPrint("Timer load error: $e");
     }

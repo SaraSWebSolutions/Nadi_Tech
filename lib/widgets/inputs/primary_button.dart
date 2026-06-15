@@ -18,7 +18,7 @@ class PrimaryButton extends StatelessWidget {
     required this.onPressed,
     required this.text,
     this.isLoading = false,
-    this.icon ,
+    this.icon,
   });
 
   @override
@@ -44,16 +44,14 @@ class PrimaryButton extends StatelessWidget {
                 ),
               )
             : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (icon != null) ...[
-      icon!,
-      const SizedBox(width: 8),
-    ],
+                  if (icon != null) ...[icon!, const SizedBox(width: 8)],
                   Text(
                     text,
                     style: const TextStyle(
                       color: Colors.white,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

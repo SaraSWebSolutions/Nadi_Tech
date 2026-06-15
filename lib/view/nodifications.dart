@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/core/utils/Time_Date.dart';
 import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/provider/notification_Service_Provider.dart';
 import 'package:tech_app/services/NotificationApiService.dart';
+import 'package:tech_app/preferences/AppPerfernces.dart';
+import 'package:tech_app/widgets/AppCircleAvatar.dart';
 
 class Notifications extends ConsumerStatefulWidget {
   const Notifications({super.key});
@@ -22,13 +25,40 @@ class _NotificationsState extends ConsumerState<Notifications> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         // ✅ Mark all notifications as read in backend
-        await ref
-    .read(notificationServiceProvider.notifier)
-    .markAllAsRead();
+        await ref.read(notificationServiceProvider.notifier).markAllAsRead();
       } catch (e) {
         debugPrint("Mark all as read error: $e");
       }
     });
+  }
+
+  Future<void> _showClearAllDialog() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final l10n = AppLocalizations.of(dialogContext)!;
+
+        return AlertDialog(
+          title: Text(l10n.deleteNotificationTitle),
+          content: Text(l10n.clearAllNotificationsConfirm),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(l10n.cancel),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(l10n.delete),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      await ref.read(notificationServiceProvider.notifier).deleteAll();
+    }
   }
 
   @override
@@ -39,18 +69,54 @@ class _NotificationsState extends ConsumerState<Notifications> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.notificationsTitle),
-        actions: [
-          Padding(
-            padding: const EdgeInsetsDirectional.only(end: 12),
-            child: TextButton(
-              onPressed: () async {
-                await ref
-    .read(notificationServiceProvider.notifier)
-    .deleteAll();            },
-              child: Image.asset("assets/images/notification.png"),
+        backgroundColor: AppColors.app_background_clr,
+        elevation: 0,
+        centerTitle: true,
+        title: Text(
+          l10n.notificationsTitle,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Poppins',
+          ),
+        ),
+        leadingWidth: 60,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 10),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: InkWell(
+              onTap: () => Navigator.pop(context),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 180, 189, 230),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
             ),
           ),
+        ),
+
+        actions: [
+          if (notificationAsync.asData?.value.isNotEmpty ?? false)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 12),
+              child: IconButton(
+                icon: const Icon(Icons.delete_sweep, color: Colors.white),
+                onPressed: _showClearAllDialog,
+              ),
+            )
+          else
+            const SizedBox.shrink(),
         ],
       ),
 
@@ -66,13 +132,9 @@ class _NotificationsState extends ConsumerState<Notifications> {
           }
 
           return RefreshIndicator(
-          onRefresh: () async {
-
-  await ref
-      .read(notificationServiceProvider.notifier)
-      .refresh();
-
-},
+            onRefresh: () async {
+              await ref.read(notificationServiceProvider.notifier).refresh();
+            },
 
             child: ListView.builder(
               itemCount: notifications.length,
@@ -130,9 +192,9 @@ class _NotificationsState extends ConsumerState<Notifications> {
                   },
 
                   onDismissed: (direction) async {
-                   await ref
-    .read(notificationServiceProvider.notifier)
-    .deleteSingle(n.id);
+                    await ref
+                        .read(notificationServiceProvider.notifier)
+                        .deleteSingle(n.id);
                   },
 
                   child: Padding(

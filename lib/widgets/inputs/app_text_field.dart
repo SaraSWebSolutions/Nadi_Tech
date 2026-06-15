@@ -56,7 +56,7 @@ class _AppTextFieldState extends State<AppTextField> {
         color: theme.colorScheme.onSurface,
       ),
 
-      cursorColor: AppColors.app_background_clr,
+      cursorColor: AppColors.scoundry_clr,
 
       decoration: InputDecoration(
         labelText: widget.label,
@@ -82,9 +82,9 @@ class _AppTextFieldState extends State<AppTextField> {
         ),
 
         floatingLabelStyle: const TextStyle(
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: AppColors.app_background_clr,
+          color: AppColors.scoundry_clr,
         ),
 
         /// ENABLED BORDER
@@ -102,7 +102,7 @@ class _AppTextFieldState extends State<AppTextField> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(
-            color: AppColors.app_background_clr,
+            color: AppColors.scoundry_clr,
             width: 1.6,
           ),
         ),

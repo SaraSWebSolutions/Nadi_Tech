@@ -34,7 +34,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
   final TimerService _timerService = TimerService();
   bool timerLoaded = false;
   final TechnicianprofileService _profileService = TechnicianprofileService();
-
+  bool _isNavigating = false;
   TechnicianProfile? _profile;
   final ScrollController _scrollController = ScrollController();
   void _scrollToIndex(int index) {
@@ -117,6 +117,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
       case 'rejected':
         return 'user-approval'; // 👈 GROUPED HERE
+      case 'user-accepted':
+        return 'user-approval';
 
       case 'in-progress':
       case 'inprogress':
@@ -346,20 +348,43 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                           [],
                                       payment: item.payment,
                                       onClick: () async {
-                                        await refreshServiceList(ref);
-                                        await ref
-                                            .read(
-                                              notificationServiceProvider
-                                                  .notifier,
-                                            )
-                                            .refresh();
+                                        if (_isNavigating) return;
+                                        _isNavigating = true;
 
-                                        if (!context.mounted) return;
-                                        context.push(
-                                          RouteName.service_card,
-                                          extra: item,
-                                        );
+                                        try {
+                                          await refreshServiceList(ref);
+                                          await ref
+                                              .read(
+                                                notificationServiceProvider
+                                                    .notifier,
+                                              )
+                                              .refresh();
+
+                                          if (!context.mounted) return;
+
+                                          context.push(
+                                            RouteName.service_card,
+                                            extra: item,
+                                          );
+                                        } finally {
+                                          _isNavigating = false;
+                                        }
                                       },
+                                      // onClick: () async {
+                                      //   await refreshServiceList(ref);
+                                      //   await ref
+                                      //       .read(
+                                      //         notificationServiceProvider
+                                      //             .notifier,
+                                      //       )
+                                      //       .refresh();
+
+                                      //   if (!context.mounted) return;
+                                      //   context.push(
+                                      //     RouteName.service_card,
+                                      //     extra: item,
+                                      //   );
+                                      // },
                                     ),
                                   ),
                                 ),

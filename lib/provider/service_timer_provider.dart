@@ -1,58 +1,112 @@
 // import 'dart:async';
+// import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import '../model/service_timer_model.dart';
+// import '../model/timer_state.dart';
 
-// class ServiceTimerNotifier extends Notifier<ServiceTimerState> {
-//   Timer? _ticker;
+// class TimerNotifier extends Notifier<TimerState> {
+//   Timer? _timer;
 
 //   @override
-//   ServiceTimerState build() {
+//   TimerState build() {
 //     ref.onDispose(() {
-//       _ticker?.cancel();
+//       _timer?.cancel();
 //     });
-//     return const ServiceTimerState();
+
+//     return const TimerState(startTime: null, isRunning: false);
 //   }
 
-//   void start() {
-//     if (state.isRunning) return;
+//   /// 🔥 Start timer with API startTime
+//   void start(DateTime startTime) {
+//     debugPrint("TIMER START CALLED => $startTime");
 
-//     final startTime = state.startTime ?? DateTime.now();
+//     if (state.isRunning && state.startTime != null) {
+//       debugPrint("BLOCKED: already running");
+//       return;
+//     }
 
-//     state = state.copyWith(
-//       startTime: startTime,
-//       isRunning: true,
-//     );
-//     _ticker?.cancel();
-//     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+//     _timer?.cancel();
+
+//     state = state.copyWith(startTime: startTime, isRunning: true);
+
+//     _startTicker();
+//   }
+
+//   void _startTicker() {
+//     _timer?.cancel();
+
+//     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+//       if (state.startTime == null || !state.isRunning) return;
+
+//       // 🔥 ONLY notify listeners, don't recreate full state
 //       state = state.copyWith();
 //     });
 //   }
 
+//   /// ⏸ Pause (keeps startTime, just stops UI updates)
 //   void pause() {
-//     if (!state.isRunning) return;
+//     _timer?.cancel();
 
-//     _ticker?.cancel();
-
-//     state = ServiceTimerState(
-//       startTime: null,
-//       pausedDuration: state.elapsed,
-//       isRunning: false,
-//     );
+//     state = TimerState(startTime: state.startTime, isRunning: false);
 //   }
 
+//   /// ▶ Resume
+//   void resume() {
+//     if (state.startTime == null) return;
+//     if (state.isRunning) return;
+
+//     state = TimerState(startTime: state.startTime, isRunning: true);
+
+//     _startTicker();
+//   }
+
+//   /// 🔄 Reset
 //   void reset() {
-//     _ticker?.cancel();
-//     state = const ServiceTimerState();
+//     _timer?.cancel();
+
+//     state = const TimerState(startTime: null, isRunning: false);
+//   }
+
+//   void pauseLocal() {
+//     state = state.copyWith(isRunning: false);
+//   }
+
+//   void startLocal() {
+//     state = state.copyWith(isRunning: true);
 //   }
 // }
 
-// /// ✅ PROVIDER
-// final serviceTimerProvider =
-//     NotifierProvider<ServiceTimerNotifier, ServiceTimerState>(
-//   ServiceTimerNotifier.new,
+// /// Timer state class
+// class TimerState {
+//   final DateTime? startTime;
+//   final bool isRunning;
 
+//   const TimerState({required this.startTime, required this.isRunning});
+
+//   TimerState copyWith({DateTime? startTime, bool? isRunning}) {
+//     return TimerState(
+//       startTime: startTime ?? this.startTime,
+//       isRunning: isRunning ?? this.isRunning,
+//     );
+//   }
+
+//   Duration get duration {
+//     if (startTime == null) return Duration.zero;
+//     return DateTime.now().difference(startTime!);
+//   }
+
+//   String get formattedTime {
+//     final d = duration;
+
+//     return "${d.inHours.toString().padLeft(2, '0')}:"
+//         "${(d.inMinutes % 60).toString().padLeft(2, '0')}:"
+//         "${(d.inSeconds % 60).toString().padLeft(2, '0')}";
+//   }
+// }
+
+// /// Global provider
+// final timerProvider = NotifierProvider<TimerNotifier, TimerState>(
+//   () => TimerNotifier(),
 // );
-// lib/providers/timer_provider.dart
 
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -61,6 +115,15 @@ import '../model/timer_state.dart';
 
 class TimerNotifier extends Notifier<TimerState> {
   Timer? _timer;
+  void initialize({required int totalSeconds, required bool isRunning}) {
+    _timer?.cancel();
+
+    state = TimerState(elapsedSeconds: totalSeconds, isRunning: isRunning);
+
+    if (isRunning) {
+      _startTicker();
+    }
+  }
 
   @override
   TimerState build() {
@@ -68,49 +131,53 @@ class TimerNotifier extends Notifier<TimerState> {
       _timer?.cancel();
     });
 
-    return const TimerState(startTime: null, isRunning: false);
+    return const TimerState(elapsedSeconds: 0, isRunning: false);
   }
 
   /// 🔥 Start timer with API startTime
-  void start(DateTime startTime) {
-    debugPrint("TIMER START CALLED => $startTime");
+  // void start(DateTime startTime) {
+  //   debugPrint("TIMER START CALLED => $startTime");
 
-    if (state.isRunning && state.startTime != null) {
-      debugPrint("BLOCKED: already running");
-      return;
-    }
+  //   if (state.isRunning && state.startTime != null) {
+  //     debugPrint("BLOCKED: already running");
+  //     return;
+  //   }
 
-    _timer?.cancel();
+  //   _timer?.cancel();
 
-    state = state.copyWith(startTime: startTime, isRunning: true);
+  //   state = state.copyWith(startTime: startTime, isRunning: true);
 
-    _startTicker();
-  }
+  //   _startTicker();
+  // }
 
   void _startTicker() {
     _timer?.cancel();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (state.startTime == null || !state.isRunning) return;
+      if (!state.isRunning) return;
 
-      // 🔥 ONLY notify listeners, don't recreate full state
-      state = state.copyWith();
+      state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
     });
+  }
+
+  void pauseLocal() {
+    _timer?.cancel();
+
+    state = state.copyWith(isRunning: false);
   }
 
   /// ⏸ Pause (keeps startTime, just stops UI updates)
   void pause() {
     _timer?.cancel();
 
-    state = TimerState(startTime: state.startTime, isRunning: false);
+    state = state.copyWith(isRunning: false);
   }
 
   /// ▶ Resume
   void resume() {
-    if (state.startTime == null) return;
     if (state.isRunning) return;
 
-    state = TimerState(startTime: state.startTime, isRunning: true);
+    state = state.copyWith(isRunning: true);
 
     _startTicker();
   }
@@ -119,43 +186,42 @@ class TimerNotifier extends Notifier<TimerState> {
   void reset() {
     _timer?.cancel();
 
-    state = const TimerState(startTime: null, isRunning: false);
+    state = const TimerState(elapsedSeconds: 0, isRunning: false);
   }
 
-  void pauseLocal() {
-    state = state.copyWith(isRunning: false);
-  }
+  // void pauseLocal() {
+  //   state = state.copyWith(isRunning: false);
+  // }
 
   void startLocal() {
     state = state.copyWith(isRunning: true);
+
+    _startTicker();
   }
 }
 
 /// Timer state class
 class TimerState {
-  final DateTime? startTime;
+  final int elapsedSeconds;
   final bool isRunning;
 
-  const TimerState({required this.startTime, required this.isRunning});
+  const TimerState({required this.elapsedSeconds, required this.isRunning});
 
-  TimerState copyWith({DateTime? startTime, bool? isRunning}) {
+  TimerState copyWith({int? elapsedSeconds, bool? isRunning}) {
     return TimerState(
-      startTime: startTime ?? this.startTime,
+      elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
       isRunning: isRunning ?? this.isRunning,
     );
   }
 
-  Duration get duration {
-    if (startTime == null) return Duration.zero;
-    return DateTime.now().difference(startTime!);
-  }
-
   String get formattedTime {
-    final d = duration;
+    final h = elapsedSeconds ~/ 3600;
+    final m = (elapsedSeconds % 3600) ~/ 60;
+    final s = elapsedSeconds % 60;
 
-    return "${d.inHours.toString().padLeft(2, '0')}:"
-        "${(d.inMinutes % 60).toString().padLeft(2, '0')}:"
-        "${(d.inSeconds % 60).toString().padLeft(2, '0')}";
+    return "${h.toString().padLeft(2, '0')}:"
+        "${m.toString().padLeft(2, '0')}:"
+        "${s.toString().padLeft(2, '0')}";
   }
 }
 

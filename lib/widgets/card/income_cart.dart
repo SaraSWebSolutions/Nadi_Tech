@@ -64,9 +64,12 @@ class _IncomeCardState extends ConsumerState<IncomeCard> {
         Duration(seconds: totalSeconds),
       );
 
-      if (isRunning) {
-        ref.read(timerProvider.notifier).start(startTime);
-      }
+      // if (isRunning) {
+      //   ref.read(timerProvider.notifier).start(startTime);
+      // }
+      ref
+          .read(timerProvider.notifier)
+          .initialize(totalSeconds: totalSeconds, isRunning: isRunning);
     } catch (e) {
       debugPrint("Timer load error: $e");
     }

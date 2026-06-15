@@ -239,6 +239,7 @@
     "writeMessage": "اكتب رسالة...",
     "getUserApproval": "الحصول على موافقة المستخدم",
     "workCompleted": "تم إكمال العمل",
-    "userApproval": "موافقة المستخدم"
+    "userApproval": "موافقة المستخدم",
+    "clearAllNotificationsConfirm": "هل أنت متأكد أنك تريد حذف جميع الإشعارات؟"
 
 }

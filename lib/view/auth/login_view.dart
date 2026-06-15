@@ -207,11 +207,11 @@ class _LoginViewState extends ConsumerState<LoginView> {
                           const SizedBox(height: 10),
 
                           PrimaryButton(
-                            height: 48,
+                            height: 54,
                             Width: double.infinity,
                             isLoading: isLoading,
                             radius: 12,
-                            color: AppColors.app_background_clr,
+                            color: AppColors.scoundry_clr,
                             text: AppLocalizations.of(context)!.login,
                             onPressed: () async {
                               if (_fromkey.currentState!.validate()) {
@@ -261,9 +261,10 @@ class _LoginViewState extends ConsumerState<LoginView> {
                                     backgroundColor:
                                         AppColors.app_background_clr,
                                   );
-                                 ref.read(bottomNavProvider.notifier).state = 0;
+                                  ref.read(bottomNavProvider.notifier).state =
+                                      0;
 
-context.go(RouteName.bottom_nav);
+                                  context.go(RouteName.bottom_nav);
                                 } else {
                                   SnackbarHelper.show(
                                     context,

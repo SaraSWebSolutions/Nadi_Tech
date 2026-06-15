@@ -522,4 +522,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get userApproval => 'User Approval';
+
+  @override
+  String get clearAllNotificationsConfirm =>
+      'Are you sure you want to clear all notifications?';
 }
