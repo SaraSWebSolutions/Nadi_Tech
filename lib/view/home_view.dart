@@ -36,6 +36,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
   final TechnicianprofileService _profileService = TechnicianprofileService();
   bool _isNavigating = false;
   TechnicianProfile? _profile;
+  DateTime? _lastTap;
   final ScrollController _scrollController = ScrollController();
   void _scrollToIndex(int index) {
     if (!_scrollController.hasClients) return;
@@ -161,6 +162,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
       StatusFilter(lang.inProgress, 'in-progress'),
       StatusFilter(lang.completed, 'completed'),
     ];
+    // DateTime? _lastTap;
 
     // return Scaffold(
     // appBar: PreferredSize(
@@ -297,7 +299,17 @@ class _HomeViewState extends ConsumerState<HomeView> {
                               ? true
                               : normalizedStatus == selectedFilter;
                         }).toList();
-
+                        if (filteredData.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              "No service found",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          );
+                        }
                         return ListView.builder(
                           physics: const AlwaysScrollableScrollPhysics(),
                           itemCount: filteredData.length,
@@ -348,42 +360,192 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                           [],
                                       payment: item.payment,
                                       onClick: () async {
-                                        if (_isNavigating) return;
-                                        _isNavigating = true;
+                                        final now = DateTime.now();
 
-                                        try {
-                                          await refreshServiceList(ref);
-                                          await ref
-                                              .read(
-                                                notificationServiceProvider
-                                                    .notifier,
-                                              )
-                                              .refresh();
-
-                                          if (!context.mounted) return;
-
-                                          context.push(
-                                            RouteName.service_card,
-                                            extra: item,
-                                          );
-                                        } finally {
-                                          _isNavigating = false;
+                                        if (_lastTap != null &&
+                                            now.difference(_lastTap!) <
+                                                const Duration(
+                                                  milliseconds: 800,
+                                                )) {
+                                          return;
                                         }
+
+                                        _lastTap = now;
+
+                                        await context.push(
+                                          RouteName.service_card,
+                                          extra: item,
+                                        );
+
+                                        if (!mounted) return;
+
+                                        await refreshServiceList(ref);
+
+                                        await ref
+                                            .read(
+                                              notificationServiceProvider
+                                                  .notifier,
+                                            )
+                                            .refresh();
                                       },
                                       // onClick: () async {
-                                      //   await refreshServiceList(ref);
-                                      //   await ref
-                                      //       .read(
-                                      //         notificationServiceProvider
-                                      //             .notifier,
-                                      //       )
-                                      //       .refresh();
+                                      //   if (_isNavigating) return;
 
-                                      //   if (!context.mounted) return;
-                                      //   context.push(
-                                      //     RouteName.service_card,
-                                      //     extra: item,
-                                      //   );
+                                      //   _isNavigating = true;
+
+                                      //   try {
+                                      //     await context.push(
+                                      //       RouteName.service_card,
+                                      //       extra: item,
+                                      //     );
+
+                                      //     await refreshServiceList(ref);
+
+                                      //     await ref
+                                      //         .read(
+                                      //           notificationServiceProvider
+                                      //               .notifier,
+                                      //         )
+                                      //         .refresh();
+                                      //   } finally {
+                                      //     _isNavigating = false;
+                                      //   }
+                                      // },
+                                      // onClick: () async {
+                                      //   print("CARD CLICKED");
+
+                                      //   if (_isNavigating) {
+                                      //     print("BLOCKED BY _isNavigating");
+                                      //     return;
+                                      //   }
+
+                                      //   _isNavigating = true;
+
+                                      //   try {
+                                      //     print("REFRESH SERVICE LIST");
+                                      //     await refreshServiceList(ref);
+
+                                      //     print("REFRESH NOTIFICATION");
+                                      //     await ref
+                                      //         .read(
+                                      //           notificationServiceProvider
+                                      //               .notifier,
+                                      //         )
+                                      //         .refresh();
+
+                                      //     print(
+                                      //       "STATUS => ${item.serviceStatus}",
+                                      //     );
+
+                                      //     if (!context.mounted) {
+                                      //       print("CONTEXT NOT MOUNTED");
+                                      //       return;
+                                      //     }
+
+                                      //     print("BEFORE PUSH");
+
+                                      //     await context.push(
+                                      //       RouteName.service_card,
+                                      //       extra: item,
+                                      //     );
+
+                                      //     print("AFTER PUSH");
+                                      //   } catch (e, s) {
+                                      //     print("ERROR => $e");
+                                      //     print(s);
+                                      //   } finally {
+                                      //     _isNavigating = false;
+                                      //     print("_isNavigating RESET");
+                                      //   }
+                                      // },
+                                      // onClick: () async {
+                                      //   final now = DateTime.now();
+
+                                      //   // 1. debounce (300–500ms)
+                                      //   if (_lastTap != null &&
+                                      //       now.difference(_lastTap!) <
+                                      //           const Duration(
+                                      //             milliseconds: 500,
+                                      //           )) {
+                                      //     return;
+                                      //   }
+
+                                      //   _lastTap = now;
+
+                                      //   if (_isNavigating) return;
+                                      //   _isNavigating = true;
+
+                                      //   try {
+                                      //     await refreshServiceList(ref);
+                                      //     await ref
+                                      //         .read(
+                                      //           notificationServiceProvider
+                                      //               .notifier,
+                                      //         )
+                                      //         .refresh();
+
+                                      //     if (!context.mounted) return;
+
+                                      //     await context.push(
+                                      //       RouteName.service_card,
+                                      //       extra: item,
+                                      //     );
+                                      //   } finally {
+                                      //     _isNavigating = false;
+                                      //   }
+                                      // },
+                                      // onClick: () async {
+                                      //   if (_isNavigating) return;
+
+                                      //   _isNavigating = true;
+
+                                      //   try {
+                                      //     await refreshServiceList(ref);
+                                      //     await ref
+                                      //         .read(
+                                      //           notificationServiceProvider
+                                      //               .notifier,
+                                      //         )
+                                      //         .refresh();
+
+                                      //     if (!context.mounted) return;
+
+                                      //     await context.push(
+                                      //       RouteName.service_card,
+                                      //       extra: item,
+                                      //     );
+                                      //   } finally {
+                                      //     _isNavigating = false;
+                                      //   }
+                                      // },
+                                      // onClick: () async {
+                                      //   final now = DateTime.now();
+
+                                      //   if (_lastTap != null &&
+                                      //       now.difference(_lastTap!) <
+                                      //           const Duration(
+                                      //             milliseconds: 800,
+                                      //           )) {
+                                      //     return;
+                                      //   }
+
+                                      //   _lastTap = now;
+
+                                      //   if (_isNavigating) return;
+                                      //   _isNavigating = true;
+
+                                      //   try {
+                                      //     await refreshServiceList(ref);
+
+                                      //     if (!mounted) return;
+
+                                      //     await context.push(
+                                      //       RouteName.service_card,
+                                      //       extra: item,
+                                      //     );
+                                      //   } finally {
+                                      //     _isNavigating = false;
+                                      //   }
                                       // },
                                     ),
                                   ),

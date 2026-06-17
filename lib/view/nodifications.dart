@@ -37,22 +37,86 @@ class _NotificationsState extends ConsumerState<Notifications> {
       context: context,
       builder: (dialogContext) {
         final l10n = AppLocalizations.of(dialogContext)!;
-
         return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Text(l10n.deleteNotificationTitle),
           content: Text(l10n.clearAllNotificationsConfirm),
+
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(l10n.cancel),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: Text(l10n.delete),
+            Row(
+              children: [
+                // ❌ CANCEL (outlined / blocked style)
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.grey.shade400),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(dialogContext, false),
+                    child: Text(
+                      l10n.cancel,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // 🗑 DELETE (danger red button)
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: () => Navigator.pop(dialogContext, true),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.delete, size: 18, color: Colors.white),
+                        SizedBox(width: 6),
+                        Text(
+                          l10n.delete,
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         );
+        // return AlertDialog(
+        //   title: Text(l10n.deleteNotificationTitle),
+        //   content: Text(l10n.clearAllNotificationsConfirm),
+        //   actions: [
+        //     TextButton(
+        //       onPressed: () => Navigator.pop(dialogContext, false),
+        //       child: Text(l10n.cancel),
+        //     ),
+        //     ElevatedButton(
+        //       style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+        //       onPressed: () => Navigator.pop(dialogContext, true),
+        //       child: Text(l10n.delete),
+        //     ),
+        //   ],
+        // );
       },
     );
 
@@ -162,26 +226,90 @@ class _NotificationsState extends ConsumerState<Notifications> {
                       context: context,
                       builder: (dialogContext) {
                         final dlg = AppLocalizations.of(dialogContext)!;
-
                         return AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+
                           title: Text(dlg.deleteNotificationTitle),
                           content: Text(dlg.deleteNotificationConfirm),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(dialogContext, false);
-                              },
-                              child: Text(dlg.cancel),
-                            ),
 
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                              ),
-                              onPressed: () {
-                                Navigator.pop(dialogContext, true);
-                              },
-                              child: Text(dlg.delete),
+                          actionsPadding: const EdgeInsets.fromLTRB(
+                            16,
+                            0,
+                            16,
+                            16,
+                          ),
+
+                          actions: [
+                            Row(
+                              children: [
+                                // ❌ CANCEL (blocked style)
+                                Expanded(
+                                  child: OutlinedButton(
+                                    style: OutlinedButton.styleFrom(
+                                      side: BorderSide(
+                                        color: Colors.grey.shade400,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    onPressed: () =>
+                                        Navigator.pop(dialogContext, false),
+                                    child: Text(
+                                      dlg.cancel,
+                                      style: TextStyle(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(width: 12),
+
+                                // 🗑 DELETE (red danger button)
+                                Expanded(
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    onPressed: () =>
+                                        Navigator.pop(dialogContext, true),
+                                    child: const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.delete,
+                                          size: 18,
+                                          color: Colors.white,
+                                        ),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          "Delete",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         );

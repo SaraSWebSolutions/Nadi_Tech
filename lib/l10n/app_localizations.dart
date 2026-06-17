@@ -1093,6 +1093,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to clear all notifications?'**
   String get clearAllNotificationsConfirm;
+
+  /// No description provided for @serviceIds.
+  ///
+  /// In en, this message translates to:
+  /// **'Service ID'**
+  String get serviceIds;
+
+  /// No description provided for @maxQuantityReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached the maximum available quantity ({count})'**
+  String maxQuantityReached(Object count);
+
+  /// No description provided for @continueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueButton;
 }
 
 class _AppLocalizationsDelegate

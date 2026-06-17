@@ -80,7 +80,10 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
           count: partCounts[part.productId.id] ?? 1,
         );
       }).toList();
-
+      // final filteredParts = sparePartList.where((item) {
+      //   final qty = int.tryParse(item.count?.toString() ?? '0') ?? 0;
+      //   return qty > 0;
+      // }).toList();
       final UpdatePayment updatePayment = UpdatePayment(
         userServiceId: widget.userServiceId,
         sparePartsUsed: spareUsedValue,
@@ -98,12 +101,16 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
 
         ref.invalidate(serviceListProvider);
 
-        context.go(RouteName.bottom_nav);
+        // context.go(RouteName.bottom_nav);
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ref.read(homeTabProvider.notifier).state = 4;
-        });
+        // WidgetsBinding.instance.addPostFrameCallback((_) {
+        //   ref.read(homeTabProvider.notifier).state = 4;
+        // });
+        ref.read(homeTabProvider.notifier).state = 4;
 
+        if (mounted) {
+          context.go(RouteName.bottom_nav);
+        }
         setState(() {
           partCounts.clear();
           selectedParts.clear();
@@ -200,7 +207,16 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                           ),
                           data: (response) {
                             final parts = response.data;
-                            if (parts.isEmpty) {
+                            final filteredParts = parts.where((item) {
+                              final qty =
+                                  int.tryParse(
+                                    item.count?.toString().trim() ?? '0',
+                                  ) ??
+                                  0;
+
+                              return qty > 0;
+                            }).toList();
+                            if (filteredParts.isEmpty) {
                               return SizedBox(
                                 height:
                                     MediaQuery.of(context).size.height * 0.7,
@@ -230,7 +246,9 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                                 ),
                               );
                             }
-
+                            debugPrint(
+                              "BUILD => sparePartsUsed=$sparePartsUsed selectedParts=${selectedParts.length}",
+                            );
                             return Column(
                               children: [
                                 /// SHOW CHECKBOX ONLY WHEN DATA EXISTS
@@ -241,16 +259,20 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                                       activeColor: AppColors.app_background_clr,
                                       onChanged: (value) {
                                         setState(() {
-                                          sparePartsUsed = value!;
-                                          if (!sparePartsUsed)
+                                          sparePartsUsed = value ?? false;
+                                          if (!sparePartsUsed) {
                                             selectedParts.clear();
+                                            partCounts.clear();
+                                          }
                                         });
                                       },
                                     ),
                                     Text(
                                       AppLocalizations.of(
                                         context,
-                                      )!.sparePartsUsedCount(parts.length),
+                                      )!.sparePartsUsedCount(
+                                        filteredParts.length,
+                                      ),
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
@@ -268,155 +290,167 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                         ),
 
                         const SizedBox(height: 20),
+                        Builder(
+                          builder: (_) {
+                            print("========== SELECTED SECTION ==========");
+                            print("sparePartsUsed = $sparePartsUsed");
+                            print(
+                              "selectedParts.length = ${selectedParts.length}",
+                            );
+                            print(
+                              "condition = ${sparePartsUsed && selectedParts.isNotEmpty}",
+                            );
+
+                            return const SizedBox.shrink();
+                          },
+                        ),
 
                         if (sparePartsUsed && selectedParts.isNotEmpty) ...[
                           const SizedBox(height: 20),
 
-                          // Text(
-                          //   AppLocalizations.of(context)!.selectedParts,
-                          //   style: const TextStyle(fontWeight: FontWeight.bold),
-                          // ),
-                          // const SizedBox(height: 10),
                           ...selectedParts.map((item) {
-                            int currentCount =
+                            final currentCount =
                                 partCounts[item.productId.id] ?? 1;
 
-                            // return yourExistingSelectedItemWidget(item, currentCount);
                             return Container(
-                              height: 70,
                               margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15),
                                 color: Colors.white,
+                                borderRadius: BorderRadius.circular(15),
                               ),
                               child: Row(
                                 children: [
-                                  const SizedBox(width: 16),
                                   Container(
                                     height: 50,
                                     width: 50,
                                     decoration: BoxDecoration(
                                       border: Border.all(
-                                        color: Colors.grey.withOpacity(0.5),
-                                        width: 1.5,
+                                        color: Colors.grey.shade300,
                                       ),
-                                      borderRadius: BorderRadius.circular(15),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: const Icon(Icons.build_outlined),
                                   ),
+
                                   const SizedBox(width: 12),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              item.productId.name(context),
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
 
-                                          Text(
-                                            "Qty: ${partCounts[item.productId.id] ?? item.count}",
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.grey,
-                                            ),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.productId.name(context),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
                                           ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                        ),
 
-                                        children: [
-                                          Text(
-                                            AppLocalizations.of(
-                                              context,
-                                            )!.bhdAmount(
-                                              item.productId.price.toString(),
-                                            ),
-                                            style: const TextStyle(
-                                              color: AppColors.scoundry_clr,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                        const SizedBox(height: 6),
+
+                                        Text(
+                                          "Qty: $currentCount",
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                            fontWeight: FontWeight.w500,
                                           ),
-                                          const SizedBox(width: 30),
-                                          Container(
-                                            height: 27,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.primary_clr,
-                                              borderRadius:
-                                                  BorderRadius.circular(30),
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceEvenly,
-                                              children: [
-                                                // Minus button
-                                                IconButton(
-                                                  padding: EdgeInsets.zero,
-                                                  constraints:
-                                                      const BoxConstraints(),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      if (currentCount > 1) {
-                                                        partCounts[item
-                                                                .productId
-                                                                .id] =
-                                                            currentCount - 1;
-                                                      }
-                                                    });
-                                                  },
-                                                  icon: const Icon(
-                                                    Icons.remove,
-                                                    color: Colors.white,
-                                                    size: 17,
+                                        ),
+
+                                        const SizedBox(height: 6),
+
+                                        Text(
+                                          AppLocalizations.of(
+                                            context,
+                                          )!.bhdAmount(
+                                            item.productId.price.toString(),
+                                          ),
+                                          style: const TextStyle(
+                                            color: AppColors.scoundry_clr,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  Container(
+                                    height: 30,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary_clr,
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        IconButton(
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                          onPressed: () {
+                                            setState(() {
+                                              if (currentCount > 1) {
+                                                partCounts[item.productId.id] =
+                                                    currentCount - 1;
+                                              }
+                                            });
+                                          },
+                                          icon: const Icon(
+                                            Icons.remove,
+                                            color: Colors.white,
+                                            size: 18,
+                                          ),
+                                        ),
+
+                                        Text(
+                                          "$currentCount",
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+
+                                        IconButton(
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                          onPressed: () {
+                                            setState(() {
+                                              final stockQty =
+                                                  int.tryParse(
+                                                    item.count.toString(),
+                                                  ) ??
+                                                  0;
+
+                                              if (currentCount < stockQty) {
+                                                partCounts[item.productId.id] =
+                                                    currentCount + 1;
+                                              } else {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      AppLocalizations.of(
+                                                        context,
+                                                      )!.maxQuantityReached(
+                                                        stockQty,
+                                                      ),
+                                                    ),
+                                                    backgroundColor: Colors.red,
+                                                    duration: const Duration(
+                                                      seconds: 2,
+                                                    ),
                                                   ),
-                                                ),
-
-                                                // Count display
-                                                Text(
-                                                  "$currentCount",
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-
-                                                // Plus button
-                                                IconButton(
-                                                  padding: EdgeInsets.zero,
-                                                  constraints:
-                                                      const BoxConstraints(),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      partCounts[item
-                                                              .productId
-                                                              .id] =
-                                                          currentCount + 1;
-                                                    });
-                                                  },
-                                                  icon: const Icon(
-                                                    Icons.add,
-                                                    color: Colors.white,
-                                                    size: 17,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                                );
+                                              }
+                                            });
+                                          },
+                                          icon: const Icon(
+                                            Icons.add,
+                                            color: Colors.white,
+                                            size: 18,
                                           ),
-                                        ],
-                                      ),
-                                    ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
@@ -605,6 +639,15 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
 
   /// AVAILABLE PARTS CARD (API DATA)
   Widget _availablePartsCard(List<Datum> spareParts) {
+    // final filteredParts = spareParts.where((item) {
+    //   final qty = int.tryParse(item.count?.toString() ?? '0') ?? 0;
+    //   return qty > 0;
+    // }).toList();
+    final filteredParts = spareParts.where((item) {
+      final qty = int.tryParse(item.count?.toString().trim() ?? '0') ?? 0;
+
+      return qty > 0;
+    }).toList();
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -620,13 +663,22 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: spareParts.length,
+            itemCount: filteredParts.length,
             itemBuilder: (context, index) {
-              final item = spareParts[index];
+              final item = filteredParts[index];
               // final isChecked = selectedParts.contains(item);
+              // final isChecked = selectedParts.any(
+              //   (e) => e.productId.id == item.productId.id,
+              // );
+              debugPrint(
+                'BUILD => ${item.productId.name(context)} '
+                'checked=${selectedParts.any((e) => e.productId.id == item.productId.id)}',
+              );
+
               final isChecked = selectedParts.any(
                 (e) => e.productId.id == item.productId.id,
               );
+
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: Row(
@@ -634,17 +686,73 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                     Checkbox(
                       value: isChecked,
                       activeColor: AppColors.scoundry_clr,
-                      onChanged: !sparePartsUsed
-                          ? null
-                          : (value) {
+                      onChanged: sparePartsUsed
+                          ? (bool? value) {
+                              final productId = item.productId.id;
+
                               setState(() {
-                                value == true
-                                    ? selectedParts.add(item)
-                                    : selectedParts.remove(item);
+                                if (value == true) {
+                                  final exists = selectedParts.any(
+                                    (e) => e.productId.id == productId,
+                                  );
+
+                                  if (!exists) {
+                                    selectedParts.add(item);
+
+                                    partCounts[productId] = 1;
+                                  }
+                                } else {
+                                  selectedParts.removeWhere(
+                                    (e) => e.productId.id == productId,
+                                  );
+
+                                  partCounts.remove(productId);
+                                }
                               });
-                            },
+
+                              debugPrint(
+                                "SELECTED => ${selectedParts.map((e) => e.productId.id).toList()}",
+                              );
+                            }
+                          : null,
                     ),
 
+                    // onChanged: sparePartsUsed
+                    //     ? (bool? checked) {
+                    //         final productId = item.productId.id;
+
+                    //         setState(() {
+                    //           if (checked == true) {
+                    //             final alreadySelected = selectedParts.any(
+                    //               (e) => e.productId.id == productId,
+                    //             );
+
+                    //             if (!alreadySelected) {
+                    //               selectedParts.add(item);
+
+                    //               partCounts.putIfAbsent(productId, () => 1);
+                    //             }
+                    //           } else {
+                    //             selectedParts.removeWhere(
+                    //               (e) => e.productId.id == productId,
+                    //             );
+
+                    //             partCounts.remove(productId);
+                    //           }
+                    //         });
+
+                    //         debugPrint(
+                    //           "Part: ${item.productId.name(context)}",
+                    //         );
+                    //         debugPrint("Checked: $checked");
+                    //         debugPrint(
+                    //           "Selected Parts Count: ${selectedParts.length}",
+                    //         );
+                    //         debugPrint(
+                    //           "Selected IDs: ${selectedParts.map((e) => e.productId.id).toList()}",
+                    //         );
+                    //       }
+                    //     : null,
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -652,10 +760,13 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                           Text(
                             item.productId.name(context),
                             style: const TextStyle(fontWeight: FontWeight.w500),
+                            overflow: TextOverflow.ellipsis,
                           ),
+
                           const SizedBox(height: 4),
+
                           Text(
-                            "Qty: ${partCounts[item.productId.id] ?? item.count}",
+                            "Stock: ${item.count}",
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               color: Colors.grey,

@@ -202,7 +202,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
             .initialize(totalSeconds: 0, isRunning: true);
         ref.read(homeTabProvider.notifier).state = 3; // In Progress tab
 
-        await refreshServiceDetail(ref, widget.data.id);
+        // await refreshServiceDetail(ref, widget.data.id);
         await refreshServiceList(ref);
 
         if (mounted) context.go(RouteName.bottom_nav);
@@ -220,6 +220,40 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
     }
   }
 
+  String getCustomerAddress(Address address) {
+    if (address.isGeoAddress) {
+      return address.geoAddress ?? "";
+    }
+
+    final parts = <String>[];
+
+    if (address.building.isNotEmpty) {
+      parts.add("Building: ${address.building}");
+    }
+
+    if ((address.blockName ?? "").isNotEmpty) {
+      parts.add("Block: ${address.blockName}");
+    }
+
+    if ((address.roadName ?? "").isNotEmpty) {
+      parts.add("Road: ${address.roadName}");
+    }
+
+    if (address.floor.isNotEmpty) {
+      parts.add("Floor: ${address.floor}");
+    }
+
+    if (address.aptNo != null) {
+      parts.add("Apartment: ${address.aptNo}");
+    }
+
+    if (address.city.isNotEmpty) {
+      parts.add("City: ${address.city}");
+    }
+
+    return parts.join(", ");
+  }
+
   @override
   Widget build(BuildContext context) {
     final detailAsync = ref.watch(serviceDetailProvider(widget.data.id));
@@ -234,6 +268,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
     //   error: (_, __) => widget.data,
     // );
     final liveItem = detailAsync.value ?? widget.data;
+    debugPrint("LIVE ITEM => $liveItem");
     final assignmentStatus = liveItem.assignmentStatus.toLowerCase();
     final assignments = liveItem.technicianUserService?.assignments ?? [];
     final bool userApproval =
@@ -408,8 +443,10 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                         vertical: 10,
                       ),
                       child: UpdateRequestView(
-                        serviceRequestId: liveItem.assignmentStatus,
+                        serviceRequestId: liveItem.serviceRequestId,
                         userServiceId: liveItem.id,
+                        assignmentStatus: liveItem.assignmentStatus,
+                        service_name: liveItem.serviceId.name,
                       ),
                     ),
                   ],
@@ -422,8 +459,10 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                         vertical: 10,
                       ),
                       child: UpdateRequestView(
-                        serviceRequestId: liveItem.assignmentStatus,
+                        serviceRequestId: liveItem.serviceRequestId,
                         userServiceId: liveItem.id,
+                        assignmentStatus: liveItem.assignmentStatus,
+                        service_name: liveItem.serviceId.name,
                       ),
                     ),
                   ],
@@ -443,6 +482,11 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
   }
 
   Widget _buildCustomerDetails(Datum item) {
+    debugPrint("ADDRESS => ${item.address}");
+    debugPrint("BUILDING => ${item.address.building}");
+    debugPrint("FLOOR => ${item.address.floor}");
+    debugPrint("APT => ${item.address.aptNo}");
+    final customerAddress = getCustomerAddress(item.address);
     return Container(
       margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -510,11 +554,12 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                 const Divider(),
                 _infoRow(
                   AppLocalizations.of(context)!.address,
-                  AppLocalizations.of(context)!.addressFormatted(
-                    item.address.building,
-                    item.address.floor,
-                    item.address.aptNo,
-                  ),
+                  customerAddress,
+                  // AppLocalizations.of(context)!.addressFormatted(
+                  //   item.address.building,
+                  //   item.address.floor,
+                  //   item.address.aptNo,
+                  // ),
                 ),
                 // const Divider(),
                 // Row(
@@ -551,6 +596,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
     final displayStatus = item.assignmentStatus.toLowerCase() == "accepted"
         ? "assigned"
         : item.assignmentStatus;
+
     return Container(
       margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -606,6 +652,11 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                _infoRow(
+                  AppLocalizations.of(context)!.serviceIds,
+                  item.serviceRequestId,
+                ),
+                const Divider(),
                 _infoRow(
                   AppLocalizations.of(context)!.serviceType,
                   item.serviceId.name,

@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
 import 'package:tech_app/l10n/app_localizations.dart';
+import 'package:tech_app/model/RequestList_Model.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
 import 'package:tech_app/provider/home_tab_provider.dart';
 import 'package:tech_app/provider/service_list_provider.dart';
@@ -24,10 +25,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class UpdateRequestView extends ConsumerStatefulWidget {
   final String serviceRequestId;
   final String userServiceId;
+  final String assignmentStatus; // ✅ ADD THIS
+  final String service_name;
+
   const UpdateRequestView({
     super.key,
     required this.serviceRequestId,
     required this.userServiceId,
+    required this.assignmentStatus,
+    required this.service_name, // ✅ ADD THIS
   });
 
   @override
@@ -80,7 +86,7 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
     super.initState();
     selectedIndexes = {0, 1}; // Always selected
     WidgetsBinding.instance.addObserver(this);
-    _status = widget.serviceRequestId;
+    _status = widget.assignmentStatus;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadTimer();
     });
@@ -227,41 +233,66 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
   }
 
   Future<void> _toggleTimer() async {
-    final timerNotifier = ref.read(timerProvider.notifier);
     final timerState = ref.read(timerProvider);
 
     try {
-      // OPTIMISTIC UPDATE
-      if (timerState.isRunning) {
-        timerNotifier.pauseLocal();
-      } else {
-        timerNotifier.startLocal();
-      }
-      final newStatus = timerState.isRunning ? "ON-HOLD" : "IN-PROGRESS";
-
-      setState(() {
-        _status = newStatus;
-      });
-
-      // API CALL
       if (timerState.isRunning) {
         await _timerService.pauseTimer(userServiceId: widget.userServiceId);
+        setState(() {
+          _status = "ON-HOLD";
+        });
       } else {
         await _timerService.resumeTimer(userServiceId: widget.userServiceId);
+        setState(() {
+          _status = "IN-PROGRESS";
+        });
       }
 
-      // 🔥 IMPORTANT: refresh Home list immediately
-      ref.invalidate(serviceListProvider);
-
-      // optional: also force rebuild listeners
-      ref.refresh(serviceListProvider);
-
+      // ONLY refresh from backend
       await _loadTimer();
+
+      ref.invalidate(serviceListProvider);
     } catch (e) {
       debugPrint("Toggle error: $e");
       await _loadTimer();
     }
   }
+  // Future<void> _toggleTimer() async {
+  //   final timerNotifier = ref.read(timerProvider.notifier);
+  //   final timerState = ref.read(timerProvider);
+
+  //   try {
+  //     // OPTIMISTIC UPDATE
+  //     if (timerState.isRunning) {
+  //       timerNotifier.pauseLocal();
+  //     } else {
+  //       timerNotifier.startLocal();
+  //     }
+  //     final newStatus = timerState.isRunning ? "ON-HOLD" : "IN-PROGRESS";
+
+  //     setState(() {
+  //       _status = newStatus;
+  //     });
+
+  //     // API CALL
+  //     if (timerState.isRunning) {
+  //       await _timerService.pauseTimer(userServiceId: widget.userServiceId);
+  //     } else {
+  //       await _timerService.resumeTimer(userServiceId: widget.userServiceId);
+  //     }
+
+  //     // 🔥 IMPORTANT: refresh Home list immediately
+  //     ref.invalidate(serviceListProvider);
+
+  //     // optional: also force rebuild listeners
+  //     ref.refresh(serviceListProvider);
+
+  //     await _loadTimer();
+  //   } catch (e) {
+  //     debugPrint("Toggle error: $e");
+  //     await _loadTimer();
+  //   }
+  // }
 
   Future<void> pickImage(ImageSource source) async {
     const int maxImages = 10;
@@ -324,6 +355,90 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
     }
   }
 
+  Widget _buildServiceTopCard() {
+    return Container(
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppLocalizations.of(context)!.serviceDetails,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+
+          const SizedBox(height: 12),
+
+          _row("Service Request ID", widget.serviceRequestId),
+          _row("Service Name", widget.service_name),
+
+          // _row("Service Name", widget.service_name),
+          const SizedBox(height: 12),
+
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: _status == "on-hold"
+                    ? Colors.green.shade100
+                    : Colors.green.shade100,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                _status.toUpperCase(),
+                style: TextStyle(
+                  color: _status == "on-hold"
+                      ? Colors.green.shade800
+                      : Colors.green.shade800,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          // _row("Current Status", widget.assignmentStatus),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 4,
+            child: Text(
+              label,
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+            ),
+          ),
+          Expanded(
+            flex: 6,
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final timerState = ref.watch(timerProvider);
@@ -335,42 +450,50 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
           context.pop();
         }
       },
+
       child: Container(
         color: Theme.of(context).scaffoldBackgroundColor,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 5),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                height: 55,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  color: Color.fromRGBO(223, 221, 221, 1),
-                ),
-                child: Center(
-                  child: Text(
-                    _status.toUpperCase(),
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 17,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ),
+              _buildServiceTopCard(), // ✅ FIXED HERE
+
               const SizedBox(height: 10),
-              Text(
-                AppLocalizations.of(context)!.timer,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
+              // Container(
+              //   padding: const EdgeInsets.symmetric(vertical: 12),
+              //   width: double.infinity,
+              //   decoration: BoxDecoration(
+              //     gradient: LinearGradient(
+              //       colors: [
+              //         AppColors.scoundry_clr,
+              //         AppColors.scoundry_clr.withOpacity(0.8),
+              //       ],
+              //     ),
+              //     borderRadius: BorderRadius.circular(16),
+              //   ),
+              //   child: Center(
+              //     child: Text(
+              //       _status.toUpperCase(),
+              //       style: const TextStyle(
+              //         color: Colors.white,
+              //         fontSize: 16,
+              //         fontWeight: FontWeight.bold,
+              //         letterSpacing: 1,
+              //       ),
+              //     ),
+              //   ),
+              // ),
               const SizedBox(height: 10),
+              sectionTitle(AppLocalizations.of(context)!.timer),
+              // Text(
+              //   AppLocalizations.of(context)!.timer,
+              //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              // ),
+              // const SizedBox(height: 10),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 15,
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.all(20),
                 margin: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -397,9 +520,9 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
                         Text(
                           timerState.formattedTime,
                           style: const TextStyle(
-                            fontSize: 18,
+                            fontSize: 30,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            letterSpacing: 1,
                           ),
                         ),
                       ],
@@ -431,57 +554,44 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 10),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 4,
-                ),
-                itemCount: _statusOptionCount,
 
-                itemBuilder: (context, index) {
-                  final bool isSelected = selectedIndexes.contains(index);
+              // const SizedBox(height: 10),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: List.generate(_statusOptionCount, (index) {
+                  final isSelected = selectedIndexes.contains(index);
 
-                  return InkWell(
-                    onTap: () {
-                      //  Accepted (0) & In Progress (1) → DO NOTHING
-                      if (index == 0 || index == 1) return;
+                  return SizedBox(
+                    width: MediaQuery.of(context).size.width / 2.4,
+                    height: 50,
+                    child: InkWell(
+                      onTap: () {
+                        if (index == 0 || index == 1) return;
 
-                      setState(() {
-                        if (isSelected) {
-                          selectedIndexes.remove(index);
-                        } else {
-                          selectedIndexes.add(index);
-                        }
-                      });
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.scoundry_clr
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(15),
-                        border: Border.all(
-                          color: AppColors.scoundry_clr,
-                          width: 1.5,
+                        setState(() {
+                          if (isSelected) {
+                            selectedIndexes.remove(index);
+                          } else {
+                            selectedIndexes.add(index);
+                          }
+                        });
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.scoundry_clr
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(color: AppColors.scoundry_clr),
                         ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          _statusLabel(context, index),
-                          style: TextStyle(
-                            color: isSelected
-                                ? Colors.white
-                                : AppColors.scoundry_clr,
-                          ),
+                        child: Center(
+                          child: Text(_statusLabel(context, index)),
                         ),
                       ),
                     ),
                   );
-                },
+                }),
               ),
 
               const SizedBox(height: 15),
@@ -565,7 +675,7 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
                       color: AppColors.scoundry_clr,
                       isLoading: isLoading,
                       onPressed: SaveUpdates,
-                      text: AppLocalizations.of(context)!.saveUpdates,
+                      text: AppLocalizations.of(context)!.continueButton,
                     )
                   : PrimaryButton(
                       radius: 15,
@@ -573,11 +683,22 @@ class _UpdateRequestViewState extends ConsumerState<UpdateRequestView>
                       height: 55,
                       color: Colors.grey,
                       onPressed: null, // disabled
-                      text: AppLocalizations.of(context)!.saveUpdates,
+                      text: AppLocalizations.of(context)!.continueButton,
                     ),
+              const SizedBox(height: 30),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget sectionTitle(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12, top: 8),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
       ),
     );
   }

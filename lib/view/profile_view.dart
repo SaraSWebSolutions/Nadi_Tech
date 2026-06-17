@@ -211,38 +211,105 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                       ),
               ),
               actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text(AppLocalizations.of(context)!.cancel),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    debugPrint("selectedReasonId $selectedReasonId");
-                    if (selectedReasonId == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            AppLocalizations.of(context)!.pleaseSelectReason,
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.grey.shade400),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                      );
-                      return;
-                    }
-                    await _accountDelete.fetchdeleteaccount(
-                      reasonId: selectedReasonId!,
-                    );
-                    await Appperfernces.clearAll();
-                    await Appperfernces.setLoggedIn(false);
-                    context.go(RouteName.splash);
-                  },
-                  child: Text(
-                    AppLocalizations.of(context)!.delete,
-                    style: TextStyle(color: Colors.red),
-                  ),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(
+                          AppLocalizations.of(context)!.cancel,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () async {
+                          if (selectedReasonId == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.pleaseSelectReason,
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
+                          await _accountDelete.fetchdeleteaccount(
+                            reasonId: selectedReasonId!,
+                          );
+
+                          await Appperfernces.clearAll();
+                          await Appperfernces.setLoggedIn(false);
+
+                          context.go(RouteName.splash);
+                        },
+                        child: Text(
+                          AppLocalizations.of(context)!.delete,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
+              // actions: [
+              //   TextButton(
+              //     onPressed: () {
+              //       Navigator.pop(context);
+              //     },
+              //     child: Text(AppLocalizations.of(context)!.cancel),
+              //   ),
+              //   TextButton(
+              //     onPressed: () async {
+              //       debugPrint("selectedReasonId $selectedReasonId");
+              //       if (selectedReasonId == null) {
+              //         ScaffoldMessenger.of(context).showSnackBar(
+              //           SnackBar(
+              //             content: Text(
+              //               AppLocalizations.of(context)!.pleaseSelectReason,
+              //             ),
+              //           ),
+              //         );
+              //         return;
+              //       }
+              //       await _accountDelete.fetchdeleteaccount(
+              //         reasonId: selectedReasonId!,
+              //       );
+              //       await Appperfernces.clearAll();
+              //       await Appperfernces.setLoggedIn(false);
+              //       context.go(RouteName.splash);
+              //     },
+              //     child: Text(
+              //       AppLocalizations.of(context)!.delete,
+              //       style: TextStyle(color: Colors.red),
+              //     ),
+              //   ),
+              // ],
             );
           },
         );
@@ -253,24 +320,60 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   void _showLogoutConfirmDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx)!;
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.logOut),
-          content: Text(AppLocalizations.of(context)!.logoutConfirmMessage),
+          title: Text(l10n.logOut),
+          content: Text(l10n.logoutConfirmMessage),
+
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(AppLocalizations.of(context)!.cancel),
-            ),
-            TextButton(
-              onPressed: () async {
-                //Navigator.pop(context); // close dialog
-                await _logout(context); // call logout
-              },
-              child: Text(
-                AppLocalizations.of(context)!.logOut,
-                style: const TextStyle(color: Colors.red),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.grey.shade400),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: Text(
+                      l10n.cancel,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(ctx).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () async {
+                      Navigator.of(ctx).pop(true);
+                      await _logout(context);
+                    },
+                    child: Text(
+                      l10n.logOut,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         );

@@ -524,4 +524,15 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get clearAllNotificationsConfirm =>
       'هل أنت متأكد أنك تريد حذف جميع الإشعارات؟';
+
+  @override
+  String get serviceIds => 'رقم الخدمة';
+
+  @override
+  String maxQuantityReached(Object count) {
+    return 'لقد وصلت إلى الحد الأقصى للكمية المتاحة ($count)';
+  }
+
+  @override
+  String get continueButton => 'متابعة';
 }

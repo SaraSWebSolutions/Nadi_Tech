@@ -69,7 +69,7 @@ class RequestCart extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style:  TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -81,17 +81,23 @@ class RequestCart extends StatelessWidget {
     );
   }
 
-  Widget _cardContainer({required Widget child ,  required BuildContext context}) {
+  Widget _cardContainer({
+    required Widget child,
+    required BuildContext context,
+  }) {
     return Container(
       margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(15),
-        boxShadow:  [
+        boxShadow: [
           BoxShadow(
-            color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.35):Colors.black.withOpacity(0.25),
-             blurRadius: 6, 
-             offset: Offset(0, 3)),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withOpacity(0.35)
+                : Colors.black.withOpacity(0.25),
+            blurRadius: 6,
+            offset: Offset(0, 3),
+          ),
         ],
       ),
       child: child,
@@ -132,12 +138,12 @@ class RequestCart extends StatelessWidget {
           //   ),
           // ),
           Expanded(
-  flex: 5,
-  child: Align(
-    alignment: AlignmentDirectional.centerEnd,
-    child: _buildValueWidget(context, value, media, isStatus),
-  ),
-),
+            flex: 5,
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: _buildValueWidget(context, value, media, isStatus),
+            ),
+          ),
         ],
       ),
     );
@@ -188,13 +194,13 @@ class RequestCart extends StatelessWidget {
     return Text(
       value,
       // textAlign: TextAlign.right,
-        textAlign: TextAlign.end,
+      textAlign: TextAlign.end,
       maxLines: 4,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        color:Theme.of(context).textTheme.bodyMedium?.color,
+        color: Theme.of(context).textTheme.bodyMedium?.color,
       ),
     );
   }
@@ -208,41 +214,41 @@ class RequestCart extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child:
-      //  Row(
-      //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //   children: [
-      //     Column(
-      //       crossAxisAlignment: CrossAxisAlignment.start,
-      //       children: [
-      //         Text(label),
-      //         Row(
-      //           children: [Text("Qty:"), const SizedBox(width: 5), Text(qty)],
-      //         ),
-      //       ],
-      //     ),
-      //     Text(amount),
-      //   ],
-      // ),
-      Row(
-  children: [
-    Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, textAlign: TextAlign.start),
+          //  Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Column(
+          //       crossAxisAlignment: CrossAxisAlignment.start,
+          //       children: [
+          //         Text(label),
+          //         Row(
+          //           children: [Text("Qty:"), const SizedBox(width: 5), Text(qty)],
+          //         ),
+          //       ],
+          //     ),
+          //     Text(amount),
+          //   ],
+          // ),
           Row(
             children: [
-              Text(AppLocalizations.of(context)!.qtyLabel),
-              const SizedBox(width: 5),
-              Text(qty),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, textAlign: TextAlign.start),
+                    Row(
+                      children: [
+                        Text(AppLocalizations.of(context)!.qtyLabel),
+                        const SizedBox(width: 5),
+                        Text(qty),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Text(amount, textAlign: TextAlign.end),
             ],
           ),
-        ],
-      ),
-    ),
-    Text(amount, textAlign: TextAlign.end),
-  ],
-),
     );
   }
 
@@ -298,8 +304,7 @@ class RequestCart extends StatelessWidget {
                           final imgUrl =
                               "${ImageBaseUrl.baseUrl}/${images[index].trim()}";
                           final urls = images
-                              .map((m) =>
-                                  "${ImageBaseUrl.baseUrl}/${m.trim()}")
+                              .map((m) => "${ImageBaseUrl.baseUrl}/${m.trim()}")
                               .toList();
                           return GestureDetector(
                             onTap: () =>
@@ -391,8 +396,8 @@ class RequestCart extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                 Text(
-               AppLocalizations.of(context)!.mediaFiles,
+                Text(
+                  AppLocalizations.of(context)!.mediaFiles,
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 12),
@@ -410,8 +415,9 @@ class RequestCart extends StatelessWidget {
                             final imgUrl =
                                 "${ImageBaseUrl.baseUrl}/${images[index].trim()}";
                             final urls = images
-                                .map((m) =>
-                                    "${ImageBaseUrl.baseUrl}/${m.trim()}")
+                                .map(
+                                  (m) => "${ImageBaseUrl.baseUrl}/${m.trim()}",
+                                )
                                 .toList();
                             return GestureDetector(
                               onTap: () =>
@@ -452,8 +458,6 @@ class RequestCart extends StatelessWidget {
                       const SizedBox(height: 12),
                     ],
                   ),
-
-              
               ],
             ),
           ),
@@ -472,10 +476,8 @@ class RequestCart extends StatelessWidget {
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black.withOpacity(0.92),
-        pageBuilder: (_, __, ___) => _FullScreenImageViewer(
-          images: images,
-          controller: controller,
-        ),
+        pageBuilder: (_, __, ___) =>
+            _FullScreenImageViewer(images: images, controller: controller),
       ),
     );
   }
@@ -499,18 +501,33 @@ class RequestCart extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionHeader(AppLocalizations.of(context)!.requestInformation, icon: Icons.receipt_long,),
+              _sectionHeader(
+                AppLocalizations.of(context)!.requestInformation,
+                icon: Icons.receipt_long,
+              ),
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _infoRow(context, AppLocalizations.of(context)!.requestId, serviceRequestID),
+                    _infoRow(
+                      context,
+                      AppLocalizations.of(context)!.requestId,
+                      serviceRequestID,
+                    ),
                     const Divider(),
-                    _infoRow(context,AppLocalizations.of(context)!.serviceType, servicetype),
+                    _infoRow(
+                      context,
+                      AppLocalizations.of(context)!.serviceType,
+                      servicetype,
+                    ),
                     // const Divider(),
                     // _infoRow(context, "Status", assignmentStatus),
                     const Divider(),
-                    _infoRow(context, AppLocalizations.of(context)!.clientName, clientname),
+                    _infoRow(
+                      context,
+                      AppLocalizations.of(context)!.clientName,
+                      clientname,
+                    ),
                     // const Divider(),
                     // _infoRow(
                     //   context,
@@ -530,9 +547,9 @@ class RequestCart extends StatelessWidget {
                     const Divider(),
                     Align(
                       // alignment: Alignment.centerLeft,
-                       alignment: AlignmentDirectional.centerStart,
+                      alignment: AlignmentDirectional.centerStart,
                       child: Text(
-                       AppLocalizations.of(context)!.description,
+                        AppLocalizations.of(context)!.description,
                         style: TextStyle(
                           color: AppColors.lightgray_clr,
                           fontSize: 12,
@@ -566,9 +583,12 @@ class RequestCart extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _sectionHeader(AppLocalizations.of(context)!.sparePartsUsed, icon: Icons.build),
+                  _sectionHeader(
+                    AppLocalizations.of(context)!.sparePartsUsed,
+                    icon: Icons.build,
+                  ),
                   assignment.usedParts.isEmpty
-                      ?  Padding(
+                      ? Padding(
                           padding: EdgeInsets.all(16.0),
                           child: Center(
                             child: Text(
@@ -586,8 +606,9 @@ class RequestCart extends StatelessWidget {
                                     context,
                                     part.productName,
                                     part.count.toString(),
-                                    AppLocalizations.of(context)!
-                                        .bhdAmount(part.price.toString()),
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.bhdAmount(part.price.toString()),
                                   ),
                                 )
                                 .toList(),
@@ -614,14 +635,17 @@ class RequestCart extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _sectionHeader(AppLocalizations.of(context)!.completedService, icon: Icons.check_circle),
+                  _sectionHeader(
+                    AppLocalizations.of(context)!.completedService,
+                    icon: Icons.check_circle,
+                  ),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
                         _infoRow(
                           context,
-                         AppLocalizations.of(context)!.timeDuration,
+                          AppLocalizations.of(context)!.timeDuration,
                           '${formatWorkDuration(assignment.workDuration)}',
                         ),
 
@@ -644,8 +668,8 @@ class RequestCart extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                               Text(
-                             AppLocalizations.of(context)!.fixedMedia,
+                              Text(
+                                AppLocalizations.of(context)!.fixedMedia,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
                                   fontSize: 12,
@@ -655,8 +679,8 @@ class RequestCart extends StatelessWidget {
                               InkWell(
                                 onTap: () =>
                                     _showMediaDialog(context, assignmentMedia),
-                                child:  Text(
-                                AppLocalizations.of(context)!.tapToView,
+                                child: Text(
+                                  AppLocalizations.of(context)!.tapToView,
                                   style: TextStyle(
                                     color: Colors.blue,
                                     decoration: TextDecoration.underline,
@@ -698,11 +722,11 @@ class RequestCart extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                       Text(AppLocalizations.of(context)!.totalAmount),
+                      Text(AppLocalizations.of(context)!.totalAmount),
                       Text(
-                        AppLocalizations.of(context)!.bhdAmount(
-                          payment.toString(),
-                        ),
+                        AppLocalizations.of(
+                          context,
+                        )!.bhdAmount(payment.toString()),
                         style: TextStyle(
                           color: AppColors.scoundry_clr,
                           fontWeight: FontWeight.bold,
@@ -747,8 +771,11 @@ class _FullScreenImageViewer extends StatelessWidget {
                   placeholder: (context, url) => const Center(
                     child: CircularProgressIndicator(color: Colors.white),
                   ),
-                  errorWidget: (context, url, error) =>
-                      const Icon(Icons.broken_image, color: Colors.white, size: 60),
+                  errorWidget: (context, url, error) => const Icon(
+                    Icons.broken_image,
+                    color: Colors.white,
+                    size: 60,
+                  ),
                 ),
               ),
             ),

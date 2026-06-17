@@ -526,4 +526,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get clearAllNotificationsConfirm =>
       'Are you sure you want to clear all notifications?';
+
+  @override
+  String get serviceIds => 'Service ID';
+
+  @override
+  String maxQuantityReached(Object count) {
+    return 'You have reached the maximum available quantity ($count)';
+  }
+
+  @override
+  String get continueButton => 'Continue';
 }

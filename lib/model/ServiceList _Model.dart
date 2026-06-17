@@ -281,9 +281,18 @@ class Address {
   final String city;
   final String building;
   final String floor;
-  final int aptNo;
-  final String roadId;
-  final String blockId;
+  final int? aptNo;
+
+  final String? roadId;
+  final String? roadName;
+
+  final String? blockId;
+  final String? blockName;
+
+  final double? latitude;
+  final double? longitude;
+  final bool isGeoAddress;
+  final String? geoAddress;
 
   Address({
     required this.id,
@@ -292,9 +301,15 @@ class Address {
     required this.city,
     required this.building,
     required this.floor,
-    required this.aptNo,
-    required this.roadId,
-    required this.blockId,
+    this.aptNo,
+    this.roadId,
+    this.roadName,
+    this.blockId,
+    this.blockName,
+    this.latitude,
+    this.longitude,
+    required this.isGeoAddress,
+    this.geoAddress,
   });
 
   factory Address.fromJson(Map<String, dynamic> json) {
@@ -305,9 +320,19 @@ class Address {
       city: json["city"] ?? "",
       building: json["building"] ?? "",
       floor: json["floor"] ?? "",
-      aptNo: json["aptNo"] ?? 0,
-      roadId: json["roadId"] ?? "",
-      blockId: json["blockId"] ?? "",
+      aptNo: json["aptNo"],
+
+      roadId: json["roadId"],
+      roadName: json["roadName"],
+
+      blockId: json["blockId"],
+      blockName: json["blockName"],
+
+      latitude: (json["latitude"] as num?)?.toDouble(),
+      longitude: (json["longitude"] as num?)?.toDouble(),
+
+      isGeoAddress: json["isGeoAddress"] ?? false,
+      geoAddress: json["geoAddress"],
     );
   }
 }

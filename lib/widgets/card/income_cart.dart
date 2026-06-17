@@ -104,28 +104,28 @@ class _IncomeCardState extends ConsumerState<IncomeCard> {
       return;
     }
 
-    debugPrint("========== ASSIGNMENTS DEBUG ==========");
+    // debugPrint("========== ASSIGNMENTS DEBUG ==========");
 
     for (int i = 0; i < widget.assignments.length; i++) {
       final a = widget.assignments[i];
 
-      debugPrint("""
-🧾 Assignment #${i + 1}
----------------------------------
-Technician ID : ${a.technicianId}
-Status        : ${a.status}
-Notes         : ${a.notes}
-Work Duration : ${a.workDuration}
-PaymentRaised : ${a.paymentRaised}
-WorkStartedAt : ${a.workStartedAt}
-UpdatedAt     : ${a.updatedAt}
-Media         : ${a.media}
-Used Parts    : ${a.usedParts.map((p) => '${p.productName} x${p.count} = ${p.total}').toList()}
----------------------------------
-""");
+      //       debugPrint("""
+      // 🧾 Assignment #${i + 1}
+      // ---------------------------------
+      // Technician ID : ${a.technicianId}
+      // Status        : ${a.status}
+      // Notes         : ${a.notes}
+      // Work Duration : ${a.workDuration}
+      // PaymentRaised : ${a.paymentRaised}
+      // WorkStartedAt : ${a.workStartedAt}
+      // UpdatedAt     : ${a.updatedAt}
+      // Media         : ${a.media}
+      // Used Parts    : ${a.usedParts.map((p) => '${p.productName} x${p.count} = ${p.total}').toList()}
+      // ---------------------------------
+      // """);
     }
 
-    debugPrint("========== END ASSIGNMENTS ==========");
+    // debugPrint("========== END ASSIGNMENTS ==========");
   }
 
   String formatWorkDuration(int seconds) {
