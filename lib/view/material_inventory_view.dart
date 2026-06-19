@@ -36,7 +36,311 @@ class _MaterialInventoryViewState extends ConsumerState<MaterialInventoryView> {
   Widget build(BuildContext context) {
     final inventoryAsync = ref.watch(inventoryListProvider);
     final connectivity = ref.watch(connectivityProvider);
+    // return Scaffold(
+    //   backgroundColor: const Color(0xffF5F7FB),
 
+    //   body: Column(
+    //     children: [
+    //       /// HEADER
+    //       Container(
+    //         // padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+    //         decoration: const BoxDecoration(
+    //           color: AppColors.app_background_clr,
+    //           borderRadius: BorderRadius.only(
+    //             bottomLeft: Radius.circular(30),
+    //             bottomRight: Radius.circular(30),
+    //           ),
+    //         ),
+    //         child: Header(
+    //           title: AppLocalizations.of(context)!.materialInventory,
+    //           showRefreshIcon: true,
+    //           showBackButton: true,
+    //           showNotificationIcon: false,
+    //           showProfileIcon: false,
+    //           onBackPressed: () {
+    //             ref.read(bottomNavProvider.notifier).state = 0;
+    //           },
+    //         ),
+    //       ),
+
+    //       Expanded(
+    //         child: inventoryAsync.when(
+    //           loading: () => ListView.builder(
+    //             padding: const EdgeInsets.all(10),
+    //             itemCount: 6,
+    //             itemBuilder: (_, __) =>
+    //                 const ShimmerLoader(height: 100, width: double.infinity),
+    //           ),
+
+    //           error: (err, _) => Center(
+    //             child: Column(
+    //               mainAxisAlignment: MainAxisAlignment.center,
+    //               children: [
+    //                 Image.asset("assets/images/inven.png", height: 120),
+    //                 const SizedBox(height: 15),
+    //                 Text(
+    //                   AppLocalizations.of(context)!.noMaterialFound,
+    //                   style: const TextStyle(
+    //                     fontSize: 16,
+    //                     fontWeight: FontWeight.w600,
+    //                   ),
+    //                 ),
+    //               ],
+    //             ),
+    //           ),
+
+    //           data: (inventoryMaterial) {
+    //             if (inventoryMaterial.data.isEmpty) {
+    //               return Center(
+    //                 child: Column(
+    //                   mainAxisAlignment: MainAxisAlignment.center,
+    //                   children: [
+    //                     Image.asset("assets/images/inven.png", height: 120),
+    //                     const SizedBox(height: 15),
+    //                     Text(
+    //                       AppLocalizations.of(context)!.noInventoryFound,
+    //                       style: const TextStyle(
+    //                         fontSize: 16,
+    //                         fontWeight: FontWeight.w600,
+    //                       ),
+    //                     ),
+    //                   ],
+    //                 ),
+    //               );
+    //             }
+
+    //             final totalProducts = inventoryMaterial.data.length;
+
+    //             final totalStock = inventoryMaterial.data.fold<int>(
+    //               0,
+    //               (sum, item) =>
+    //                   sum + (int.tryParse(item.count.toString()) ?? 0),
+    //             );
+
+    //             return Column(
+    //               children: [
+    //                 /// SUMMARY CARD
+    //                 Container(
+    //                   margin: const EdgeInsets.all(16),
+    //                   padding: const EdgeInsets.symmetric(
+    //                     horizontal: 20,
+    //                     vertical: 18,
+    //                   ),
+    //                   decoration: BoxDecoration(
+    //                     color: Colors.white,
+    //                     borderRadius: BorderRadius.circular(20),
+    //                     boxShadow: const [
+    //                       BoxShadow(
+    //                         color: Colors.black12,
+    //                         blurRadius: 10,
+    //                         offset: Offset(0, 4),
+    //                       ),
+    //                     ],
+    //                   ),
+    //                   child: Row(
+    //                     children: [
+    //                       Expanded(
+    //                         child: Column(
+    //                           children: [
+    //                             Text(
+    //                               "$totalProducts",
+    //                               style: const TextStyle(
+    //                                 fontSize: 22,
+    //                                 fontWeight: FontWeight.bold,
+    //                               ),
+    //                             ),
+    //                             const SizedBox(height: 4),
+    //                             const Text(
+    //                               "Materials",
+    //                               style: TextStyle(color: Colors.grey),
+    //                             ),
+    //                           ],
+    //                         ),
+    //                       ),
+
+    //                       Container(
+    //                         width: 1,
+    //                         height: 40,
+    //                         color: Colors.grey.shade300,
+    //                       ),
+
+    //                       Expanded(
+    //                         child: Column(
+    //                           children: [
+    //                             Text(
+    //                               "$totalStock",
+    //                               style: const TextStyle(
+    //                                 fontSize: 22,
+    //                                 fontWeight: FontWeight.bold,
+    //                                 color: AppColors.primary_clr,
+    //                               ),
+    //                             ),
+    //                             const SizedBox(height: 4),
+    //                             const Text(
+    //                               "Total Stock",
+    //                               style: TextStyle(color: Colors.grey),
+    //                             ),
+    //                           ],
+    //                         ),
+    //                       ),
+    //                     ],
+    //                   ),
+    //                 ),
+
+    //                 /// INVENTORY LIST
+    //                 Expanded(
+    //                   child: AnimationLimiter(
+    //                     child: ListView.builder(
+    //                       padding: const EdgeInsets.only(
+    //                         left: 16,
+    //                         right: 16,
+    //                         bottom: 20,
+    //                       ),
+    //                       itemCount: inventoryMaterial.data.length,
+    //                       itemBuilder: (context, index) {
+    //                         final item = inventoryMaterial.data[index];
+
+    //                         final productName = item.productId.productName;
+
+    //                         final price = item.productId.price;
+
+    //                         final stock =
+    //                             int.tryParse(item.count.toString()) ?? 0;
+
+    //                         final stockColor = stock <= 2
+    //                             ? Colors.red
+    //                             : AppColors.primary_clr;
+
+    //                         return AnimationConfiguration.staggeredList(
+    //                           position: index,
+    //                           duration: const Duration(milliseconds: 700),
+    //                           child: SlideAnimation(
+    //                             verticalOffset: 40,
+    //                             child: FadeInAnimation(
+    //                               child: Container(
+    //                                 margin: const EdgeInsets.only(bottom: 14),
+    //                                 padding: const EdgeInsets.all(16),
+    //                                 decoration: BoxDecoration(
+    //                                   color: Colors.white,
+    //                                   borderRadius: BorderRadius.circular(20),
+    //                                   boxShadow: const [
+    //                                     BoxShadow(
+    //                                       color: Colors.black12,
+    //                                       blurRadius: 8,
+    //                                       offset: Offset(0, 4),
+    //                                     ),
+    //                                   ],
+    //                                 ),
+    //                                 child: Row(
+    //                                   children: [
+    //                                     Container(
+    //                                       height: 60,
+    //                                       width: 60,
+    //                                       decoration: BoxDecoration(
+    //                                         color: AppColors.scoundry_clr
+    //                                             .withOpacity(.15),
+    //                                         shape: BoxShape.circle,
+    //                                       ),
+    //                                       child: const Icon(
+    //                                         Icons.inventory_2_outlined,
+    //                                         size: 28,
+    //                                         color: AppColors.scoundry_clr,
+    //                                       ),
+    //                                     ),
+
+    //                                     const SizedBox(width: 15),
+
+    //                                     Expanded(
+    //                                       child: Column(
+    //                                         crossAxisAlignment:
+    //                                             CrossAxisAlignment.start,
+    //                                         children: [
+    //                                           Text(
+    //                                             productName,
+    //                                             style: const TextStyle(
+    //                                               fontSize: 18,
+    //                                               fontWeight: FontWeight.w600,
+    //                                             ),
+    //                                           ),
+
+    //                                           const SizedBox(height: 8),
+
+    //                                           Container(
+    //                                             padding:
+    //                                                 const EdgeInsets.symmetric(
+    //                                                   horizontal: 10,
+    //                                                   vertical: 4,
+    //                                                 ),
+    //                                             decoration: BoxDecoration(
+    //                                               color: stockColor.withOpacity(
+    //                                                 .1,
+    //                                               ),
+    //                                               borderRadius:
+    //                                                   BorderRadius.circular(20),
+    //                                             ),
+    //                                             child: Text(
+    //                                               "$stock In Stock",
+    //                                               style: TextStyle(
+    //                                                 color: stockColor,
+    //                                                 fontWeight: FontWeight.bold,
+    //                                               ),
+    //                                             ),
+    //                                           ),
+
+    //                                           const SizedBox(height: 8),
+
+    //                                           Text(
+    //                                             "BHD $price",
+    //                                             style: const TextStyle(
+    //                                               fontSize: 16,
+    //                                               fontWeight: FontWeight.bold,
+    //                                               color: AppColors.primary_clr,
+    //                                             ),
+    //                                           ),
+    //                                         ],
+    //                                       ),
+    //                                     ),
+    //                                   ],
+    //                                 ),
+    //                               ),
+    //                             ),
+    //                           ),
+    //                         );
+    //                       },
+    //                     ),
+    //                   ),
+    //                 ),
+    //               ],
+    //             );
+    //           },
+    //         ),
+    //       ),
+
+    //       /// BUTTON
+    //       SafeArea(
+    //         top: false,
+    //         child: Container(
+    //           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+    //           // decoration: const BoxDecoration(
+    //           //   color: Colors.white,
+    //           //   boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+    //           // ),
+    //           child: PrimaryButton(
+    //             radius: 15,
+    //             color: AppColors.scoundry_clr,
+    //             isLoading: inventoryAsync.isLoading,
+    //             onPressed: () {
+    //               context.push(RouteName.material_request);
+    //             },
+    //             Width: double.infinity,
+    //             height: 55,
+    //             text: AppLocalizations.of(context)!.requestMaterial,
+    //           ),
+    //         ),
+    //       ),
+    //     ],
+    //   ),
+    // );
     return PopScope(
       canPop: true,
       onPopInvoked: (didPop) async {

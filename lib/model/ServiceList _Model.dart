@@ -240,6 +240,8 @@ class Assignment {
 class UsedPart {
   final String productId;
   final String productName;
+  final String? productNameEn;
+  final String? productNameAr;
   final int count;
   final int price;
   final int total;
@@ -250,12 +252,24 @@ class UsedPart {
     required this.count,
     required this.price,
     required this.total,
+    this.productNameEn,
+    this.productNameAr,
   });
 
   factory UsedPart.fromJson(Map<String, dynamic> json) {
+    final product = json["productId"];
+
     return UsedPart(
-      productId: json["productId"] ?? "",
-      productName: json["productName"] ?? "",
+      productId: product is Map ? product["_id"] ?? "" : "",
+
+      productName: product is Map
+          ? (product["productName_en"] ?? product["productName_ar"] ?? "")
+          : "",
+
+      productNameEn: product is Map ? product["productName_en"] : null,
+
+      productNameAr: product is Map ? product["productName_ar"] : null,
+
       count: json["count"] ?? 0,
       price: json["price"] ?? 0,
       total: json["total"] ?? 0,
@@ -265,6 +279,8 @@ class UsedPart {
   Map<String, dynamic> toJson() => {
     "productId": productId,
     "productName": productName,
+    "productName_en": productNameEn,
+    "productName_ar": productNameAr,
     "count": count,
     "price": price,
     "total": total,

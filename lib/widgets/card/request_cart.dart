@@ -86,7 +86,7 @@ class RequestCart extends StatelessWidget {
     required BuildContext context,
   }) {
     return Container(
-      margin: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(15),
@@ -96,7 +96,7 @@ class RequestCart extends StatelessWidget {
                 ? Colors.white.withOpacity(0.35)
                 : Colors.black.withOpacity(0.25),
             blurRadius: 6,
-            offset: Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -493,250 +493,429 @@ class RequestCart extends StatelessWidget {
     debugPrint(
       "ASSIGNMENTS JSON ********************8:\n${const JsonEncoder.withIndent('  ').convert(assignments.map((e) => e.toJson()).toList())}",
     );
+    debugPrint("Assignments Length = ${assignments.length}");
     return Column(
       children: [
         // 1. Request Information
-        _cardContainer(
-          context: context,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _sectionHeader(
-                AppLocalizations.of(context)!.requestInformation,
-                icon: Icons.receipt_long,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    _infoRow(
-                      context,
-                      AppLocalizations.of(context)!.requestId,
-                      serviceRequestID,
-                    ),
-                    const Divider(),
-                    _infoRow(
-                      context,
-                      AppLocalizations.of(context)!.serviceType,
-                      servicetype,
-                    ),
-                    // const Divider(),
-                    // _infoRow(context, "Status", assignmentStatus),
-                    const Divider(),
-                    _infoRow(
-                      context,
-                      AppLocalizations.of(context)!.clientName,
-                      clientname,
-                    ),
-                    // const Divider(),
-                    // _infoRow(
-                    //   context,
-                    //   "View Media",
-                    //   "Tap to view",
-                    //   media: media,
-                    // ),
-                    if (media != null && media.isNotEmpty) ...[
+        Container(
+          // color: Colors.red,
+          child: _cardContainer(
+            context: context,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sectionHeader(
+                  AppLocalizations.of(context)!.requestInformation,
+                  icon: Icons.receipt_long,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      _infoRow(
+                        context,
+                        AppLocalizations.of(context)!.requestId,
+                        serviceRequestID,
+                      ),
                       const Divider(),
                       _infoRow(
                         context,
-                        AppLocalizations.of(context)!.viewMedia,
-                        AppLocalizations.of(context)!.tapToView,
-                        media: media,
+                        AppLocalizations.of(context)!.serviceType,
+                        servicetype,
                       ),
-                    ],
-                    const Divider(),
-                    Align(
-                      // alignment: Alignment.centerLeft,
-                      alignment: AlignmentDirectional.centerStart,
-                      child: Text(
-                        AppLocalizations.of(context)!.description,
-                        style: TextStyle(
-                          color: AppColors.lightgray_clr,
-                          fontSize: 12,
+                      // const Divider(),
+                      // _infoRow(context, "Status", assignmentStatus),
+                      const Divider(),
+                      _infoRow(
+                        context,
+                        AppLocalizations.of(context)!.clientName,
+                        clientname,
+                      ),
+                      // const Divider(),
+                      // _infoRow(
+                      //   context,
+                      //   "View Media",
+                      //   "Tap to view",
+                      //   media: media,
+                      // ),
+                      if (media != null && media.isNotEmpty) ...[
+                        const Divider(),
+                        _infoRow(
+                          context,
+                          AppLocalizations.of(context)!.viewMedia,
+                          AppLocalizations.of(context)!.tapToView,
+                          media: media,
+                        ),
+                      ],
+                      const Divider(),
+                      Align(
+                        // alignment: Alignment.centerLeft,
+                        alignment: AlignmentDirectional.centerStart,
+                        child: Text(
+                          AppLocalizations.of(context)!.description,
+                          style: TextStyle(
+                            color: AppColors.lightgray_clr,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
+                      const SizedBox(height: 6),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          feedback,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // 2. Spare Parts Used
+        const SizedBox(height: 4), // contr
+        Column(
+          children: assignments.map((assignment) {
+            debugPrint(
+              "USED PARTS => ${jsonEncode(assignment.usedParts.map((e) => e.toJson()).toList())}",
+            );
+
+            final isArabic =
+                Localizations.localeOf(context).languageCode == 'ar';
+
+            return Container(
+              // color: Colors.red,
+              child: _cardContainer(
+                context: context,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionHeader(
+                      AppLocalizations.of(context)!.sparePartsUsed,
+                      icon: Icons.build,
                     ),
-                    const SizedBox(height: 6),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        feedback,
-                        style: const TextStyle(fontSize: 14),
+
+                    assignment.usedParts.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Center(
+                              child: Text(
+                                AppLocalizations.of(context)!.noSparePartUsed,
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                            ),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Column(
+                              children: assignment.usedParts.map((part) {
+                                return _sparePartRow(
+                                  context,
+                                  isArabic
+                                      ? ((part.productNameAr?.isNotEmpty ??
+                                                false)
+                                            ? part.productNameAr!
+                                            : part.productName)
+                                      : ((part.productNameEn?.isNotEmpty ??
+                                                false)
+                                            ? part.productNameEn!
+                                            : part.productName),
+                                  part.count.toString(),
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.bhdAmount(part.price.toString()),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        // ListView.builder(
+        //   shrinkWrap: true,
+        //   physics: const NeverScrollableScrollPhysics(),
+        //   itemCount: assignments.length,
+        //   itemBuilder: (context, index) {
+        //     final assignment = assignments[index];
+        //     debugPrint(
+        //       "USED PARTS [$index] => ${jsonEncode(assignment.usedParts.map((e) => e.toJson()).toList())}",
+        //     );
+
+        //     final isArabic =
+        //         Localizations.localeOf(context).languageCode == 'ar';
+
+        //     return Container(
+        //       color: Colors.red,
+        //       child: _cardContainer(
+        //         context: context,
+        //         child: Column(
+        //           crossAxisAlignment: CrossAxisAlignment.start,
+        //           children: [
+        //             _sectionHeader(
+        //               AppLocalizations.of(context)!.sparePartsUsed,
+        //               icon: Icons.build,
+        //             ),
+
+        //             assignment.usedParts.isEmpty
+        //                 ? Padding(
+        //                     padding: EdgeInsets.all(16.0),
+        //                     child: Center(
+        //                       child: Text(
+        //                         AppLocalizations.of(context)!.noSparePartUsed,
+        //                         style: TextStyle(color: Colors.grey),
+        //                       ),
+        //                     ),
+        //                   )
+        //                 : Padding(
+        //                     padding: const EdgeInsets.all(10.0),
+        //                     child: Column(
+        //                       children: assignment.usedParts
+        //                           .map(
+        //                             (part) => _sparePartRow(
+        //                               context,
+        //                               isArabic
+        //                                   ? ((part.productNameAr?.isNotEmpty ??
+        //                                             false)
+        //                                         ? part.productNameAr!
+        //                                         : part.productName)
+        //                                   : ((part.productNameEn?.isNotEmpty ??
+        //                                             false)
+        //                                         ? part.productNameEn!
+        //                                         : part.productName),
+
+        //                               part.count.toString(),
+        //                               AppLocalizations.of(
+        //                                 context,
+        //                               )!.bhdAmount(part.price.toString()),
+        //                             ),
+        //                           )
+        //                           .toList(),
+        //                     ),
+        //                   ),
+        //           ],
+        //         ),
+        //       ),
+        //     );
+        //   },
+        // ),
+
+        // 3. Completed Service
+        // Completed Service Card
+        // const SizedBox(height: 4), // contr
+
+        // ListView.builder(
+        //   shrinkWrap: true,
+        //   physics: const NeverScrollableScrollPhysics(),
+        //   itemCount: assignments.length,
+        //   itemBuilder: (context, index) {
+        //     final assignment = assignments[index];
+        //     final assignmentMedia = assignment.media;
+
+        //     return Container(
+        //       color: Colors.blue,
+        //       child: _cardContainer(
+        //         context: context,
+        //         child: Column(
+        //           crossAxisAlignment: CrossAxisAlignment.start,
+        //           children: [
+        //             _sectionHeader(
+        //               AppLocalizations.of(context)!.completedService,
+        //               icon: Icons.check_circle,
+        //             ),
+        //             Padding(
+        //               padding: const EdgeInsets.all(16.0),
+        //               child: Column(
+        //                 children: [
+        //                   _infoRow(
+        //                     context,
+        //                     AppLocalizations.of(context)!.timeDuration,
+        //                     '${formatWorkDuration(assignment.workDuration)}',
+        //                   ),
+
+        //                   const Divider(),
+        //                   _infoRow(
+        //                     context,
+        //                     AppLocalizations.of(context)!.description,
+        //                     '${(assignment.notes) ?? "_"}',
+        //                   ),
+        //                   const Divider(),
+        //                   _infoRow(
+        //                     context,
+        //                     AppLocalizations.of(context)!.status,
+        //                     '${(assignment.status)}',
+        //                     isStatus: true,
+        //                   ),
+        //                   const Divider(),
+        //                   // View Fixed Media Row
+        //                   if (assignmentMedia.isNotEmpty)
+        //                     Row(
+        //                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //                       children: [
+        //                         Text(
+        //                           AppLocalizations.of(context)!.fixedMedia,
+        //                           style: TextStyle(
+        //                             fontWeight: FontWeight.w500,
+        //                             fontSize: 12,
+        //                             color: Colors.grey,
+        //                           ),
+        //                         ),
+        //                         InkWell(
+        //                           onTap: () => _showMediaDialog(
+        //                             context,
+        //                             assignmentMedia,
+        //                           ),
+        //                           child: Text(
+        //                             AppLocalizations.of(context)!.tapToView,
+        //                             style: TextStyle(
+        //                               color: Colors.blue,
+        //                               decoration: TextDecoration.underline,
+        //                               fontWeight: FontWeight.w500,
+        //                             ),
+        //                           ),
+        //                         ),
+        //                       ],
+        //                     ),
+        //                 ],
+        //               ),
+        //             ),
+        //           ],
+        //         ),
+        //       ),
+        //     );
+        //   },
+        // ),
+
+        // // 4. Total Service Cost
+        const SizedBox(height: 4), // contr
+        Column(
+          children: assignments.map((assignment) {
+            final assignmentMedia = assignment.media;
+
+            return Container(
+              // color: Colors.blue,
+              child: _cardContainer(
+                context: context,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionHeader(
+                      AppLocalizations.of(context)!.completedService,
+                      icon: Icons.check_circle,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          _infoRow(
+                            context,
+                            AppLocalizations.of(context)!.timeDuration,
+                            formatWorkDuration(assignment.workDuration),
+                          ),
+
+                          const Divider(),
+
+                          _infoRow(
+                            context,
+                            AppLocalizations.of(context)!.description,
+                            assignment.notes ?? "_",
+                          ),
+
+                          const Divider(),
+
+                          _infoRow(
+                            context,
+                            AppLocalizations.of(context)!.status,
+                            assignment.status,
+                            isStatus: true,
+                          ),
+
+                          if (assignmentMedia.isNotEmpty) ...[
+                            const Divider(),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  AppLocalizations.of(context)!.fixedMedia,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () => _showMediaDialog(
+                                    context,
+                                    assignmentMedia,
+                                  ),
+                                  child: Text(
+                                    AppLocalizations.of(context)!.tapToView,
+                                    style: const TextStyle(
+                                      color: Colors.blue,
+                                      decoration: TextDecoration.underline,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-
-        // 2. Spare Parts Used
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: assignments.length,
-          itemBuilder: (context, index) {
-            final assignment = assignments[index];
-            return _cardContainer(
-              context: context,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _sectionHeader(
-                    AppLocalizations.of(context)!.sparePartsUsed,
-                    icon: Icons.build,
-                  ),
-                  assignment.usedParts.isEmpty
-                      ? Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.noSparePartUsed,
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Column(
-                            children: assignment.usedParts
-                                .map(
-                                  (part) => _sparePartRow(
-                                    context,
-                                    part.productName,
-                                    part.count.toString(),
-                                    AppLocalizations.of(
-                                      context,
-                                    )!.bhdAmount(part.price.toString()),
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                        ),
-                ],
-              ),
             );
-          },
+          }).toList(),
         ),
+        const SizedBox(height: 4), // contr
 
-        // 3. Completed Service
-        // Completed Service Card
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: assignments.length,
-          itemBuilder: (context, index) {
-            final assignment = assignments[index];
-            final assignmentMedia = assignment.media;
-
-            return _cardContainer(
-              context: context,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _sectionHeader(
-                    AppLocalizations.of(context)!.completedService,
-                    icon: Icons.check_circle,
+        Container(
+          // color: Colors.yellow,
+          child: _cardContainer(
+            context: context,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sectionHeader(AppLocalizations.of(context)!.totalServiceCost),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(15),
+                      bottomRight: Radius.circular(15),
+                    ),
+                    color: Theme.of(context).colorScheme.surface,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 20,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _infoRow(
-                          context,
-                          AppLocalizations.of(context)!.timeDuration,
-                          '${formatWorkDuration(assignment.workDuration)}',
-                        ),
-
-                        const Divider(),
-                        _infoRow(
-                          context,
-                          AppLocalizations.of(context)!.description,
-                          '${(assignment.notes) ?? "_"}',
-                        ),
-                        const Divider(),
-                        _infoRow(
-                          context,
-                          AppLocalizations.of(context)!.status,
-                          '${(assignment.status)}',
-                          isStatus: true,
-                        ),
-                        const Divider(),
-                        // View Fixed Media Row
-                        if (assignmentMedia.isNotEmpty)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)!.fixedMedia,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              InkWell(
-                                onTap: () =>
-                                    _showMediaDialog(context, assignmentMedia),
-                                child: Text(
-                                  AppLocalizations.of(context)!.tapToView,
-                                  style: TextStyle(
-                                    color: Colors.blue,
-                                    decoration: TextDecoration.underline,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
+                        Text(AppLocalizations.of(context)!.totalAmount),
+                        Text(
+                          AppLocalizations.of(
+                            context,
+                          )!.bhdAmount(payment.toString()),
+                          style: TextStyle(
+                            color: AppColors.scoundry_clr,
+                            fontWeight: FontWeight.bold,
                           ),
+                        ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            );
-          },
-        ),
-
-        // 4. Total Service Cost
-        _cardContainer(
-          context: context,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _sectionHeader(AppLocalizations.of(context)!.totalServiceCost),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(15),
-                    bottomRight: Radius.circular(15),
-                  ),
-                  color: Theme.of(context).colorScheme.surface,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 20,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(AppLocalizations.of(context)!.totalAmount),
-                      Text(
-                        AppLocalizations.of(
-                          context,
-                        )!.bhdAmount(payment.toString()),
-                        style: TextStyle(
-                          color: AppColors.scoundry_clr,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],

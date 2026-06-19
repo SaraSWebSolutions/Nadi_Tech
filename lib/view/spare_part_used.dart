@@ -308,9 +308,9 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                         if (sparePartsUsed && selectedParts.isNotEmpty) ...[
                           const SizedBox(height: 20),
 
-                          ...selectedParts.map((item) {
+                          ...selectedParts.map((selectedPart) {
                             final currentCount =
-                                partCounts[item.productId.id] ?? 1;
+                                partCounts[selectedPart.productId.id] ?? 1;
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 10),
@@ -341,7 +341,7 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          item.productId.name(context),
+                                          selectedPart.productId.name(context),
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -363,7 +363,8 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                                           AppLocalizations.of(
                                             context,
                                           )!.bhdAmount(
-                                            item.productId.price.toString(),
+                                            selectedPart.productId.price
+                                                .toString(),
                                           ),
                                           style: const TextStyle(
                                             color: AppColors.scoundry_clr,
@@ -388,7 +389,9 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                                           onPressed: () {
                                             setState(() {
                                               if (currentCount > 1) {
-                                                partCounts[item.productId.id] =
+                                                partCounts[selectedPart
+                                                        .productId
+                                                        .id] =
                                                     currentCount - 1;
                                               }
                                             });
@@ -415,12 +418,15 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                                             setState(() {
                                               final stockQty =
                                                   int.tryParse(
-                                                    item.count.toString(),
+                                                    selectedPart.count
+                                                        .toString(),
                                                   ) ??
                                                   0;
 
                                               if (currentCount < stockQty) {
-                                                partCounts[item.productId.id] =
+                                                partCounts[selectedPart
+                                                        .productId
+                                                        .id] =
                                                     currentCount + 1;
                                               } else {
                                                 ScaffoldMessenger.of(
@@ -648,6 +654,7 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
 
       return qty > 0;
     }).toList();
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -674,7 +681,9 @@ class _SparePartUsedState extends ConsumerState<SparePartUsed> {
                 'BUILD => ${item.productId.name(context)} '
                 'checked=${selectedParts.any((e) => e.productId.id == item.productId.id)}',
               );
-
+              debugPrint(
+                "AVAILABLE => ${item.productId.name(context)} | stock=${item.count}",
+              );
               final isChecked = selectedParts.any(
                 (e) => e.productId.id == item.productId.id,
               );

@@ -16,78 +16,110 @@ class MaterialCart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool lowStock = count <= 2;
+
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      padding: const EdgeInsets.all(12),
-      height: 87,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        color: const Color.fromRGBO(217, 217, 217, 1),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
-       
+          /// ICON
           Container(
-            height: 47,
-            width: 47,
-            decoration: const BoxDecoration(
+            height: 60,
+            width: 60,
+            decoration: BoxDecoration(
+              color: AppColors.scoundry_clr.withOpacity(.15),
               shape: BoxShape.circle,
-              color: Colors.white,
             ),
             child: const Icon(
               Icons.inventory_2_outlined,
-              color: AppColors.primary_clr,
+              color: AppColors.scoundry_clr,
+              size: 28,
             ),
           ),
 
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
 
-          
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                productName,
-                style:
-                     TextStyle(fontSize: 14, fontWeight: FontWeight.w600,color: Colors.black),
-              ),
-              const SizedBox(height: 4),
-              Text.rich(
-                TextSpan(
-                  text: AppLocalizations.of(context)!.countLabel, 
+          /// DETAILS
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  productName,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
                   ),
-                  children: [
-                    TextSpan(
-                      text: "$count", 
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.w600,
-                      ),
+                ),
+
+                const SizedBox(height: 10),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: lowStock
+                        ? Colors.red.withOpacity(.1)
+                        : Colors.green.withOpacity(.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    "${AppLocalizations.of(context)!.countLabel} $count",
+                    style: TextStyle(
+                      color: lowStock ? Colors.red : Colors.green,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
                     ),
-                     TextSpan(
-                      text: AppLocalizations.of(context)!.priceLabel,
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    TextSpan(
-                      text: "$price", 
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  "BHD $price",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary_clr,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          /// LOW STOCK WARNING
+          if (lowStock)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                "LOW",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
                 ),
               ),
-            ],
-          ),
+            ),
         ],
       ),
     );
