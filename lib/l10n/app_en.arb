@@ -246,6 +246,8 @@
     "clearAllNotificationsConfirm": "Are you sure you want to clear all notifications?",
     "serviceIds": "Service ID",
       "maxQuantityReached": "You have reached the maximum available quantity ({count})",
- "continueButton": "Continue"
+ "continueButton": "Continue",
+ "countLabels": "Stock:",
+  "lowStock": "LOW"
 
 }

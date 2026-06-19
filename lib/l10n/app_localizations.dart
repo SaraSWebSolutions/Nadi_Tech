@@ -1111,6 +1111,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue'**
   String get continueButton;
+
+  /// No description provided for @countLabels.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock:'**
+  String get countLabels;
+
+  /// No description provided for @lowStock.
+  ///
+  /// In en, this message translates to:
+  /// **'LOW'**
+  String get lowStock;
 }
 
 class _AppLocalizationsDelegate

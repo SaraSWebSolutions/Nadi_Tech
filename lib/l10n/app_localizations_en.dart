@@ -537,4 +537,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get continueButton => 'Continue';
+
+  @override
+  String get countLabels => 'Stock:';
+
+  @override
+  String get lowStock => 'LOW';
 }

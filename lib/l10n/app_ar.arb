@@ -243,7 +243,11 @@
     "clearAllNotificationsConfirm": "هل أنت متأكد أنك تريد حذف جميع الإشعارات؟",
     "serviceIds": "رقم الخدمة",
       "maxQuantityReached": "لقد وصلت إلى الحد الأقصى للكمية المتاحة ({count})",
-       "continueButton": "متابعة"
+       "continueButton": "متابعة",
+       
+  "countLabels": "المخزون:",
+  "lowStock": "منخفض"
+
 
 
 }

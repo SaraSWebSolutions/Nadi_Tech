@@ -535,4 +535,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get continueButton => 'متابعة';
+
+  @override
+  String get countLabels => 'المخزون:';
+
+  @override
+  String get lowStock => 'منخفض';
 }

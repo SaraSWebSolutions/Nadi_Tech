@@ -80,7 +80,7 @@ class MaterialCart extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    "${AppLocalizations.of(context)!.countLabel} $count",
+                    "${AppLocalizations.of(context)!.countLabels} $count",
                     style: TextStyle(
                       color: lowStock ? Colors.red : Colors.green,
                       fontWeight: FontWeight.w600,
@@ -111,8 +111,8 @@ class MaterialCart extends StatelessWidget {
                 color: Colors.red.withOpacity(.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text(
-                "LOW",
+              child: Text(
+                AppLocalizations.of(context)!.lowStock,
                 style: TextStyle(
                   color: Colors.red,
                   fontWeight: FontWeight.bold,
