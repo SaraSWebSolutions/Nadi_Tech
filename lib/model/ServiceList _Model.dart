@@ -395,7 +395,7 @@ class IssuesId {
 class ServiceId {
   final String id;
   final String name;
-  final String? nameEn;
+  final String nameEn;
   final String serviceImage;
   final String serviceLogo;
   final DateTime createdAt;
@@ -404,7 +404,7 @@ class ServiceId {
   ServiceId({
     required this.id,
     required this.name,
-    this.nameEn,
+    required this.nameEn,
     required this.serviceImage,
     required this.serviceLogo,
     required this.createdAt,
@@ -478,7 +478,7 @@ class UserId {
 /// ===============================
 class BasicInfo {
   final String fullName;
-  final int mobileNumber;
+  final String mobileNumber;
   final String email;
   final String gender;
 
@@ -492,7 +492,7 @@ class BasicInfo {
   factory BasicInfo.fromJson(Map<String, dynamic> json) {
     return BasicInfo(
       fullName: json["fullName"] ?? "",
-      mobileNumber: json["mobileNumber"] ?? 0,
+      mobileNumber: json["mobileNumber"] ?? '',
       email: json["email"] ?? "",
       gender: json["gender"] ?? "",
     );

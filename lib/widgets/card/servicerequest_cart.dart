@@ -225,33 +225,39 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
       return address.geoAddress ?? "";
     }
 
-    final parts = <String>[];
+    final building = address.building.toString().trim();
+    final apt = address.aptNo?.toString().trim() ?? "";
+    final floor = address.floor.toString().trim();
+    final road = address.roadName?.toString().trim() ?? "";
+    final block = address.blockName?.toString().trim() ?? "";
+    final city = address.city.toString().trim();
 
-    if (address.building.isNotEmpty) {
-      parts.add("Building: ${address.building}");
+    final lines = <String>[];
+
+    if (building.isNotEmpty || apt.isNotEmpty) {
+      lines.add(
+        "${building.isNotEmpty ? "Building $building" : ""}"
+        "${apt.isNotEmpty ? " • Apt $apt" : ""}",
+      );
     }
 
-    if ((address.blockName ?? "").isNotEmpty) {
-      parts.add("Block: ${address.blockName}");
+    if (floor.isNotEmpty) {
+      lines.add("Floor $floor");
     }
 
-    if ((address.roadName ?? "").isNotEmpty) {
-      parts.add("Road: ${address.roadName}");
+    if (road.isNotEmpty || block.isNotEmpty) {
+      lines.add(
+        "${road.isNotEmpty ? "Road $road" : ""}"
+        "${road.isNotEmpty && block.isNotEmpty ? " • " : ""}"
+        "${block.isNotEmpty ? "Block $block" : ""}",
+      );
     }
 
-    if (address.floor.isNotEmpty) {
-      parts.add("Floor: ${address.floor}");
+    if (city.isNotEmpty) {
+      lines.add("City: $city");
     }
 
-    if (address.aptNo != null) {
-      parts.add("Apartment: ${address.aptNo}");
-    }
-
-    if (address.city.isNotEmpty) {
-      parts.add("City: ${address.city}");
-    }
-
-    return parts.join(", ");
+    return lines.join("\n");
   }
 
   @override
@@ -422,7 +428,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                       userServiceId: liveItem.id,
                       clientname: liveItem.userId.basicInfo.fullName,
                       serviceRequestID: liveItem.serviceRequestId,
-                      servicetype: liveItem.serviceId.name,
+                      servicetype: liveItem.serviceId.nameEn,
                       assignmentStatus: liveItem.assignmentStatus,
                       scheduleService: liveItem.scheduleService,
                       status: liveItem.serviceStatus,
@@ -446,7 +452,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                         serviceRequestId: liveItem.serviceRequestId,
                         userServiceId: liveItem.id,
                         assignmentStatus: liveItem.assignmentStatus,
-                        service_name: liveItem.serviceId.name,
+                        service_name: liveItem.serviceId.nameEn,
                       ),
                     ),
                   ],
@@ -462,7 +468,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                         serviceRequestId: liveItem.serviceRequestId,
                         userServiceId: liveItem.id,
                         assignmentStatus: liveItem.assignmentStatus,
-                        service_name: liveItem.serviceId.name,
+                        service_name: liveItem.serviceId.nameEn,
                       ),
                     ),
                   ],
@@ -579,11 +585,11 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                 //     ),
                 //   ],
                 // ),
-                const Divider(),
-                _infoRow(
-                  AppLocalizations.of(context)!.distance,
-                  AppLocalizations.of(context)!.distanceKm('7'),
-                ),
+                // const Divider(),
+                // _infoRow(
+                //   AppLocalizations.of(context)!.distance,
+                //   AppLocalizations.of(context)!.distanceKm('7'),
+                // ),
               ],
             ),
           ),
@@ -659,7 +665,7 @@ class _ServicerequestCartState extends ConsumerState<ServicerequestCart> {
                 const Divider(),
                 _infoRow(
                   AppLocalizations.of(context)!.serviceType,
-                  item.serviceId.name,
+                  item.serviceId.nameEn,
                 ),
                 const Divider(),
                 _infoRow(

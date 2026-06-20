@@ -8,8 +8,6 @@ class AppCircleAvatar extends StatelessWidget {
   final double borderWidth;
   final Color borderColor;
   final VoidCallback? onTap;
-  final IconData fallbackIcon;
-  final Color fallbackBgColor;
 
   const AppCircleAvatar({
     super.key,
@@ -18,49 +16,96 @@ class AppCircleAvatar extends StatelessWidget {
     this.borderWidth = 2,
     this.borderColor = const Color(0x22000000),
     this.onTap,
-    this.fallbackIcon = Icons.person,
-    this.fallbackBgColor = const Color(0xFFE0E0E0),
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      borderRadius: BorderRadius.circular(size),
       onTap: onTap,
       child: Container(
-        height: size,
         width: size,
+        height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(color: borderColor, width: borderWidth),
         ),
-        child: ClipOval(
-          child: (imageUrl != null && imageUrl!.isNotEmpty)
-              ? CachedNetworkImage(
-                  imageUrl: imageUrl!,
-                  fit: BoxFit.cover,
-                  width: size,
-                  height: size,
-                  placeholder: (context, url) => _buildShimmer(),
-                  errorWidget: (context, url, error) => _buildFallback(),
-                )
-              : _buildFallback(),
+        child: CircleAvatar(
+          radius: size / 2,
+          backgroundColor: Colors.grey.shade300,
+          backgroundImage: imageUrl != null && imageUrl!.isNotEmpty
+              ? CachedNetworkImageProvider(imageUrl!)
+              : null,
+          child: imageUrl == null || imageUrl!.isEmpty
+              ? Icon(Icons.person, size: size * 0.5, color: Colors.grey)
+              : null,
         ),
       ),
     );
   }
-
-  Widget _buildFallback() {
-    return Container(
-      color: fallbackBgColor,
-      child: Icon(fallbackIcon, color: Colors.grey, size: size * 0.5),
-    );
-  }
-
-  Widget _buildShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      child: Container(color: Colors.white),
-    );
-  }
 }
+
+// class AppCircleAvatar extends StatelessWidget {
+//   final String? imageUrl;
+//   final double size;
+//   final VoidCallback? onTap;
+//   final Color borderColor;
+
+//   const AppCircleAvatar({
+//     super.key,
+//     this.imageUrl,
+//     required this.size,
+//     this.onTap,
+//     required this.borderColor,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return InkWell(
+//       onTap: onTap,
+//       borderRadius: BorderRadius.circular(size),
+//       child: Container(
+//         width: size,
+//         height: size,
+//         decoration: BoxDecoration(
+//           shape: BoxShape.circle,
+//           border: Border.all(
+//             color: borderColor,
+//             width: 2,
+//           ),
+//           boxShadow: [
+//             BoxShadow(
+//               color: Colors.black12,
+//               blurRadius: 8,
+//               offset: Offset(0, 3),
+//             ),
+//           ],
+//         ),
+//         clipBehavior: Clip.antiAlias,
+//         child: imageUrl != null && imageUrl!.isNotEmpty
+//             ? CachedNetworkImage(
+//                 imageUrl: imageUrl!,
+//                 fit: BoxFit.cover,
+//                 width: size,
+//                 height: size,
+//                 useOldImageOnUrlChange: true,
+//                 fadeInDuration: Duration.zero,
+//                 fadeOutDuration: Duration.zero,
+//                 errorWidget: (_, __, ___) => _fallback(),
+//               )
+//             : _fallback(),
+//       ),
+//     );
+//   }
+
+//   Widget _fallback() {
+//     return Container(
+//       color: Colors.grey.shade300,
+//       alignment: Alignment.center,
+//       child: const Icon(
+//         Icons.person,
+//         color: Colors.grey,
+//       ),
+//     );
+//   }
+// }

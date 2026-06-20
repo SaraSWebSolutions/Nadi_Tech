@@ -1,9 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:tech_app/core/constants/app_colors.dart';
+import 'package:tech_app/core/network/dio_client.dart';
 import 'package:tech_app/l10n/app_localizations.dart';
 import 'package:tech_app/model/StatusFilter_Model.dart';
 import 'package:tech_app/preferences/AppPerfernces.dart';
@@ -73,11 +75,20 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
       if (!mounted) return;
 
+      if (response.data.image != null && response.data.image!.isNotEmpty) {
+        await precacheImage(
+          CachedNetworkImageProvider(
+            '${ImageBaseUrl.baseUrl}/${response.data.image}',
+          ),
+          context,
+        );
+      }
+
       setState(() {
         _profile = response;
       });
     } catch (e) {
-      debugPrint("Profile load error: $e");
+      debugPrint(e.toString());
     }
   }
 
@@ -154,7 +165,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
     final connectivity = ref.watch(connectivityProvider);
     final lang = AppLocalizations.of(context)!;
-
+    debugPrint("SERVICE LIST STATE => $serviceList");
     final List<StatusFilter> filters = [
       StatusFilter(lang.all, 'all'),
       StatusFilter(lang.accepted, 'accepted'),
@@ -179,6 +190,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
     //     ),
     //   ),
     // ),
+    debugPrint("SERVICE LIST STATE => $serviceList");
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
@@ -269,6 +281,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
           // const SizedBox(height: 20),
 
           /// ================= LIST =================
+          /// debugPrint("SERVICE LIST STATE => $serviceList");
           Expanded(
             child: serviceList.when(
               data: (data) {
@@ -299,6 +312,13 @@ class _HomeViewState extends ConsumerState<HomeView> {
                               ? true
                               : normalizedStatus == selectedFilter;
                         }).toList();
+                        print("Selected Filter: $selectedFilter");
+                        for (final item in data.data) {
+                          print(
+                            "Original: ${item.assignmentStatus} | "
+                            "Normalized: ${normalizeStatus(item.assignmentStatus)}",
+                          );
+                        }
                         if (filteredData.isEmpty) {
                           return const Center(
                             child: Text(
@@ -561,6 +581,12 @@ class _HomeViewState extends ConsumerState<HomeView> {
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (err, st) => Center(child: Text(err.toString())),
+              //  error: (err, st) {
+              //   debugPrint(err.toString());
+              //   debugPrint(st.toString());
+
+              //   return const Center(child: Text("No service found"));
+              // },
             ),
           ),
         ],

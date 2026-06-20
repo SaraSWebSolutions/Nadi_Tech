@@ -98,6 +98,8 @@ class _HeaderState extends ConsumerState<Header>
   }
 
   Widget _buildProfileImage() {
+    final imageUrl = widget.profile?.data.image;
+
     return InkWell(
       onTap:
           widget.onProfileTap ??
@@ -114,40 +116,78 @@ class _HeaderState extends ConsumerState<Header>
             color: AppColors.app_background_clr.withOpacity(0.15),
             width: 2,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
         ),
-        clipBehavior: Clip.antiAlias, // ✅ IMPORTANT FIX
-        child: widget.profile?.data.image?.isNotEmpty ?? false
-            ? CachedNetworkImage(
-                imageUrl:
-                    '${ImageBaseUrl.baseUrl}/${widget.profile!.data.image}',
-                fit: BoxFit.cover,
-                width: 44,
-                height: 44,
-                placeholder: (context, url) => Container(
-                  color: Colors.grey.shade300,
-                  child: const Center(
-                    child: CircularProgressIndicator(strokeWidth: 2),
+        child: ClipOval(
+          child: imageUrl != null && imageUrl.isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl: '${ImageBaseUrl.baseUrl}/$imageUrl',
+                  fit: BoxFit.cover,
+                  width: 44,
+                  height: 44,
+                  errorWidget: (_, __, ___) => Container(
+                    color: Colors.grey.shade300,
+                    child: const Icon(Icons.person),
                   ),
-                ),
-                errorWidget: (context, url, error) => Container(
+                )
+              : Container(
                   color: Colors.grey.shade300,
-                  child: Icon(Icons.person, color: Colors.grey, size: 24),
+                  child: const Icon(Icons.person),
                 ),
-              )
-            : Container(
-                color: Colors.grey.shade300,
-                child: const Icon(Icons.person, color: Colors.grey, size: 24),
-              ),
+        ),
       ),
     );
   }
+  // Widget _buildProfileImage() {
+  //   return InkWell(
+  //     onTap:
+  //         widget.onProfileTap ??
+  //         () {
+  //           ref.read(bottomNavProvider.notifier).state = 4;
+  //         },
+  //     borderRadius: BorderRadius.circular(50),
+  //     child: Container(
+  //       height: 44,
+  //       width: 44,
+  //       decoration: BoxDecoration(
+  //         shape: BoxShape.circle,
+  //         border: Border.all(
+  //           color: AppColors.app_background_clr.withOpacity(0.15),
+  //           width: 2,
+  //         ),
+  //         boxShadow: [
+  //           BoxShadow(
+  //             color: Colors.black.withOpacity(0.08),
+  //             blurRadius: 8,
+  //             offset: const Offset(0, 3),
+  //           ),
+  //         ],
+  //       ),
+  //       clipBehavior: Clip.antiAlias, // ✅ IMPORTANT FIX
+  //       child: widget.profile?.data.image?.isNotEmpty ?? false
+  //           ? CachedNetworkImage(
+  //               imageUrl:
+  //                   '${ImageBaseUrl.baseUrl}/${widget.profile!.data.image}',
+  //               fit: BoxFit.cover,
+  //               width: 44,
+  //               height: 44,
+  //               placeholder: (context, url) => Container(
+  //                 color: Colors.grey.shade300,
+  //                 child: const Center(
+  //                   child: CircularProgressIndicator(strokeWidth: 2),
+  //                 ),
+  //               ),
+  //               errorWidget: (context, url, error) => Container(
+  //                 color: Colors.grey.shade300,
+  //                 child: Icon(Icons.person, color: Colors.grey, size: 24),
+  //               ),
+  //             )
+  //           : Container(
+  //               color: Colors.grey.shade300,
+  //               child: const Icon(Icons.person, color: Colors.grey, size: 24),
+  //             ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildBackButton(BuildContext context) {
     return _iconButton(
@@ -164,7 +204,13 @@ class _HeaderState extends ConsumerState<Header>
   @override
   Widget build(BuildContext context) {
     final notificationAsync = ref.watch(notificationServiceProvider);
+    final imageUrl =
+        widget.profile?.data.image != null &&
+            widget.profile!.data.image!.isNotEmpty
+        ? '${ImageBaseUrl.baseUrl}/${widget.profile!.data.image}'
+        : null;
 
+    debugPrint("FULL IMAGE URL => $imageUrl");
     return AppBar(
       backgroundColor: AppColors.app_background_clr,
       elevation: 0,
@@ -188,8 +234,8 @@ class _HeaderState extends ConsumerState<Header>
       leading: widget.showBackButton
           ? Center(
               child: SizedBox(
-                width: 38,
-                height: 38,
+                width: 44,
+                height: 44,
                 child: _buildBackButton(context),
               ),
             )
