@@ -580,13 +580,13 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, st) => Center(child: Text(err.toString())),
-              //  error: (err, st) {
-              //   debugPrint(err.toString());
-              //   debugPrint(st.toString());
+              // error: (err, st) => Center(child: Text(err.toString())),
+               error: (err, st) {
+                debugPrint(err.toString());
+                debugPrint(st.toString());
 
-              //   return const Center(child: Text("No service found"));
-              // },
+                return const Center(child: Text("No service found"));
+              },
             ),
           ),
         ],
