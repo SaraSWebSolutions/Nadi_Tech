@@ -248,6 +248,15 @@
       "maxQuantityReached": "You have reached the maximum available quantity ({count})",
  "continueButton": "Continue",
  "countLabels": "Stock:",
-  "lowStock": "LOW"
+  "lowStock": "LOW",
+   "emailRequired": "Email is required",
+  "emailCannotContainSpaces": "Email cannot contain spaces",
+  "enterValidEmail": "Enter valid email",
+  "mobileNumberRequired": "Mobile number is required",
+  "mobileMustBe8Digits": "Mobile number must be 8 digits",
+  "invalidMobileNumber": "Invalid mobile number",
+  "pleaseWait": "Please wait...",
+  "personalDetails": "Personal Details",
+  "applicationSettings": "Application Settings"
 
 }

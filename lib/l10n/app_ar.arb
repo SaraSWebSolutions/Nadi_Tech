@@ -246,7 +246,16 @@
        "continueButton": "متابعة",
        
   "countLabels": "المخزون:",
-  "lowStock": "منخفض"
+  "lowStock": "منخفض",
+  "emailRequired": "البريد الإلكتروني مطلوب",
+  "emailCannotContainSpaces": "لا يمكن أن يحتوي البريد الإلكتروني على مسافات",
+  "enterValidEmail": "أدخل بريدًا إلكترونيًا صحيحًا",
+  "mobileNumberRequired": "رقم الهاتف مطلوب",
+  "mobileMustBe8Digits": "يجب أن يتكون رقم الهاتف من 8 أرقام",
+  "invalidMobileNumber": "رقم الهاتف غير صالح",
+  "pleaseWait": "يرجى الانتظار...",
+   "personalDetails": "البيانات الشخصية",
+  "applicationSettings": "إعدادات التطبيق"
 
 
 

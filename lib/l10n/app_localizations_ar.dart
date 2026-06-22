@@ -402,7 +402,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get emailIsRequired => 'البريد الإلكتروني مطلوب';
 
   @override
-  String get enterValidEmail => 'أدخل بريداً إلكترونياً صالحاً';
+  String get enterValidEmail => 'أدخل بريدًا إلكترونيًا صحيحًا';
 
   @override
   String get passwordIsRequired => 'كلمة المرور مطلوبة';
@@ -541,4 +541,29 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get lowStock => 'منخفض';
+
+  @override
+  String get emailRequired => 'البريد الإلكتروني مطلوب';
+
+  @override
+  String get emailCannotContainSpaces =>
+      'لا يمكن أن يحتوي البريد الإلكتروني على مسافات';
+
+  @override
+  String get mobileNumberRequired => 'رقم الهاتف مطلوب';
+
+  @override
+  String get mobileMustBe8Digits => 'يجب أن يتكون رقم الهاتف من 8 أرقام';
+
+  @override
+  String get invalidMobileNumber => 'رقم الهاتف غير صالح';
+
+  @override
+  String get pleaseWait => 'يرجى الانتظار...';
+
+  @override
+  String get personalDetails => 'البيانات الشخصية';
+
+  @override
+  String get applicationSettings => 'إعدادات التطبيق';
 }

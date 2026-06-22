@@ -640,7 +640,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
               ),
               const SizedBox(width: 8),
               Text(
-                "Personal Details",
+                AppLocalizations.of(context)!.personalDetails,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
@@ -713,7 +713,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
               ),
               const SizedBox(width: 8),
               Text(
-                "Application Settings",
+                AppLocalizations.of(context)!.applicationSettings,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),

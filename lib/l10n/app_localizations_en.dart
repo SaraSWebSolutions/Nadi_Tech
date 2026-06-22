@@ -404,7 +404,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailIsRequired => 'Email is required';
 
   @override
-  String get enterValidEmail => 'Enter a valid email';
+  String get enterValidEmail => 'Enter valid email';
 
   @override
   String get passwordIsRequired => 'Password is required';
@@ -543,4 +543,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lowStock => 'LOW';
+
+  @override
+  String get emailRequired => 'Email is required';
+
+  @override
+  String get emailCannotContainSpaces => 'Email cannot contain spaces';
+
+  @override
+  String get mobileNumberRequired => 'Mobile number is required';
+
+  @override
+  String get mobileMustBe8Digits => 'Mobile number must be 8 digits';
+
+  @override
+  String get invalidMobileNumber => 'Invalid mobile number';
+
+  @override
+  String get pleaseWait => 'Please wait...';
+
+  @override
+  String get personalDetails => 'Personal Details';
+
+  @override
+  String get applicationSettings => 'Application Settings';
 }

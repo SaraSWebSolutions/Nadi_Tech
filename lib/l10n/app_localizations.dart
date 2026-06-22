@@ -875,7 +875,7 @@ abstract class AppLocalizations {
   /// No description provided for @enterValidEmail.
   ///
   /// In en, this message translates to:
-  /// **'Enter a valid email'**
+  /// **'Enter valid email'**
   String get enterValidEmail;
 
   /// No description provided for @passwordIsRequired.
@@ -1123,6 +1123,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'LOW'**
   String get lowStock;
+
+  /// No description provided for @emailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Email is required'**
+  String get emailRequired;
+
+  /// No description provided for @emailCannotContainSpaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Email cannot contain spaces'**
+  String get emailCannotContainSpaces;
+
+  /// No description provided for @mobileNumberRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number is required'**
+  String get mobileNumberRequired;
+
+  /// No description provided for @mobileMustBe8Digits.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number must be 8 digits'**
+  String get mobileMustBe8Digits;
+
+  /// No description provided for @invalidMobileNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid mobile number'**
+  String get invalidMobileNumber;
+
+  /// No description provided for @pleaseWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait...'**
+  String get pleaseWait;
+
+  /// No description provided for @personalDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Details'**
+  String get personalDetails;
+
+  /// No description provided for @applicationSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Settings'**
+  String get applicationSettings;
 }
 
 class _AppLocalizationsDelegate

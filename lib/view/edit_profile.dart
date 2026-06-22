@@ -69,26 +69,42 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   String? validateEmail(String? value) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (value == null || value.trim().isEmpty) {
-      return "Email is required";
+      return l10n.emailRequired;
     }
 
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (value.contains(' ')) {
+      return l10n.emailCannotContainSpaces;
+    }
+
+    final emailRegex = RegExp(
+      r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$',
+    );
 
     if (!emailRegex.hasMatch(value.trim())) {
-      return "Enter valid email";
+      return l10n.enterValidEmail;
     }
 
     return null;
   }
 
   String? validateMobile(String? value) {
+    final l10n = AppLocalizations.of(context)!;
+    debugPrint("Mobile='$value' Length=${value?.length}");
     if (value == null || value.trim().isEmpty) {
-      return "Mobile number is required";
+      return l10n.mobileNumberRequired;
     }
 
-    if (!RegExp(r'^[0-9]{8}$').hasMatch(value.trim())) {
-      return "Mobile number must be 8 digits";
+    final mobile = value.trim();
+
+    if (!RegExp(r'^[0-9]{8}$').hasMatch(mobile)) {
+      return l10n.mobileMustBe8Digits;
+    }
+
+    if (mobile == "00000000") {
+      return l10n.invalidMobileNumber;
     }
 
     return null;
@@ -104,10 +120,13 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   Future<void> _updateprofile() async {
-    if (!_formKey.currentState!.validate()) {
+    final isValid = _formKey.currentState!.validate();
+
+    debugPrint("FORM VALID => $isValid");
+
+    if (!isValid) {
       return;
     }
-
     try {
       setState(() => _isLoading = true);
 
@@ -261,6 +280,7 @@ class _EditProfileState extends State<EditProfile> {
               /// FORM CARD
               Form(
                 key: _formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
@@ -327,6 +347,9 @@ class _EditProfileState extends State<EditProfile> {
                         controller: _mobile,
                         keyboardType: TextInputType.number,
                         validator: validateMobile,
+                        //                         onChanged: (_) {
+                        //   _formKey.currentState?.validate();
+                        // },
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                           LengthLimitingTextInputFormatter(8),
@@ -341,7 +364,7 @@ class _EditProfileState extends State<EditProfile> {
                         color: AppColors.primary_clr,
                         onPressed: _isLoading ? null : _updateprofile,
                         text: _isLoading
-                            ? "Please wait..."
+                            ? AppLocalizations.of(context)!.pleaseWait
                             : AppLocalizations.of(context)!.saveChanges,
                       ),
                     ],

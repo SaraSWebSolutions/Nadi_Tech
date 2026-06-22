@@ -49,6 +49,7 @@ class _AppTextFieldState extends State<AppTextField> {
       inputFormatters: widget.inputFormatters,
       maxLines: widget.maxLines ?? 1,
       obscureText: widget.isPassword ? _obscure : false,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
 
       style: TextStyle(
         fontSize: 15,
