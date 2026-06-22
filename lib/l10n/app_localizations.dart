@@ -533,7 +533,7 @@ abstract class AppLocalizations {
   /// No description provided for @noSparePartUsed.
   ///
   /// In en, this message translates to:
-  /// **'No Spare Part Used'**
+  /// **'No Spare Parts Used'**
   String get noSparePartUsed;
 
   /// No description provided for @completedService.

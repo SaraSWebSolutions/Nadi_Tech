@@ -56,7 +56,7 @@ class _MyRequestListState extends ConsumerState<MyRequestList> {
               error: (error, stack) => Center(
                 child: Text(
                   error.toString(),
-                  style: const TextStyle(color: Colors.red),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
 
@@ -75,10 +75,10 @@ class _MyRequestListState extends ConsumerState<MyRequestList> {
                         const SizedBox(height: 12),
                         Text(
                           AppLocalizations.of(context)!.noRequestFound,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Color.fromRGBO(13, 95, 72, 1),
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ],
@@ -100,18 +100,18 @@ class _MyRequestListState extends ConsumerState<MyRequestList> {
                         child: SlideAnimation(
                           verticalOffset: 40,
                           child: FadeInAnimation(
-                            child: Container(
+                            child: Card(
                               margin: const EdgeInsets.only(bottom: 10),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
+                              elevation:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? 1
+                                  : 3,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainer,
+                              shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
                               ),
                               child: ListTile(
                                 contentPadding: const EdgeInsets.symmetric(
@@ -120,9 +120,12 @@ class _MyRequestListState extends ConsumerState<MyRequestList> {
                                 ),
                                 title: Text(
                                   product.productName,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 16,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
                                   ),
                                 ),
                                 subtitle: Padding(
@@ -142,8 +145,9 @@ class _MyRequestListState extends ConsumerState<MyRequestList> {
                                                       context,
                                                     )!.qtyLabel,
                                                     style: TextStyle(
-                                                      color:
-                                                          Colors.grey.shade600,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
                                                       fontSize: 13,
                                                     ),
                                                   ),
@@ -151,8 +155,10 @@ class _MyRequestListState extends ConsumerState<MyRequestList> {
                                                     text: item.quantity
                                                         .toString(),
                                                     style: TextStyle(
-                                                      color: AppColors
-                                                          .app_background_clr,
+                                                      color: Theme.of(
+                                                        context,
+                                                      ).colorScheme.primary,
+
                                                       fontWeight:
                                                           FontWeight.w600,
                                                       fontSize: 13,
@@ -166,7 +172,9 @@ class _MyRequestListState extends ConsumerState<MyRequestList> {
                                                 item.productId.updatedAt,
                                               ),
                                               style: TextStyle(
-                                                color: Colors.grey.shade500,
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.onSurfaceVariant,
                                                 fontSize: 12,
                                               ),
                                             ),
@@ -178,7 +186,10 @@ class _MyRequestListState extends ConsumerState<MyRequestList> {
                                 ),
                                 trailing: Chip(
                                   label: Text(item.status),
-                                  backgroundColor: Colors.blue.shade50,
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primaryContainer,
+                                  // backgroundColor: Colors.blue.shade50,
                                 ),
                               ),
                             ),

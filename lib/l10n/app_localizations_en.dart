@@ -228,7 +228,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sparePartsUsed => 'Spare Parts Used';
 
   @override
-  String get noSparePartUsed => 'No Spare Part Used';
+  String get noSparePartUsed => 'No Spare Parts Used';
 
   @override
   String get completedService => 'Completed Service';

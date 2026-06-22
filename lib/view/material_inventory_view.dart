@@ -34,6 +34,8 @@ class _MaterialInventoryViewState extends ConsumerState<MaterialInventoryView> {
   DateTime? _lastBackPressTime;
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final inventoryAsync = ref.watch(inventoryListProvider);
     final connectivity = ref.watch(connectivityProvider);
     // return Scaffold(
@@ -372,8 +374,9 @@ class _MaterialInventoryViewState extends ConsumerState<MaterialInventoryView> {
             return Column(
               children: [
                 Container(
-                  decoration: const BoxDecoration(
-                    color: AppColors.app_background_clr,
+                  decoration: BoxDecoration(
+                    color: colors.primary,
+                    // color: AppColors.app_background_clr,
                     // borderRadius: BorderRadius.only(
                     //   bottomLeft: Radius.circular(20),
                     //   bottomRight: Radius.circular(20),
@@ -419,10 +422,11 @@ class _MaterialInventoryViewState extends ConsumerState<MaterialInventoryView> {
                           const SizedBox(height: 12),
                           Text(
                             AppLocalizations.of(context)!.noMaterialFound,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: Color.fromRGBO(13, 95, 72, 1),
+                              color: colors.primary,
+                              // color: Color.fromRGBO(13, 95, 72, 1),
                             ),
                           ),
                         ],
